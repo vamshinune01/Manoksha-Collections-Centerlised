@@ -1364,6 +1364,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/pricing/skus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListSkuPrices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pricing/skus/{skuId}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetRetailPriceHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pricing/skus/{skuId}/retail-price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["SetRetailPrice"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pricing/products/{productId}/reseller-discount": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetProductResellerDiscount"];
+        put: operations["SetProductResellerDiscount"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pricing/products/{productId}/reseller-discount/clear": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClearProductResellerDiscount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pricing/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PreviewResellerPrice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/purchasing/suppliers": {
         parameters: {
             query?: never;
@@ -1518,6 +1614,134 @@ export interface paths {
         get: operations["ListGoodsReceipts"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/commercial-terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerCommercialTerms"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerCatalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/price-quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ResellerPriceQuote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/resellers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListResellers"];
+        put?: never;
+        post: operations["CreateReseller"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/resellers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetReseller"];
+        put: operations["UpdateReseller"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/resellers/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ChangeResellerStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/resellers/{id}/commercial-terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ChangeResellerTerms"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1904,13 +2128,36 @@ export interface components {
             currentPassword?: string | null;
             newPassword?: string | null;
         };
+        ChangeResellerStatusRequest: {
+            status?: string | null;
+            reason?: string | null;
+        };
         ChangeStatusRequest: {
             status?: string | null;
+            reason?: string | null;
+        };
+        ChangeTermsRequest: {
+            /** Format: double */
+            resellerDiscountPct?: number;
+            notes?: string | null;
             reason?: string | null;
         };
         ChangeUserStatusRequest: {
             status?: string | null;
             reason?: string | null;
+        };
+        CommercialTermDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: int32 */
+            version?: number;
+            /** Format: double */
+            discountPct?: number;
+            notes?: string | null;
+            reason?: string | null;
+            /** Format: date-time */
+            effectiveFrom?: string;
+            isCurrent?: boolean;
         };
         CorrectAttendanceRequest: {
             /** Format: date-time */
@@ -2036,6 +2283,20 @@ export interface components {
             expectedDate?: string | null;
             notes?: string | null;
             lines?: components["schemas"]["PoLineRequest"][] | null;
+            reason?: string | null;
+        };
+        CreateResellerRequest: {
+            contactName?: string | null;
+            businessName?: string | null;
+            mobile?: string | null;
+            email?: string | null;
+            addressLine?: string | null;
+            city?: string | null;
+            state?: string | null;
+            pin?: string | null;
+            /** Format: double */
+            resellerDiscountPct?: number;
+            notes?: string | null;
             reason?: string | null;
         };
         CreateRoleRequest: {
@@ -2368,7 +2629,29 @@ export interface components {
             trackingMode?: string | null;
             availableForRetail?: boolean;
             availableForReseller?: boolean;
+            /** Format: double */
+            retailPrice?: number | null;
             availability?: components["schemas"]["BranchAvailabilityDto"][] | null;
+        };
+        PricePreviewDto: {
+            /** Format: uuid */
+            resellerId?: string;
+            /** Format: int32 */
+            termsVersion?: number;
+            /** Format: double */
+            resellerDiscountPct?: number;
+            /** Format: double */
+            productDiscountPct?: number | null;
+            /** Format: double */
+            retailPrice?: number;
+            appliedSource?: string | null;
+            /** Format: double */
+            appliedPct?: number;
+            /** Format: double */
+            finalUnitPrice?: number;
+        };
+        PricingReasonRequest: {
+            reason?: string | null;
         };
         PrintLabelsRequest: {
             barcodeIds?: string[] | null;
@@ -2402,6 +2685,27 @@ export interface components {
             variants?: components["schemas"]["VariantDto"][] | null;
             /** Format: date-time */
             createdAt?: string;
+        };
+        ProductDiscountDto: {
+            /** Format: uuid */
+            productId?: string;
+            /** Format: double */
+            currentDiscountPct?: number | null;
+            history?: components["schemas"]["ProductDiscountHistoryDto"][] | null;
+        };
+        ProductDiscountHistoryDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: double */
+            discountPct?: number;
+            /** Format: date-time */
+            effectiveFrom?: string;
+            /** Format: date-time */
+            effectiveTo?: string | null;
+            /** Format: uuid */
+            setBy?: string;
+            reason?: string | null;
+            endReason?: string | null;
         };
         ProductPage: {
             items?: components["schemas"]["ProductSummaryDto"][] | null;
@@ -2455,6 +2759,9 @@ export interface components {
             expectedTotal?: number | null;
             lines?: components["schemas"]["PoLineDto"][] | null;
         };
+        QuoteRequest: {
+            skuIds?: string[] | null;
+        };
         ReasonRequest: {
             reason?: string | null;
         };
@@ -2493,12 +2800,142 @@ export interface components {
             code?: string | null;
             reason?: string | null;
         };
+        ResellerCatalogItemDto: {
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            /** Format: uuid */
+            productId?: string;
+            productName?: string | null;
+            variantName?: string | null;
+            categoryName?: string | null;
+            /** Format: double */
+            retailPrice?: number;
+            discountSource?: string | null;
+            /** Format: double */
+            discountPct?: number;
+            /** Format: double */
+            resellerPrice?: number;
+        };
+        ResellerCatalogPage: {
+            items?: components["schemas"]["ResellerCatalogItemDto"][] | null;
+            /** Format: int32 */
+            total?: number;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            pageSize?: number;
+        };
+        ResellerDetailDto: {
+            /** Format: uuid */
+            id?: string;
+            resellerNumber?: string | null;
+            /** Format: uuid */
+            userId?: string;
+            mobile?: string | null;
+            status?: string | null;
+            profile?: components["schemas"]["ResellerProfileDto"];
+            /** Format: double */
+            walletBalance?: number;
+            currentTerms?: components["schemas"]["CommercialTermDto"];
+            termsHistory?: components["schemas"]["CommercialTermDto"][] | null;
+            statusHistory?: components["schemas"]["StatusChangeDto"][] | null;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            activatedAt?: string | null;
+        };
+        ResellerPriceLine: {
+            /** Format: uuid */
+            skuId?: string;
+            /** Format: uuid */
+            retailPriceId?: string;
+            /** Format: double */
+            retailPrice?: number;
+            discountSource?: string | null;
+            /** Format: double */
+            discountPct?: number;
+            /** Format: double */
+            finalUnitPrice?: number;
+            /** Format: uuid */
+            commercialTermId?: string;
+            /** Format: int32 */
+            commercialTermVersion?: number;
+            /** Format: uuid */
+            productDiscountId?: string | null;
+        };
+        ResellerProfileDto: {
+            contactName?: string | null;
+            businessName?: string | null;
+            email?: string | null;
+            addressLine?: string | null;
+            city?: string | null;
+            state?: string | null;
+            pin?: string | null;
+            notes?: string | null;
+        };
+        ResellerSelfDto: {
+            resellerNumber?: string | null;
+            contactName?: string | null;
+            businessName?: string | null;
+            mobile?: string | null;
+            email?: string | null;
+            status?: string | null;
+            canPlaceOrders?: boolean;
+            /** Format: double */
+            resellerDiscountPct?: number;
+            /** Format: int32 */
+            termsVersion?: number;
+            /** Format: double */
+            walletBalance?: number;
+        };
+        ResellerSummaryDto: {
+            /** Format: uuid */
+            id?: string;
+            resellerNumber?: string | null;
+            contactName?: string | null;
+            businessName?: string | null;
+            mobile?: string | null;
+            city?: string | null;
+            status?: string | null;
+            /** Format: double */
+            currentDiscountPct?: number;
+            /** Format: double */
+            walletBalance?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            activatedAt?: string | null;
+        };
+        ResellerTermDto: {
+            /** Format: int32 */
+            version?: number;
+            /** Format: double */
+            discountPct?: number;
+            notes?: string | null;
+            /** Format: date-time */
+            effectiveFrom?: string;
+            isCurrent?: boolean;
+        };
         ResolveDiscrepancyRequest: {
             action?: string | null;
             /** Format: int32 */
             quantity?: number | null;
             itemIds?: string[] | null;
             notes?: string | null;
+        };
+        RetailPriceHistoryDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: double */
+            price?: number;
+            /** Format: date-time */
+            effectiveFrom?: string;
+            /** Format: date-time */
+            effectiveTo?: string | null;
+            /** Format: uuid */
+            setBy?: string;
+            reason?: string | null;
         };
         RetireBarcodeRequest: {
             reason?: string | null;
@@ -2584,6 +3021,16 @@ export interface components {
             expectedVersion?: number;
             reason?: string | null;
         };
+        SetProductDiscountRequest: {
+            /** Format: double */
+            discountPct?: number;
+            reason?: string | null;
+        };
+        SetRetailPriceRequest: {
+            /** Format: double */
+            price?: number;
+            reason?: string | null;
+        };
         SetRolePermissionsRequest: {
             permissions?: string[] | null;
             reason?: string | null;
@@ -2603,6 +3050,33 @@ export interface components {
             productStatus?: string | null;
             availableForRetail?: boolean;
             availableForReseller?: boolean;
+        };
+        SkuPriceDto: {
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            /** Format: uuid */
+            productId?: string;
+            productName?: string | null;
+            variantName?: string | null;
+            productStatus?: string | null;
+            availableForRetail?: boolean;
+            availableForReseller?: boolean;
+            /** Format: double */
+            retailPrice?: number | null;
+            /** Format: date-time */
+            priceSince?: string | null;
+            /** Format: double */
+            productResellerDiscountPct?: number | null;
+        };
+        StatusChangeDto: {
+            fromStatus?: string | null;
+            toStatus?: string | null;
+            reason?: string | null;
+            /** Format: uuid */
+            actorUserId?: string | null;
+            /** Format: date-time */
+            occurredAt?: string;
         };
         StockRowDto: {
             /** Format: uuid */
@@ -2740,6 +3214,17 @@ export interface components {
             supplierReference?: string | null;
             /** Format: date */
             expectedDate?: string | null;
+            notes?: string | null;
+            reason?: string | null;
+        };
+        UpdateResellerRequest: {
+            contactName?: string | null;
+            businessName?: string | null;
+            email?: string | null;
+            addressLine?: string | null;
+            city?: string | null;
+            state?: string | null;
+            pin?: string | null;
             notes?: string | null;
             reason?: string | null;
         };
@@ -5144,6 +5629,174 @@ export interface operations {
             };
         };
     };
+    ListSkuPrices: {
+        parameters: {
+            query?: {
+                q?: string;
+                productId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkuPriceDto"][];
+                };
+            };
+        };
+    };
+    GetRetailPriceHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                skuId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetailPriceHistoryDto"][];
+                };
+            };
+        };
+    };
+    SetRetailPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                skuId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetRetailPriceRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetailPriceHistoryDto"][];
+                };
+            };
+        };
+    };
+    GetProductResellerDiscount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDiscountDto"];
+                };
+            };
+        };
+    };
+    SetProductResellerDiscount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetProductDiscountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDiscountDto"];
+                };
+            };
+        };
+    };
+    ClearProductResellerDiscount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PricingReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDiscountDto"];
+                };
+            };
+        };
+    };
+    PreviewResellerPrice: {
+        parameters: {
+            query: {
+                resellerId: string;
+                skuId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PricePreviewDto"];
+                };
+            };
+        };
+    };
     ListSuppliers: {
         parameters: {
             query?: never;
@@ -5480,6 +6133,242 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GoodsReceiptDto"][];
+                };
+            };
+        };
+    };
+    ResellerMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerSelfDto"];
+                };
+            };
+        };
+    };
+    ResellerCommercialTerms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerTermDto"][];
+                };
+            };
+        };
+    };
+    ResellerCatalog: {
+        parameters: {
+            query?: {
+                q?: string;
+                categoryId?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerCatalogPage"];
+                };
+            };
+        };
+    };
+    ResellerPriceQuote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerPriceLine"][];
+                };
+            };
+        };
+    };
+    ListResellers: {
+        parameters: {
+            query?: {
+                q?: string;
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerSummaryDto"][];
+                };
+            };
+        };
+    };
+    CreateReseller: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateResellerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerDetailDto"];
+                };
+            };
+        };
+    };
+    GetReseller: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerDetailDto"];
+                };
+            };
+        };
+    };
+    UpdateReseller: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateResellerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerDetailDto"];
+                };
+            };
+        };
+    };
+    ChangeResellerStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeResellerStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerDetailDto"];
+                };
+            };
+        };
+    };
+    ChangeResellerTerms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeTermsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerDetailDto"];
                 };
             };
         };

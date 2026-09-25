@@ -24,6 +24,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <Badge tone={p.status === "Active" ? "green" : p.status === "Draft" ? "amber" : "red"}>{p.status}</Badge>
         {p.availableForRetail ? <Badge>Retail</Badge> : <Badge tone="red">Not for retail</Badge>}
         {p.availableForReseller ? <Badge tone="brand">Reseller</Badge> : <Badge tone="red">Not for resellers</Badge>}
+        {can(me, P.pricingView) && <Link href={`/pricing?productId=${p.id}`} className="text-sm text-brand-700 hover:underline">Prices →</Link>}
         {manage && <ProductStatusButtons product={p} />}
       </div>
       <div className="grid gap-6 xl:grid-cols-3">

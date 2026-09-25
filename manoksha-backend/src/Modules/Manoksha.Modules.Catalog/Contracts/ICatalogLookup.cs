@@ -18,8 +18,29 @@ public interface ICatalogLookup
 {
     Task<SkuInfo?> FindSkuAsync(Guid skuId, CancellationToken cancellationToken = default);
 
+    /// <summary>Search by product name, SKU code or barcode; or list a product's SKUs.</summary>
+    Task<IReadOnlyList<SkuInfo>> SearchSkusAsync(string? query, Guid? productId, int limit, CancellationToken cancellationToken = default);
+
+    Task<bool> ProductExistsAsync(Guid productId, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyDictionary<Guid, SkuInfo>> FindSkusAsync(IReadOnlyCollection<Guid> skuIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sellable SKUs for a channel: active product, active variant, and available for resellers (reseller channel) or for
+    /// retail (retail channel). Paged, optionally filtered by name / SKU code / category.
+    /// </summary>
+    Task<SellableSkuPage> ListSellableSkusAsync(SalesChannel channel, string? query, Guid? categoryId, int page, int pageSize, CancellationToken cancellationToken = default);
 }
+
+public enum SalesChannel
+{
+    Retail = 1,
+    Reseller = 2,
+}
+
+public sealed record SellableSku(SkuInfo Sku, Guid CategoryId, string CategoryName);
+
+public sealed record SellableSkuPage(IReadOnlyList<SellableSku> Items, int Total, int Page, int PageSize);
 
 public sealed record AttributeValue(string Attribute, string Value);
 

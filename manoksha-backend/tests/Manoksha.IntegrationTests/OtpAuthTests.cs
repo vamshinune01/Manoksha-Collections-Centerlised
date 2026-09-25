@@ -2,9 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using Manoksha.IntegrationTests.Infrastructure;
 using Manoksha.Integrations.Sms;
-using Manoksha.Modules.Identity.Domain;
-using Manoksha.Persistence;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Manoksha.IntegrationTests;
 
@@ -111,15 +108,7 @@ public class OtpAuthTests(ManokshaApiFactory factory)
         var mobile = ApiClient.NewMobile();
         var customerTokens = await factory.RegisterCustomerAsync(mobile);
 
-        // Reseller creation/activation arrives in Phase 4; create an ACTIVE reseller identity directly for this test.
-        await using (var scope = factory.Services.CreateAsyncScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<ManokshaDbContext>();
-            var reseller = User.CreatePendingReseller(mobile, "Reseller Shop", null, DateTimeOffset.UtcNow, factory.OwnerUserId);
-            reseller.Activate(DateTimeOffset.UtcNow);
-            db.Add(reseller);
-            await db.SaveChangesAsync();
-        }
+        await factory.CreateResellerAsync(mobile);
 
         factory.Clock.Advance(TimeSpan.FromMinutes(2));
         var client = factory.CreateClient();

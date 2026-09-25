@@ -48,6 +48,7 @@ public sealed record PosScanDto(
     string TrackingMode,
     bool AvailableForRetail,
     bool AvailableForReseller,
+    decimal? RetailPrice,
     IReadOnlyList<BranchAvailabilityDto> Availability);
 
 public sealed record ScanAttributeDto(string AttributeName, string Value);

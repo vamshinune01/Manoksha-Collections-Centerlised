@@ -55,6 +55,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Manoksha.Modules.Inventory"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Manoksha.Modules.Purchasing", "src\Modules\Manoksha.Modules.Purchasing\Manoksha.Modules.Purchasing.csproj", "{84A3113E-55C5-4255-8E16-49DA42CA9373}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Manoksha.Modules.Wallet", "src\Modules\Manoksha.Modules.Wallet\Manoksha.Modules.Wallet.csproj", "{F6F9EE12-5871-4617-932E-B08A2CB77ABE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Manoksha.Modules.Resellers", "src\Modules\Manoksha.Modules.Resellers\Manoksha.Modules.Resellers.csproj", "{203C67B7-80C3-4F2B-BBFC-E194E57EA863}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Manoksha.Modules.Pricing", "src\Modules\Manoksha.Modules.Pricing\Manoksha.Modules.Pricing.csproj", "{61E44CCB-D747-48CF-A2EA-224107919B31}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -140,6 +146,18 @@ Global
 		{84A3113E-55C5-4255-8E16-49DA42CA9373}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84A3113E-55C5-4255-8E16-49DA42CA9373}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84A3113E-55C5-4255-8E16-49DA42CA9373}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6F9EE12-5871-4617-932E-B08A2CB77ABE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6F9EE12-5871-4617-932E-B08A2CB77ABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6F9EE12-5871-4617-932E-B08A2CB77ABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6F9EE12-5871-4617-932E-B08A2CB77ABE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{203C67B7-80C3-4F2B-BBFC-E194E57EA863}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{203C67B7-80C3-4F2B-BBFC-E194E57EA863}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{203C67B7-80C3-4F2B-BBFC-E194E57EA863}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{203C67B7-80C3-4F2B-BBFC-E194E57EA863}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61E44CCB-D747-48CF-A2EA-224107919B31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61E44CCB-D747-48CF-A2EA-224107919B31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61E44CCB-D747-48CF-A2EA-224107919B31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61E44CCB-D747-48CF-A2EA-224107919B31}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B56051FE-06C1-4230-92B5-79C31E788591} = {3BE785FC-6FAA-4508-A0A4-6CD4881846AB}
@@ -166,5 +184,8 @@ Global
 		{A4EDB310-53DF-4C75-9319-D1C809C1625A} = {04195A6E-0B7D-4FD8-8358-68AA06D35B2D}
 		{1EDB744E-83A8-443C-9EF9-6AD59D94F1AA} = {04195A6E-0B7D-4FD8-8358-68AA06D35B2D}
 		{84A3113E-55C5-4255-8E16-49DA42CA9373} = {04195A6E-0B7D-4FD8-8358-68AA06D35B2D}
+		{F6F9EE12-5871-4617-932E-B08A2CB77ABE} = {04195A6E-0B7D-4FD8-8358-68AA06D35B2D}
+		{203C67B7-80C3-4F2B-BBFC-E194E57EA863} = {04195A6E-0B7D-4FD8-8358-68AA06D35B2D}
+		{61E44CCB-D747-48CF-A2EA-224107919B31} = {04195A6E-0B7D-4FD8-8358-68AA06D35B2D}
 	EndGlobalSection
 EndGlobal

@@ -220,10 +220,17 @@ internal sealed partial class ProductService(
     }
 
     /// <summary>SKU picker: product name, SKU code or barcode.</summary>
-    public async Task<IReadOnlyList<SkuInfo>> SearchSkusAsync(string? q, int? limit, CancellationToken ct)
+    public Task<IReadOnlyList<SkuInfo>> SearchSkusAsync(string? q, int? limit, CancellationToken ct) => SearchSkusAsync(q, null, limit ?? 20, ct);
+
+    public async Task<IReadOnlyList<SkuInfo>> SearchSkusAsync(string? q, Guid? productId, int limit, CancellationToken cancellationToken = default)
     {
-        var take = Math.Clamp(limit ?? 20, 1, 50);
+        var ct = cancellationToken;
+        var take = Math.Clamp(limit, 1, 100);
         var skus = db.Set<Sku>().AsNoTracking();
+        if (productId is { } pid)
+        {
+            skus = skus.Where(s => s.ProductId == pid);
+        }
         if (!string.IsNullOrWhiteSpace(q))
         {
             var term = q.Trim();
@@ -237,6 +244,40 @@ internal sealed partial class ProductService(
         var found = await FindSkusAsync(ids, ct);
         return ids.Where(found.ContainsKey).Select(id => found[id]).ToList();
     }
+
+    public async Task<SellableSkuPage> ListSellableSkusAsync(SalesChannel channel, string? query, Guid? categoryId, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var size = Math.Clamp(pageSize, 1, 100);
+        var number = Math.Max(1, page);
+        var rows = from s in db.Set<Sku>()
+                   join v in db.Set<Variant>() on s.VariantId equals v.Id
+                   join p in db.Set<Product>() on s.ProductId equals p.Id
+                   join c in db.Set<Category>() on p.CategoryId equals c.Id
+                   where p.Status == ProductStatus.Active && v.Status == RecordStatus.Active
+                         && (channel == SalesChannel.Reseller ? p.AvailableForReseller : p.AvailableForRetail)
+                   select new { s, v, p, c };
+        if (categoryId is { } cat)
+        {
+            rows = rows.Where(x => x.p.CategoryId == cat);
+        }
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var term = query.Trim();
+            var upper = term.ToUpperInvariant();
+            var pattern = $"%{term.Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal)}%";
+            rows = rows.Where(x => EF.Functions.ILike(x.p.Name, pattern) || x.s.Code == upper);
+        }
+        var total = await rows.CountAsync(cancellationToken);
+        var items = await rows.OrderBy(x => x.p.Name).ThenBy(x => x.v.Name).Skip((number - 1) * size).Take(size).AsNoTracking()
+            .Select(x => new SellableSku(
+                new SkuInfo(x.s.Id, x.s.Code, x.v.Id, x.v.Name, true, x.p.Id, x.p.Name, x.p.TrackingMode.ToString(), x.p.Status.ToString(), x.p.AvailableForRetail, x.p.AvailableForReseller),
+                x.c.Id, x.c.Name))
+            .ToListAsync(cancellationToken);
+        return new SellableSkuPage(items, total, number, size);
+    }
+
+    public Task<bool> ProductExistsAsync(Guid productId, CancellationToken cancellationToken = default) =>
+        db.Set<Product>().AnyAsync(p => p.Id == productId, cancellationToken);
 
     public async Task<SkuInfo?> FindSkuAsync(Guid skuId, CancellationToken cancellationToken = default) =>
         (await FindSkusAsync([skuId], cancellationToken)).GetValueOrDefault(skuId);

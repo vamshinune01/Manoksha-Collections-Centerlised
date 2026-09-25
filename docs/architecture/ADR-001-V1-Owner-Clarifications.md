@@ -96,3 +96,17 @@ Engineering decisions for Phase 3 (confirm or correct):
   oldest layers at dispatch and recreates them at the destination with the original unit costs and dates.
 - Stock counts are blind (counters do not see the system quantity until submission). Differences become discrepancies,
   resolved by an approved adjustment or dismissed with a reason.
+
+## Phase 4 Owner decisions (25 Sep 2026)
+17. **Reseller sign-in by status:** ACTIVE — full access; FROZEN — read-only sign-in (history, wallet, terms; no new orders or
+    deposits); SUSPENDED — no sign-in (existing sessions are revoked when suspended); CLOSED — read-only sign-in to their own history.
+    PENDING — sign-in is the activation step (mobile OTP).
+18. **A reseller's registered mobile number cannot be changed in V1.** To change it, close the reseller and create a new one.
+19. **A PENDING reseller may be closed** by the Owner (with a reason, audited); the record is kept.
+
+Engineering decisions for Phase 4 (confirm or correct):
+- Activation "eligibility checks" = the reseller is still PENDING, has an initial commercial-term version and a ₹0 wallet.
+- Retail prices are set per SKU and take effect immediately; a SKU without a retail price is not sellable in any channel.
+- Discount percentages allow up to 2 decimals (0–100). Reseller price = retail × (1 − discount/100), rounded HALF-UP to paisa.
+- Commercial-term PDF/email notifications are delivered with the notifications module (Phase 9); every term version is stored now.
+- The reseller wallet (₹0) is created at onboarding; its ledger, deposits and checkout arrive in Phase 5.

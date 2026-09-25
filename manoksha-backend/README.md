@@ -22,6 +22,9 @@ src/
     Manoksha.Modules.Inventory stock levels, serialized pieces, FIFO cost layers, movements, transfers, counts, adjustments,
                                discrepancies; StockEngine is the only code that changes stock (IStockReceiver)
     Manoksha.Modules.Purchasing suppliers, purchase orders, goods receipts (posts to Inventory in the same transaction)
+    Manoksha.Modules.Wallet    prepaid reseller wallets (ledger in Phase 5)
+    Manoksha.Modules.Resellers onboarding, status lifecycle, versioned commercial terms, reseller login gate
+    Manoksha.Modules.Pricing   retail price history, product reseller discounts, IPriceCalculator, reseller catalog/quotes
   Integrations/                ISmsSender / IEmailSender / IFileStorage adapters (dev fakes refused in Production)
   Migrations/                  EF Core migrations
   Hosts/
@@ -49,4 +52,5 @@ dotnet ef migrations add <Name> --project src/Migrations/Manoksha.Migrations --s
 ```
 
 New modules must also be added to `ModuleCatalog` and `DesignTimeDbContextFactory`. Cross-module foreign keys are added with
-raw SQL in the migration (modules stay decoupled in code; the database still enforces references).
+raw SQL in the migration as `DEFERRABLE INITIALLY DEFERRED` (checked at commit, because EF cannot order inserts for
+relationships it does not know). Modules stay decoupled in code; the database still enforces references.

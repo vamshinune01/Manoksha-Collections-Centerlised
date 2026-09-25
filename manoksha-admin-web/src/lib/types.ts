@@ -431,3 +431,80 @@ export interface Adjustment {
   estimatedValue: number | null;
   requiresOwner: boolean | null;
 }
+
+export interface ResellerSummary {
+  id: string;
+  resellerNumber: string;
+  contactName: string;
+  businessName: string | null;
+  mobile: string;
+  city: string;
+  status: "Pending" | "Active" | "Frozen" | "Suspended" | "Closed";
+  currentDiscountPct: number;
+  walletBalance: number;
+  createdAt: string;
+  activatedAt: string | null;
+}
+
+export interface CommercialTerm {
+  id: string;
+  version: number;
+  discountPct: number;
+  notes: string | null;
+  reason: string;
+  effectiveFrom: string;
+  isCurrent: boolean;
+}
+
+export interface ResellerDetail {
+  id: string;
+  resellerNumber: string;
+  userId: string;
+  mobile: string;
+  status: ResellerSummary["status"];
+  profile: { contactName: string; businessName: string | null; email: string; addressLine: string; city: string; state: string; pin: string; notes: string | null };
+  walletBalance: number;
+  currentTerms: CommercialTerm;
+  termsHistory: CommercialTerm[];
+  statusHistory: { fromStatus: string | null; toStatus: string; reason: string; actorUserId: string | null; occurredAt: string }[];
+  createdAt: string;
+  activatedAt: string | null;
+}
+
+export interface SkuPrice {
+  skuId: string;
+  skuCode: string;
+  productId: string;
+  productName: string;
+  variantName: string;
+  productStatus: string;
+  availableForRetail: boolean;
+  availableForReseller: boolean;
+  retailPrice: number | null;
+  priceSince: string | null;
+  productResellerDiscountPct: number | null;
+}
+
+export interface PriceHistory {
+  id: string;
+  price: number;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  reason: string;
+}
+
+export interface ProductDiscount {
+  productId: string;
+  currentDiscountPct: number | null;
+  history: { id: string; discountPct: number; effectiveFrom: string; effectiveTo: string | null; reason: string; endReason: string | null }[];
+}
+
+export interface PricePreview {
+  termsVersion: number;
+  resellerDiscountPct: number;
+  productDiscountPct: number | null;
+  retailPrice: number;
+  appliedSource: string;
+  appliedPct: number;
+  finalUnitPrice: number;
+}

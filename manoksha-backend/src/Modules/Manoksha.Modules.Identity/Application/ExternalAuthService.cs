@@ -1,5 +1,6 @@
 using Manoksha.Application.Abstractions;
 using Manoksha.Application.Security;
+using Manoksha.Modules.Identity.Contracts;
 using Manoksha.Modules.Identity.Domain;
 using Manoksha.Modules.Identity.Infrastructure;
 using Manoksha.Persistence;
@@ -20,6 +21,7 @@ internal sealed class ExternalAuthService(
     SessionService sessions,
     IAuditWriter audit,
     IRequestContext requestContext,
+    IEnumerable<IResellerLoginGate> resellerGates,
     IClock clock)
 {
     public async Task<AuthResponse> VerifyOtpAsync(OtpVerifyRequest request, CancellationToken ct)
@@ -45,11 +47,26 @@ internal sealed class ExternalAuthService(
             return AuthResponse.Authenticated(await sessions.IssueAsync(user, Audiences.Customer, ct));
         }
 
-        // Reseller: only Owner-created accounts. PENDING activation after OTP is added with reseller onboarding (Phase 4).
-        if (user is null || user.Status != UserStatus.Active)
+        // Reseller: only Owner-created accounts (SPEC §5.3). OTP verification is the activation step for PENDING resellers;
+        // the Resellers module decides per business status who may sign in (ADR-001 §17).
+        if (user is null || user.Status is not (UserStatus.Pending or UserStatus.Active))
         {
             await LogAsync(user?.Id, accountType, mobile, "DENIED", ct);
             throw new ForbiddenException("RESELLER_ACCOUNT_NOT_ACTIVE", "No active reseller account is registered for this number.");
+        }
+        foreach (var gate in resellerGates)
+        {
+            var decision = await gate.OnMobileVerifiedAsync(user.Id, ct);
+            if (!decision.Allowed)
+            {
+                await LogAsync(user.Id, accountType, mobile, "DENIED", ct);
+                throw new ForbiddenException(decision.DenyCode ?? "RESELLER_ACCOUNT_NOT_ACTIVE", decision.DenyMessage ?? "Sign-in is not available for this reseller account.");
+            }
+        }
+        if (user.Status == UserStatus.Pending)
+        {
+            user.Activate(clock.UtcNow);
+            await audit.RecordAsync(new AuditRecord("identity.reseller.mobile_verified", "User", user.Id.ToString(), After: new { mobile = MobileNumber.Mask(mobile) }), ct);
         }
         await LogAsync(user.Id, accountType, mobile, "SUCCESS", ct);
         return AuthResponse.Authenticated(await sessions.IssueAsync(user, Audiences.Reseller, ct));

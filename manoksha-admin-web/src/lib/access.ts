@@ -52,6 +52,10 @@ export const P = {
   transfersApprove: "transfers.approve",
   transfersDispatch: "transfers.dispatch",
   transfersReceive: "transfers.receive",
+  resellersView: "resellers.view",
+  resellersManage: "resellers.manage",
+  pricingView: "pricing.view",
+  pricingManage: "pricing.manage",
 } as const;
 
 export interface NavItem {
@@ -68,6 +72,8 @@ export const NAV: NavItem[] = [
   { href: "/employees", label: "Employees", permission: P.employeesView },
   { href: "/attendance", label: "Attendance", permission: [P.attendanceSelf, P.attendanceView] },
   { href: "/catalog", label: "Catalog", permission: P.catalogView },
+  { href: "/pricing", label: "Pricing", permission: P.pricingView },
+  { href: "/resellers", label: "Resellers", permission: P.resellersView },
   { href: "/purchasing", label: "Purchasing", permission: [P.purchasingView, P.goodsReceipt] },
   { href: "/inventory", label: "Inventory", permission: [P.inventoryView, P.inventoryCount] },
   { href: "/users", label: "Users", permission: P.usersView },

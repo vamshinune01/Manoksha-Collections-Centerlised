@@ -36,6 +36,8 @@ namespace Manoksha.Migrations.Migrations
 
             modelBuilder.HasSequence("po_seq", "purchasing");
 
+            modelBuilder.HasSequence("reseller_number_seq", "resellers");
+
             modelBuilder.HasSequence("sku_code_seq", "catalog");
 
             modelBuilder.HasSequence("supplier_seq", "purchasing");
@@ -2242,6 +2244,113 @@ namespace Manoksha.Migrations.Migrations
                     b.ToTable("transfer_line_items", "inventory");
                 });
 
+            modelBuilder.Entity("Manoksha.Modules.Pricing.Domain.ProductResellerDiscount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("DiscountPct")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("numeric(7,4)")
+                        .HasColumnName("discount_pct");
+
+                    b.Property<DateTimeOffset>("EffectiveFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("effective_from");
+
+                    b.Property<DateTimeOffset?>("EffectiveTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("effective_to");
+
+                    b.Property<string>("EndReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("end_reason");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("SetBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("set_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_reseller_discounts");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_product_reseller_discounts_current")
+                        .HasFilter("effective_to IS NULL");
+
+                    b.HasIndex("ProductId", "EffectiveFrom")
+                        .HasDatabaseName("ix_product_reseller_discounts_product_id_effective_from");
+
+                    b.ToTable("product_reseller_discounts", "pricing", t =>
+                        {
+                            t.HasCheckConstraint("ck_product_discount_range", "discount_pct >= 0 AND discount_pct <= 100");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Pricing.Domain.RetailPrice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("EffectiveFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("effective_from");
+
+                    b.Property<DateTimeOffset?>("EffectiveTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("effective_to");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("price");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("SetBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("set_by");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_retail_prices");
+
+                    b.HasIndex("SkuId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_retail_prices_current")
+                        .HasFilter("effective_to IS NULL");
+
+                    b.HasIndex("SkuId", "EffectiveFrom")
+                        .HasDatabaseName("ix_retail_prices_sku_id_effective_from");
+
+                    b.ToTable("retail_prices", "pricing", t =>
+                        {
+                            t.HasCheckConstraint("ck_retail_prices_positive", "price > 0");
+                        });
+                });
+
             modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.GoodsReceipt", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2552,6 +2661,168 @@ namespace Manoksha.Migrations.Migrations
                     b.ToTable("suppliers", "purchasing");
                 });
 
+            modelBuilder.Entity("Manoksha.Modules.Resellers.Domain.CommercialTerm", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal>("DiscountPct")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("numeric(7,4)")
+                        .HasColumnName("discount_pct");
+
+                    b.Property<DateTimeOffset>("EffectiveFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("effective_from");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("ResellerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reseller_id");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_commercial_terms");
+
+                    b.HasIndex("ResellerId", "Version")
+                        .IsUnique()
+                        .HasDatabaseName("ix_commercial_terms_reseller_id_version");
+
+                    b.ToTable("commercial_terms", "resellers");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Resellers.Domain.Reseller", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("ActivatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("activated_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("MobileE164")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("mobile_e164");
+
+                    b.Property<string>("ResellerNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("reseller_number");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_resellers");
+
+                    b.HasIndex("MobileE164")
+                        .IsUnique()
+                        .HasDatabaseName("ix_resellers_mobile_e164");
+
+                    b.HasIndex("ResellerNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_resellers_reseller_number");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_resellers_status");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_resellers_user_id");
+
+                    b.ToTable("resellers", "resellers");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Resellers.Domain.ResellerStatusChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("from_status");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("ResellerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reseller_id");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("to_status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_reseller_status_changes");
+
+                    b.HasIndex("ResellerId", "OccurredAt")
+                        .HasDatabaseName("ix_reseller_status_changes_reseller_id_occurred_at");
+
+                    b.ToTable("reseller_status_changes", "resellers");
+                });
+
             modelBuilder.Entity("Manoksha.Modules.Settings.Domain.SystemSetting", b =>
                 {
                     b.Property<string>("Key")
@@ -2635,6 +2906,49 @@ namespace Manoksha.Migrations.Migrations
                         .HasDatabaseName("ix_system_setting_changes_key_changed_at");
 
                     b.ToTable("system_setting_changes", "settings");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Wallet.Domain.ResellerWallet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("balance");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("ResellerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reseller_id");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_wallets");
+
+                    b.HasIndex("ResellerId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_wallets_reseller_id");
+
+                    b.ToTable("wallets", "wallet", t =>
+                        {
+                            t.HasCheckConstraint("ck_wallets_balance_non_negative", "balance >= 0");
+                        });
                 });
 
             modelBuilder.Entity("Manoksha.Persistence.Idempotency.IdempotencyRecord", b =>
@@ -3101,6 +3415,93 @@ namespace Manoksha.Migrations.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_purchase_order_lines_purchase_orders_purchase_order_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Resellers.Domain.CommercialTerm", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Resellers.Domain.Reseller", null)
+                        .WithMany()
+                        .HasForeignKey("ResellerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_commercial_terms_resellers_reseller_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Resellers.Domain.Reseller", b =>
+                {
+                    b.OwnsOne("Manoksha.Modules.Resellers.Domain.ResellerProfile", "Profile", b1 =>
+                        {
+                            b1.Property<Guid>("ResellerId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<string>("AddressLine")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("address_line");
+
+                            b1.Property<string>("BusinessName")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("business_name");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("city");
+
+                            b1.Property<string>("ContactName")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("contact_name");
+
+                            b1.Property<string>("Email")
+                                .IsRequired()
+                                .HasMaxLength(254)
+                                .HasColumnType("character varying(254)")
+                                .HasColumnName("email");
+
+                            b1.Property<string>("Notes")
+                                .HasMaxLength(2000)
+                                .HasColumnType("character varying(2000)")
+                                .HasColumnName("notes");
+
+                            b1.Property<string>("Pin")
+                                .IsRequired()
+                                .HasMaxLength(6)
+                                .HasColumnType("character varying(6)")
+                                .HasColumnName("pin");
+
+                            b1.Property<string>("State")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("state");
+
+                            b1.HasKey("ResellerId");
+
+                            b1.ToTable("resellers", "resellers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ResellerId")
+                                .HasConstraintName("fk_resellers_resellers_id");
+                        });
+
+                    b.Navigation("Profile")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Resellers.Domain.ResellerStatusChange", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Resellers.Domain.Reseller", null)
+                        .WithMany()
+                        .HasForeignKey("ResellerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reseller_status_changes_resellers_reseller_id");
                 });
 
             modelBuilder.Entity("Manoksha.Modules.Branches.Domain.FulfillmentPriorityVersion", b =>

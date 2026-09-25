@@ -42,6 +42,7 @@ public sealed class IdentityModule : IModule
         services.AddScoped<MeService>();
         services.AddScoped<IStartupSeeder, IdentitySeeder>();
         services.AddScoped<IInternalUserAccounts, InternalUserAccounts>();
+        services.AddScoped<IResellerAccounts, ResellerAccounts>();
         services.AddScoped<IDevelopmentSeeder, IdentityDevelopmentSeeder>();
     }
 

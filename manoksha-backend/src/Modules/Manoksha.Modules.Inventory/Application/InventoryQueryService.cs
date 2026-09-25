@@ -1,5 +1,6 @@
 using Manoksha.Modules.Catalog.Contracts;
 using Manoksha.Modules.Inventory.Domain;
+using Manoksha.Modules.Pricing.Contracts;
 using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,7 @@ using P = Manoksha.Application.Security.Permissions;
 
 namespace Manoksha.Modules.Inventory.Application;
 
-internal sealed class InventoryQueryService(ManokshaDbContext db, InventoryAccess access, ICatalogBarcodes barcodes)
+internal sealed class InventoryQueryService(ManokshaDbContext db, InventoryAccess access, ICatalogBarcodes barcodes, IPriceCalculator prices)
 {
     private static readonly InventoryStatus[] Unsold =
     [
@@ -117,7 +118,7 @@ internal sealed class InventoryQueryService(ManokshaDbContext db, InventoryAcces
 
     /// <summary>
     /// Scanning returns product/variant, the piece's current location and status, and availability per branch the user can see
-    /// (SPEC §7). Applicable price is added with pricing (Phase 4).
+    /// (SPEC §7), and the applicable retail price (POS bargaining is authorized separately in Phase 8).
     /// </summary>
     public async Task<PosScanDto> ScanAsync(string code, CancellationToken ct)
     {
@@ -140,9 +141,10 @@ internal sealed class InventoryQueryService(ManokshaDbContext db, InventoryAcces
             .ToList();
 
         var sku = found.Sku;
+        var retail = (await prices.GetRetailPricesAsync([sku.SkuId], ct)).GetValueOrDefault(sku.SkuId);
         return new PosScanDto(found.Code, found.Kind, item?.Id, item?.WrittenOffAt is null ? item?.Status.ToString() : "WrittenOff", item?.BranchId,
             item is null ? null : names.GetValueOrDefault(item.BranchId), sku.SkuId, sku.SkuCode, sku.VariantId, sku.VariantName,
             found.Attributes.Select(a => new ScanAttributeDto(a.Attribute, a.Value)).ToList(), sku.ProductId, sku.ProductName, sku.ProductStatus, sku.TrackingMode,
-            sku.AvailableForRetail, sku.AvailableForReseller, availability);
+            sku.AvailableForRetail, sku.AvailableForReseller, retail?.Price, availability);
     }
 }

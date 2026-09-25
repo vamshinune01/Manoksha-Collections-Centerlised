@@ -18,7 +18,7 @@ GRANT CREATE ON DATABASE manoksha TO manoksha_migrator;
 -- DO $$
 -- DECLARE s text;
 -- BEGIN
---   FOREACH s IN ARRAY ARRAY['platform','identity','audit','settings','branches','employees','catalog','inventory','purchasing'] LOOP
+--   FOREACH s IN ARRAY ARRAY['platform','identity','audit','settings','branches','employees','catalog','inventory','purchasing','wallet','resellers','pricing'] LOOP
 --     EXECUTE format('GRANT USAGE ON SCHEMA %I TO manoksha_app, manoksha_readonly', s);
 --     EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA %I TO manoksha_app', s);
 --     EXECUTE format('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA %I TO manoksha_app', s);
@@ -31,4 +31,5 @@ GRANT CREATE ON DATABASE manoksha TO manoksha_migrator;
 -- -- Append-only history: the application role may only INSERT/SELECT.
 -- REVOKE UPDATE, DELETE, TRUNCATE ON audit.audit_log, settings.system_setting_changes, identity.login_events,
 --   branches.fulfillment_priority_versions, branches.fulfillment_priority_entries, catalog.barcode_prints,
---   inventory.inventory_movements, inventory.cost_layer_consumptions FROM manoksha_app;
+--   inventory.inventory_movements, inventory.cost_layer_consumptions,
+--   resellers.reseller_status_changes, resellers.commercial_terms FROM manoksha_app;

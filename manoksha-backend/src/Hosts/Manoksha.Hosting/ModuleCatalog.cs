@@ -5,6 +5,9 @@ using Manoksha.Modules.Catalog;
 using Manoksha.Modules.Employees;
 using Manoksha.Modules.Identity;
 using Manoksha.Modules.Inventory;
+using Manoksha.Modules.Pricing;
+using Manoksha.Modules.Resellers;
+using Manoksha.Modules.Wallet;
 using Manoksha.Modules.Purchasing;
 using Manoksha.Modules.Settings;
 
@@ -23,5 +26,8 @@ public static class ModuleCatalog
         new CatalogModule(),
         new InventoryModule(),
         new PurchasingModule(),
+        new WalletModule(),
+        new ResellersModule(),
+        new PricingModule(),
     ];
 }
