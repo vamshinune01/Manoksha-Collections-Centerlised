@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Manoksha.Hosting</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Integrations\Manoksha.Integrations\Manoksha.Integrations.csproj" />
+    <ProjectReference Include="..\..\Migrations\Manoksha.Migrations\Manoksha.Migrations.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Identity\Manoksha.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Audit\Manoksha.Modules.Audit.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Settings\Manoksha.Modules.Settings.csproj" />
+  </ItemGroup>
+</Project>

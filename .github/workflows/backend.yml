@@ -1,0 +1,51 @@
+name: backend
+
+on:
+  pull_request:
+    paths: ["manoksha-backend/**", "contracts/**", ".github/workflows/backend.yml"]
+  push:
+    branches: [main]
+    paths: ["manoksha-backend/**", "contracts/**", ".github/workflows/backend.yml"]
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: manoksha-backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      MANOKSHA_TEST_POSTGRES: Host=localhost;Port=5432;Username=ci;Password=ci;Database=postgres
+      DOTNET_NOLOGO: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: manoksha-backend/global.json
+      - run: dotnet restore Manoksha.sln
+      - run: dotnet build Manoksha.sln --no-restore -c Release
+      - name: Vulnerable package audit
+        run: dotnet list "$PWD/Manoksha.sln" package --vulnerable --include-transitive 2>&1 | tee vuln.txt && ! grep -qE "has the following vulnerable packages|error" vuln.txt
+      - name: Unit + architecture tests
+        run: |
+          dotnet test tests/Manoksha.UnitTests --no-build -c Release
+          dotnet test tests/Manoksha.ArchitectureTests --no-build -c Release
+      - name: Integration tests (real PostgreSQL, OpenAPI contract drift)
+        run: dotnet test tests/Manoksha.IntegrationTests --no-build -c Release
+      - name: Migrations are up to date with the model
+        run: |
+          dotnet tool restore
+          dotnet ef migrations has-pending-model-changes --project src/Migrations/Manoksha.Migrations --startup-project src/Migrations/Manoksha.Migrations

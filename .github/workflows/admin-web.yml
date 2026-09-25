@@ -1,0 +1,28 @@
+name: admin-web
+
+on:
+  pull_request:
+    paths: ["manoksha-admin-web/**", "packages/**", "contracts/**", "package.json", "package-lock.json", ".github/workflows/admin-web.yml"]
+  push:
+    branches: [main]
+    paths: ["manoksha-admin-web/**", "packages/**", "contracts/**", "package.json", "package-lock.json", ".github/workflows/admin-web.yml"]
+
+concurrency:
+  group: admin-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generated API types match the committed contract
+        run: npm run api-client:generate && git diff --exit-code packages/api-client/src/schema.d.ts
+      - run: npm run admin:lint
+      - run: npm run admin:typecheck
+      - run: npm run admin:build

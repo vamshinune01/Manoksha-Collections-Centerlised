@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Manoksha.SharedKernel</RootNamespace>
+  </PropertyGroup>
+</Project>

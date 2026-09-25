@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Manoksha.Integrations</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MailKit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Manoksha.Application\Manoksha.Application.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,66 @@
+# ADR-001 — V1 Owner Clarifications (authoritative)
+
+| | |
+|---|---|
+| Status | **ACCEPTED** (Owner, 24 Sep 2026) |
+| Applies to | [V1-Architecture-and-Design.md](V1-Architecture-and-Design.md) — architecture approved as proposed |
+| Precedence | SPEC (business source of truth) → this ADR (authoritative clarifications of SPEC) → design document |
+
+These answers resolve Q1–Q12 and the setup items of the design document §23.
+
+## 1. Repository layout
+One V1 monorepo. The current workspace folder is the repository root, containing `manoksha-backend/`, `manoksha-admin-web/`, `manoksha-customer-web/`, `manoksha-mobile-pos/`, `infra/`, `contracts/`, `docs/`. The four apps stay logically and deployably separate.
+
+## 2. Customer and reseller mobile numbers
+The same mobile number may exist as both a Customer identity and a Reseller identity — separate account contexts, permissions and tokens. Customer authentication never grants reseller access; reseller authentication never grants customer-context permissions.
+**Implementation:** uniqueness is `(account_type, mobile_e164)`; OTP challenges and tokens are bound to one account context (`customer` / `reseller` audience).
+
+## 3. FIFO costing
+FIFO cost layers **per SKU per branch**. A transfer carries the originating cost basis (the consumed source layers' unit costs and dates) into the destination branch's layers, so company cost is unchanged by transfers.
+
+## 4. Goods receipt
+Supplier delivers directly to the receiving branch. A Purchase Order identifies the expected receiving branch. An authorized Inventory Employee / Branch Manager verifies and records the Goods Receipt → inventory created → becomes AVAILABLE after successful receipt/verification. Owner sees all receipts. Later movement between branches uses the normal transfer workflow. No central warehouse.
+
+## 5. Reseller end-customers
+Relationship model: `Reseller → ResellerCustomerRelationship → Customer/Contact`. A normalized central person/contact identity may be kept internally for deduplication, but relationships and order history are isolated per reseller and never merged automatically. Reseller A can never search/browse/access Reseller B's relationships or orders. Owner has global visibility.
+
+## 6. Reseller catalog
+Products carry `AvailableForRetail` and `AvailableForReseller`. Products not available for resellers do not appear as purchasable in the reseller catalog, and the backend rejects any reseller order line for them.
+
+## 7. Transfer approval
+Created by an authorized employee/manager; the **source-branch manager** approves release; the destination verifies/receives. Owner can approve/manage globally. No employee or manager approves their own request.
+**Owner exception:** an Owner-created transfer may be authorized by the same Owner. RequestedBy, ApprovedBy, ApprovalTime, Source, Destination, Items and Reason are still recorded, and the audit entry explicitly marks *Owner initiated and authorized*.
+
+## 8. Administrative cancellation
+No customer cancellation. Owner always may cancel; a Branch Manager may cancel orders assigned to their branch only with the configured permission. Cancellation requires a reason and is audited.
+- **Online paid order:** stop fulfillment, release RESERVED / unconsumed allocation, and create `PAYMENT_RECONCILIATION_REQUIRED` when money was received — never mark as refunded unless an external refund is recorded.
+- **Reseller wallet order:** a system-generated REVERSAL/CREDIT ledger entry linked to the order and original debit (original never changed); no manual Owner balance edit required.
+- **Inventory:** safely releasable stock → AVAILABLE; DAMAGED / LOST / missing stock is never returned to AVAILABLE by cancellation. Every change keeps movement history.
+
+## 9. POS sales
+A POS sale is a store order that becomes `COMPLETED` on successful finalization, at retail pricing, with authorized bargaining and split payments. Reseller pricing never applies automatically at POS.
+
+## 10. Customer checkout login
+Browsing and cart building may be anonymous; order placement/payment requires customer login (mobile OTP). No guest orders.
+
+## 11. Monetary rounding
+Fixed-decimal types only. Monetary results rounded to 2 decimals (paisa) using HALF-UP (e.g. ₹1,234.567 → ₹1,234.57). No whole-rupee rounding. Percentages stored with sufficient precision. All authoritative rounding in the backend.
+**Implementation:** `numeric(14,2)` for money, `numeric(7,4)` for percentages, `MidpointRounding.AwayFromZero` (equivalent to half-up for the non-negative amounts used).
+
+## 12. Late payment recovery price
+Recovery preserves the original price snapshot the customer paid. It revalidates inventory, complete-basket fulfillment, branch eligibility, payment identity, payment amount and the original snapshot, and never renegotiates price. Not recoverable → `PAYMENT_RECONCILIATION_REQUIRED`.
+
+## Setup / providers
+Payment gateway, SMS OTP/DLT, email, domains and GCP billing are not Phase 1 blockers. All are behind adapters (`IPaymentGateway`, `ISmsSender`, `IEmailSender`, `IFileStorage`) with safe development fakes; the fakes are refused at startup in Production.
+
+## Engineering notes recorded during Phase 1
+- Web workspaces use **npm workspaces** instead of pnpm (pnpm/corepack is not available on the build machine with Node 25). No functional impact.
+- Entity IDs are server-generated UUIDv7 `Guid`s (strongly-typed ID wrappers were dropped to keep EF mappings simple; IDs remain immutable and server-generated).
+- Application services are called directly (no mediator library); behaviour is equivalent.
+- Audit rows carry a content hash in Phase 1; the cross-row hash chain / sealing is delivered in Phase 10 hardening.
+- Next.js 16 renamed Middleware to **Proxy** (`src/proxy.ts`); the admin web uses it for silent token refresh.
+- ESLint 10 is used with an explicit React version setting (eslint-plugin-react's auto-detection is incompatible with ESLint 10).
+- Configuration arrays merge by index in .NET, so environment-specific arrays (e.g. `Auth:MfaRequiredRoles`) are defined only in
+  the environment files that need them; `EnvironmentConfigurationTests` guards this (Owner MFA required in Staging/Production).
+- Modules register HTTP-only services (authentication/authorization) through `IModule.AddApiServices`, so the non-web Worker host
+  never builds them; `HostCompositionTests` guards this.

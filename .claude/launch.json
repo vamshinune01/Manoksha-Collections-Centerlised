@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "manoksha-api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "manoksha-backend/src/Hosts/Manoksha.Api", "--no-launch-profile", "--urls", "http://localhost:5080", "--environment", "Development"],
+      "port": 5080
+    },
+    {
+      "name": "manoksha-admin-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "-w", "manoksha-admin-web"],
+      "port": 3001
+    }
+  ]
+}

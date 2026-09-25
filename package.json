@@ -1,0 +1,19 @@
+{
+  "name": "manoksha-collections",
+  "private": true,
+  "description": "Manoksha Collections V1 monorepo (web workspaces). Backend: manoksha-backend (.NET). POS: manoksha-mobile-pos (Flutter).",
+  "workspaces": [
+    "packages/*",
+    "manoksha-admin-web"
+  ],
+  "scripts": {
+    "api-client:generate": "npm run generate -w @manoksha/api-client",
+    "admin:dev": "npm run dev -w manoksha-admin-web",
+    "admin:build": "npm run build -w manoksha-admin-web",
+    "admin:lint": "npm run lint -w manoksha-admin-web",
+    "admin:typecheck": "npm run typecheck -w manoksha-admin-web"
+  },
+  "engines": {
+    "node": ">=20.9"
+  }
+}

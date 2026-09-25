@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <PropertyGroup>
+    <RootNamespace>Manoksha.Worker</RootNamespace>
+    <UserSecretsId>manoksha-worker-local</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Manoksha.Hosting\Manoksha.Hosting.csproj" />
+  </ItemGroup>
+</Project>

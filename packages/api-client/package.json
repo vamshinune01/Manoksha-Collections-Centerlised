@@ -1,0 +1,19 @@
+{
+  "name": "@manoksha/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Types generated from contracts/openapi/manoksha-v1.json. Contains NO business logic — all rules live in manoksha-backend.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "openapi-typescript ../../contracts/openapi/manoksha-v1.json -o src/schema.d.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3"
+  }
+}

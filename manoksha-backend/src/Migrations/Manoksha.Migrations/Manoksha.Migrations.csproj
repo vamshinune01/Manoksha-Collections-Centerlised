@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Manoksha.Migrations</RootNamespace>
+    <!-- EF-generated migration code is not held to analyzer style rules. -->
+    <NoWarn>$(NoWarn);CA1861;CA1814;IDE0161</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Identity\Manoksha.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Audit\Manoksha.Modules.Audit.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Settings\Manoksha.Modules.Settings.csproj" />
+  </ItemGroup>
+</Project>

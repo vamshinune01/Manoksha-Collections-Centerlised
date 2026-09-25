@@ -1,0 +1,35 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# .NET
+bin/
+obj/
+*.user
+TestResults/
+*.trx
+.dotnet-tools-cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+.env
+.env.local
+.env.*.local
+
+# Flutter
+manoksha-mobile-pos/.dart_tool/
+manoksha-mobile-pos/build/
+manoksha-mobile-pos/.flutter-plugins*
+
+# Local data / secrets
+.local-storage/
+*.pem
+*.key
+secrets/
