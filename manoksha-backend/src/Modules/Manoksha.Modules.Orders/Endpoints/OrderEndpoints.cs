@@ -29,6 +29,8 @@ internal static class OrderEndpoints
             s.ListAsync(channel, status, branchId, resellerId, ct)).RequirePermission(Permissions.Orders.View).WithName("ListOrders");
         admin.MapGet("/orders/{id:guid}", (Guid id, OrderQueryService s, CancellationToken ct) => s.GetAsync(id, ct))
             .RequirePermission(Permissions.Orders.View).WithName("GetOrder");
+        admin.MapGet("/resellers/{resellerId:guid}/customers", (Guid resellerId, string? q, ResellerCustomerService s, CancellationToken ct) =>
+            s.ListForResellerAsync(resellerId, q, ct)).RequirePermission(Permissions.Resellers.View).WithName("ListResellerCustomersForOwner");
         admin.MapGet("/fulfillment-inquiries", async (ManokshaDbContext db, CancellationToken ct) =>
                 (await db.Set<FulfillmentInquiry>().AsNoTracking().OrderByDescending(i => i.CreatedAt).Take(200).ToListAsync(ct))
                 .Select(i => new FulfillmentInquiryDto(i.Id, i.Reference, i.Channel.ToString(), i.ResellerId, i.ContactName, i.ContactMobile, i.CartJson, i.EvaluationsJson,

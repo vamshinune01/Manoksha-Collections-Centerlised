@@ -39,6 +39,19 @@ internal sealed class ResellerCustomerService(ManokshaDbContext db, IResellerDir
         return ToDto(customer);
     }
 
+    /// <summary>Owner/authorized staff: any reseller's customer list (global visibility, SPEC §24).</summary>
+    public async Task<IReadOnlyList<ResellerCustomerDto>> ListForResellerAsync(Guid resellerId, string? q, CancellationToken ct)
+    {
+        _ = await resellers.FindAsync(resellerId, ct) ?? throw new NotFoundException("RESELLER_NOT_FOUND", "Reseller not found.");
+        var query = db.Set<ResellerCustomer>().AsNoTracking().Where(c => c.ResellerId == resellerId);
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var pattern = $"%{q.Trim()}%";
+            query = query.Where(c => EF.Functions.ILike(c.Details.Name, pattern) || EF.Functions.ILike(c.Details.Mobile, pattern));
+        }
+        return (await query.OrderBy(c => c.Details.Name).Take(1000).ToListAsync(ct)).Select(ToDto).ToList();
+    }
+
     internal async Task<ResellerCustomer> GetOwnAsync(Guid resellerId, Guid id, CancellationToken ct) =>
         await db.Set<ResellerCustomer>().SingleOrDefaultAsync(c => c.Id == id && c.ResellerId == resellerId, ct) ?? throw NotFound();
 

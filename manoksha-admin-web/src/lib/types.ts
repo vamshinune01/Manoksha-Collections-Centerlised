@@ -595,3 +595,10 @@ export interface FulfillmentInquiry {
   status: string;
   createdAt: string;
 }
+
+export interface ResellerCustomer {
+  id: string;
+  details: { name: string; mobile: string; email: string | null; addressLine: string; city: string; state: string; pin: string };
+  createdAt: string;
+  updatedAt: string;
+}

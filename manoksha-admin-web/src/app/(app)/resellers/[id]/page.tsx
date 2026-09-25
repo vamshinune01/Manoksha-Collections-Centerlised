@@ -2,16 +2,17 @@ import Link from "next/link";
 import { Alert, Badge, Card, PageHeader, formatDateTime } from "@/components/ui";
 import { P, can, inr } from "@/lib/access";
 import { backendFetch, getMe } from "@/lib/backend";
-import type { LedgerPage, ResellerDetail } from "@/lib/types";
+import type { LedgerPage, ResellerCustomer, ResellerDetail } from "@/lib/types";
 import { RESELLER_TONE } from "../reseller-status";
 import { PricePreview, ResellerStatusActions, TermsForm, WalletAdjustment } from "./reseller-actions";
 
 export default async function ResellerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const me = (await getMe())!;
-  const [reseller, ledger] = await Promise.all([
+  const [reseller, ledger, customers] = await Promise.all([
     backendFetch<ResellerDetail>(`admin/resellers/${id}`),
     can(me, P.walletView) ? backendFetch<LedgerPage>(`admin/wallet/resellers/${id}/ledger?limit=20`) : Promise.resolve(null),
+    backendFetch<ResellerCustomer[]>(`admin/resellers/${id}/customers`),
   ]);
   if (!reseller.ok) return <Alert>{reseller.problem.title}</Alert>;
   const r = reseller.data;
@@ -66,6 +67,16 @@ export default async function ResellerPage({ params }: { params: Promise<{ id: s
               {r.statusHistory.map((s) => <li key={s.occurredAt}>{formatDateTime(s.occurredAt)} · {s.fromStatus ?? "—"} → <strong>{s.toStatus}</strong> · {s.reason}</li>)}
             </ul>
           </Card>
+          {customers.ok && (
+            <Card title={`Reseller's customers (${customers.data.length})`}>
+              <ul className="max-h-72 space-y-1 overflow-y-auto text-xs">
+                {customers.data.map((c) => (
+                  <li key={c.id}><span className="font-medium">{c.details.name}</span> · {c.details.mobile} · {c.details.city} {c.details.pin}</li>
+                ))}
+                {customers.data.length === 0 && <li className="text-slate-500">None saved yet.</li>}
+              </ul>
+            </Card>
+          )}
           {r.status !== "Pending" && <Card title="Price preview"><PricePreview resellerId={r.id} /></Card>}
         </div>
       </div>

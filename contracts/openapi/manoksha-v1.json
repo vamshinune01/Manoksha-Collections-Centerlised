@@ -3515,6 +3515,47 @@
         }
       }
     },
+    "/api/v1/admin/resellers/{resellerId}/customers": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "ListResellerCustomersForOwner",
+        "parameters": [
+          {
+            "name": "resellerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResellerCustomerDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/fulfillment-inquiries": {
       "get": {
         "tags": [
@@ -5560,6 +5601,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LedgerEntryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/wallet/integrity": {
+      "get": {
+        "tags": [
+          "Wallet"
+        ],
+        "operationId": "CheckWalletIntegrity",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletIntegrityReport"
                 }
               }
             }
@@ -10279,6 +10340,62 @@
           "value": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WalletIntegrityIssue": {
+        "type": "object",
+        "properties": {
+          "walletId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resellerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "problem": {
+            "type": "string",
+            "nullable": true
+          },
+          "cachedBalance": {
+            "type": "number",
+            "format": "double"
+          },
+          "ledgerBalance": {
+            "type": "number",
+            "format": "double"
+          },
+          "atSeq": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WalletIntegrityReport": {
+        "type": "object",
+        "properties": {
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "walletsChecked": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletIntegrityIssue"
+            },
+            "nullable": true
+          },
+          "healthy": {
+            "type": "boolean",
+            "readOnly": true
           }
         },
         "additionalProperties": false

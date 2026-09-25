@@ -55,6 +55,13 @@ internal sealed class WalletService(
     {
         var debit = await db.Set<WalletLedgerEntry>().AsNoTracking().SingleOrDefaultAsync(e => e.OrderId == orderId && e.Type == LedgerEntryType.Debit, cancellationToken)
             ?? throw new NotFoundException("WALLET_DEBIT_NOT_FOUND", "No wallet debit exists for this order.");
+        // Lock the wallet first so two concurrent reversals serialize; then a debit can be reversed at most once
+        // (also enforced by the unique index on reverses_entry_id).
+        await db.Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM wallet.wallets WHERE reseller_id = {debit.ResellerId} FOR UPDATE", cancellationToken);
+        if (await db.Set<WalletLedgerEntry>().AnyAsync(e => e.ReversesEntryId == debit.Id, cancellationToken))
+        {
+            throw new ConflictException("WALLET_DEBIT_ALREADY_REVERSED", "This order's wallet debit has already been reversed.");
+        }
         var entry = await PostAsync(debit.ResellerId, LedgerEntryType.Reversal, LedgerDirection.Credit, debit.Amount, orderId, debit.OrderNumber, null, debit.Id,
             reason, cancellationToken);
         await audit.RecordAsync(new AuditRecord("wallet.debit.reversed", "Wallet", debit.ResellerId.ToString(),

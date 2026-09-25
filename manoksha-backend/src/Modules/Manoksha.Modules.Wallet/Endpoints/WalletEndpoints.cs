@@ -19,6 +19,8 @@ internal static class WalletEndpoints
             s.LedgerAsync(resellerId, beforeSeq, limit, ct)).RequirePermission(Permissions.Wallet.View).WithName("GetResellerLedger");
         admin.MapPost("/resellers/{resellerId:guid}/adjustments", (Guid resellerId, ManualAdjustmentRequest r, WalletService s, CancellationToken ct) =>
             s.AdjustAsync(resellerId, r, ct)).RequirePermission(Permissions.Wallet.Adjust).WithName("AdjustResellerWallet");
+        admin.MapGet("/integrity", (WalletIntegrityService s, CancellationToken ct) => s.CheckAsync(recordFindings: false, ct))
+            .RequirePermission(Permissions.Wallet.View).WithName("CheckWalletIntegrity");
         admin.MapGet("/deposits", (string? status, Guid? resellerId, DepositService s, CancellationToken ct) => s.ListAsync(status, resellerId, ct))
             .RequirePermission(Permissions.Wallet.View).WithName("ListDeposits");
         admin.MapPost("/deposits/{id:guid}/approve", (Guid id, ReviewDepositRequest r, DepositService s, CancellationToken ct) => s.ApproveAsync(id, r, ct))

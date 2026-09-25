@@ -127,3 +127,13 @@ Engineering decisions for Phase 5 (confirm or correct):
 - Reseller orders commit stock immediately (AVAILABLE → SOLD) together with the wallet debit and order creation; FIFO cost is
   consumed at that point for gross-profit reporting.
 - The Owner's manual wallet adjustment (credit or debit) is Owner-only with a mandatory reason, and can never take the balance below ₹0.
+
+Phase 5 completion items (engineering, 25 Sep 2026):
+- The wallet reversal used by administrative cancellation (§8) locks the wallet and refuses a second reversal of the same
+  debit (`WALLET_DEBIT_ALREADY_REVERSED`); the original debit is never changed.
+- A nightly wallet integrity check (Worker, `Jobs:WalletIntegrityIntervalHours`, default 24) verifies cached balance = ledger
+  credits − debits, the last entry's balance, and the unbroken balance chain. Findings are audited
+  (`wallet.integrity.mismatch`) and published as an event for the Owner; the check never auto-corrects. The Owner can also run
+  it on demand (`GET /api/v1/admin/wallet/integrity`).
+- The Owner sees each reseller's saved end-customers on the reseller page (§5 global visibility); resellers add and edit their
+  own saved customers in the reseller web area.

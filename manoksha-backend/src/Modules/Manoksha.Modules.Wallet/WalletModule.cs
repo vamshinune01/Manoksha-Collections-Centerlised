@@ -24,6 +24,7 @@ public sealed class WalletModule : IModule
         services.AddScoped<IResellerOnboardingParticipant>(sp => sp.GetRequiredService<WalletService>());
         services.AddScoped<IResellerBalanceView>(sp => sp.GetRequiredService<WalletService>());
         services.AddScoped<DepositService>();
+        services.AddScoped<WalletIntegrityService>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => WalletEndpoints.Map(endpoints);

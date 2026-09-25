@@ -6,6 +6,7 @@ namespace Manoksha.Persistence.Platform;
 public static class AdvisoryLocks
 {
     public const long Housekeeping = 7_100_001;
+    public const long WalletIntegrity = 7_100_002;
 
     /// <summary>Transaction-scoped lock; released automatically at commit/rollback. Requires an open transaction.</summary>
     public static async Task<bool> TryAcquireTransactionLockAsync(ManokshaDbContext db, long key, CancellationToken cancellationToken)
