@@ -42,7 +42,7 @@ internal static class CliCommands
                     var password = Environment.GetEnvironmentVariable("MANOKSHA_DEV_SEED_PASSWORD")
                         ?? throw new ArgumentException("Set MANOKSHA_DEV_SEED_PASSWORD.");
                     await app.Services.InitialiseDatabaseAsync(applyMigrations: true);
-                    await IdentityCommands.SeedDevelopmentUsersAsync(app.Services, password, CancellationToken.None);
+                    await app.Services.SeedDevelopmentDataAsync(password, CancellationToken.None);
                     logger.LogInformation("Development users seeded.");
                     return 0;
                 }

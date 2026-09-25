@@ -1,5 +1,6 @@
 using Manoksha.Application.Abstractions;
 using Manoksha.Application.Security;
+using Manoksha.Modules.Branches.Contracts;
 using Manoksha.Modules.Identity.Domain;
 using Manoksha.Modules.Identity.Infrastructure;
 using Manoksha.Persistence;
@@ -32,6 +33,7 @@ internal sealed class UserAdministrationService(
     ICurrentUser currentUser,
     IAuditWriter audit,
     IOutbox outbox,
+    IBranchDirectory branches,
     IClock clock)
 {
     public async Task<IReadOnlyList<UserSummaryDto>> ListInternalUsersAsync(CancellationToken ct)
@@ -52,6 +54,11 @@ internal sealed class UserAdministrationService(
     }
 
     public Task<CreateInternalUserResponse> CreateInternalUserAsync(CreateInternalUserRequest request, CancellationToken ct)
+    {
+        return CreateInternalUserCoreAsync(request, ct);
+    }
+
+    internal Task<CreateInternalUserResponse> CreateInternalUserCoreAsync(CreateInternalUserRequest request, CancellationToken ct)
     {
         RequireReason(request.Reason);
         if (!EmailAddress.IsValid(request.Email))
@@ -132,6 +139,16 @@ internal sealed class UserAdministrationService(
                     throw new BusinessRuleException("ROLE_SCOPE_MISMATCH", $"Role '{role.Name}' applies to all branches; do not specify a branch.", 400);
                 case RoleScope.Branch when request.BranchId is null:
                     throw new BusinessRuleException("ROLE_SCOPE_MISMATCH", $"Role '{role.Name}' is branch-scoped; a branch is required.", 400);
+            }
+
+            if (request.BranchId is { } branchId)
+            {
+                var branch = await branches.FindAsync(branchId, innerCt)
+                    ?? throw new NotFoundException("BRANCH_NOT_FOUND", "Branch not found.");
+                if (!branch.IsActive)
+                {
+                    throw new BusinessRuleException("BRANCH_INACTIVE", $"Branch {branch.Name} is inactive.");
+                }
             }
 
             var assignment = new UserRoleAssignment(user.Id, role.Id, request.BranchId, currentUser.UserId, request.Reason, clock.UtcNow);

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Badge, Card, PageHeader } from "@/components/ui";
-import { NAV, can, shortId } from "@/lib/access";
+import { NAV, canAny, shortId } from "@/lib/access";
 import { getMe } from "@/lib/backend";
 
 export default async function DashboardPage() {
   const me = (await getMe())!;
-  const sections = NAV.filter((n) => n.href !== "/" && (!n.permission || can(me, n.permission)));
+  const sections = NAV.filter((n) => n.href !== "/" && (canAny(me, n.permission)));
 
   return (
     <>

@@ -16,6 +16,9 @@ src/
     Manoksha.Modules.Identity  internal login + MFA, customer/reseller OTP, sessions, RBAC
     Manoksha.Modules.Audit     immutable audit log + search
     Manoksha.Modules.Settings  Owner-managed business settings (versioned, audited)
+    Manoksha.Modules.Branches  branch master, versioned fulfillment priority (IBranchDirectory, IFulfillmentPriorityProvider)
+    Manoksha.Modules.Employees employee profiles, branch assignment history, attendance
+    Manoksha.Modules.Catalog   categories, configurable variant attributes, products, variants, SKUs, barcodes (ICatalogLookup)
   Integrations/                ISmsSender / IEmailSender / IFileStorage adapters (dev fakes refused in Production)
   Migrations/                  EF Core migrations
   Hosts/
@@ -42,4 +45,5 @@ dotnet tool restore
 dotnet ef migrations add <Name> --project src/Migrations/Manoksha.Migrations --startup-project src/Migrations/Manoksha.Migrations --output-dir Migrations
 ```
 
-New modules must also be added to `ModuleCatalog` and `DesignTimeDbContextFactory`.
+New modules must also be added to `ModuleCatalog` and `DesignTimeDbContextFactory`. Cross-module foreign keys are added with
+raw SQL in the migration (modules stay decoupled in code; the database still enforces references).

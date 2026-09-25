@@ -212,6 +212,566 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/branches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListBranches"];
+        put?: never;
+        post: operations["CreateBranch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branches/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetBranch"];
+        put: operations["UpdateBranch"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branches/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ChangeBranchStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/fulfillment-priority": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetFulfillmentPriority"];
+        put: operations["SetFulfillmentPriority"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/fulfillment-priority/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetFulfillmentPriorityHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListCategories"];
+        put?: never;
+        post: operations["CreateCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["UpdateCategory"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/attributes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListAttributes"];
+        put?: never;
+        post: operations["CreateAttribute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/attributes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["UpdateAttribute"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/attributes/{id}/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AddAttributeOption"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/attributes/{id}/options/{optionId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SetAttributeOptionStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SearchProducts"];
+        put?: never;
+        post: operations["CreateProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetProduct"];
+        put: operations["UpdateProduct"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/products/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ChangeProductStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/products/{id}/variants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AddVariant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/variants/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ChangeVariantStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/skus/{skuId}/barcodes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["GenerateBarcode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/skus/{skuId}/barcodes/external": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RegisterExternalBarcode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/barcodes/{id}/retire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RetireBarcode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/barcodes/print": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PrintBarcodeLabels"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/barcodes/lookup/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LookupBarcode"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/employees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListEmployees"];
+        put?: never;
+        post: operations["CreateEmployee"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/employees/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetEmployee"];
+        put: operations["UpdateEmployee"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/employees/{id}/branch-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetEmployeeBranchHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/employees/{id}/reassign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ReassignEmployee"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/employees/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ChangeEmployeeStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListAttendance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/attendance/{id}/correct": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CorrectAttendance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MyAttendance_admin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me/attendance/clock-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClockIn_admin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me/attendance/clock-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClockOut_admin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/me/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MyAttendance_pos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/me/attendance/clock-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClockIn_pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/me/attendance/clock-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClockOut_pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/scan/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosScan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -408,6 +968,10 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AddOptionRequest: {
+            value?: string | null;
+            reason?: string | null;
+        };
         AssignRoleRequest: {
             /** Format: uuid */
             roleId?: string;
@@ -415,23 +979,171 @@ export interface components {
             branchId?: string | null;
             reason?: string | null;
         };
+        AttendanceDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            employeeId?: string;
+            employeeName?: string | null;
+            employeeCode?: string | null;
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: date-time */
+            clockInAt?: string;
+            /** Format: date-time */
+            clockOutAt?: string | null;
+            /** Format: double */
+            hoursWorked?: number | null;
+            clockInSource?: string | null;
+            clockOutSource?: string | null;
+            /** Format: uuid */
+            correctedBy?: string | null;
+            correctionReason?: string | null;
+        };
+        AttributeDto: {
+            /** Format: uuid */
+            id?: string;
+            code?: string | null;
+            name?: string | null;
+            isActive?: boolean;
+            options?: components["schemas"]["AttributeOptionDto"][] | null;
+        };
+        AttributeOptionDto: {
+            /** Format: uuid */
+            id?: string;
+            value?: string | null;
+            /** Format: int32 */
+            sortOrder?: number;
+            isActive?: boolean;
+        };
         AuthResponse: {
             status?: string | null;
             tokens?: components["schemas"]["TokenPair"];
             challengeToken?: string | null;
         };
+        BarcodeDto: {
+            /** Format: uuid */
+            id?: string;
+            code?: string | null;
+            kind?: string | null;
+            status?: string | null;
+            /** Format: uuid */
+            inventoryItemId?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: int32 */
+            printCount?: number;
+            /** Format: date-time */
+            lastPrintedAt?: string | null;
+            retireReason?: string | null;
+        };
+        BranchAddressDto: {
+            line1?: string | null;
+            city?: string | null;
+            state?: string | null;
+            pin?: string | null;
+            phone?: string | null;
+        };
+        BranchAssignmentDto: {
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: date-time */
+            fromAt?: string;
+            /** Format: date-time */
+            toAt?: string | null;
+            /** Format: uuid */
+            assignedBy?: string | null;
+            reason?: string | null;
+        };
+        BranchDto: {
+            /** Format: uuid */
+            id?: string;
+            code?: string | null;
+            name?: string | null;
+            address?: components["schemas"]["BranchAddressDto"];
+            isActive?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        CategoryDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            parentId?: string | null;
+            name?: string | null;
+            slug?: string | null;
+            /** Format: int32 */
+            sortOrder?: number;
+            isActive?: boolean;
+        };
+        ChangeBranchStatusRequest: {
+            isActive?: boolean;
+            reason?: string | null;
+        };
+        ChangeEmployeeStatusRequest: {
+            status?: string | null;
+            reason?: string | null;
+        };
         ChangePasswordRequest: {
             currentPassword?: string | null;
             newPassword?: string | null;
         };
+        ChangeStatusRequest: {
+            status?: string | null;
+            reason?: string | null;
+        };
         ChangeUserStatusRequest: {
             status?: string | null;
+            reason?: string | null;
+        };
+        CorrectAttendanceRequest: {
+            /** Format: date-time */
+            clockInAt?: string;
+            /** Format: date-time */
+            clockOutAt?: string | null;
+            reason?: string | null;
+        };
+        CreateAttributeRequest: {
+            code?: string | null;
+            name?: string | null;
+            options?: string[] | null;
+            reason?: string | null;
+        };
+        CreateBranchRequest: {
+            code?: string | null;
+            name?: string | null;
+            address?: components["schemas"]["BranchAddressDto"];
+            reason?: string | null;
+        };
+        CreateEmployeeRequest: {
+            fullName?: string | null;
+            email?: string | null;
+            /** Format: uuid */
+            existingUserId?: string | null;
+            mobile?: string | null;
+            /** Format: uuid */
+            assignedBranchId?: string;
+            /** Format: date */
+            joinedOn?: string | null;
             reason?: string | null;
         };
         CreateInternalUserRequest: {
             email?: string | null;
             displayName?: string | null;
             mobile?: string | null;
+            reason?: string | null;
+        };
+        CreateProductRequest: {
+            /** Format: uuid */
+            categoryId?: string;
+            name?: string | null;
+            description?: string | null;
+            trackingMode?: string | null;
+            variantAttributeIds?: string[] | null;
+            availableForRetail?: boolean;
+            availableForReseller?: boolean;
             reason?: string | null;
         };
         CreateRoleRequest: {
@@ -442,19 +1154,67 @@ export interface components {
             permissions?: string[] | null;
             reason?: string | null;
         };
+        CreateVariantRequest: {
+            optionIds?: string[] | null;
+            skuCode?: string | null;
+            generateBarcode?: boolean;
+            reason?: string | null;
+        };
         CustomerRegistrationRequest: {
             registrationToken?: string | null;
             fullName?: string | null;
             email?: string | null;
         };
+        EmployeeDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            userId?: string;
+            employeeCode?: string | null;
+            fullName?: string | null;
+            mobile?: string | null;
+            email?: string | null;
+            /** Format: uuid */
+            assignedBranchId?: string;
+            assignedBranchName?: string | null;
+            status?: string | null;
+            /** Format: date */
+            joinedOn?: string;
+            /** Format: date-time */
+            createdAt?: string;
+        };
         FirstPasswordChangeRequest: {
             challengeToken?: string | null;
             newPassword?: string | null;
+        };
+        FulfillmentPriorityEntry: {
+            /** Format: int32 */
+            priority?: number;
+            /** Format: uuid */
+            branchId?: string;
+            branchCode?: string | null;
+            branchName?: string | null;
+            isActive?: boolean;
+        };
+        GenerateBarcodeRequest: {
+            reason?: string | null;
         };
         InternalLoginRequest: {
             email?: string | null;
             password?: string | null;
             client?: string | null;
+        };
+        LabelDto: {
+            /** Format: uuid */
+            barcodeId?: string;
+            code?: string | null;
+            kind?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            skuCode?: string | null;
+            /** Format: int32 */
+            copies?: number;
+            isReprint?: boolean;
         };
         LogoutRequest: {
             refreshToken?: string | null;
@@ -496,6 +1256,15 @@ export interface components {
             challengeToken?: string | null;
             code?: string | null;
         };
+        MyAttendanceDto: {
+            isEmployee?: boolean;
+            isClockedIn?: boolean;
+            open?: components["schemas"]["AttendanceDto"];
+            recent?: components["schemas"]["AttendanceDto"][] | null;
+            /** Format: uuid */
+            assignedBranchId?: string | null;
+            assignedBranchName?: string | null;
+        };
         OtpRequestRequest: {
             mobile?: string | null;
             context?: string | null;
@@ -516,11 +1285,82 @@ export interface components {
             module?: string | null;
             ownerOnly?: boolean;
         };
+        PrintLabelsRequest: {
+            barcodeIds?: string[] | null;
+            /** Format: int32 */
+            copies?: number;
+        };
+        PriorityDto: {
+            /** Format: int32 */
+            version?: number;
+            /** Format: date-time */
+            changedAt?: string | null;
+            /** Format: uuid */
+            changedBy?: string | null;
+            reason?: string | null;
+            entries?: components["schemas"]["FulfillmentPriorityEntry"][] | null;
+        };
+        ProductDetailDto: {
+            /** Format: uuid */
+            id?: string;
+            name?: string | null;
+            slug?: string | null;
+            description?: string | null;
+            /** Format: uuid */
+            categoryId?: string;
+            categoryName?: string | null;
+            trackingMode?: string | null;
+            status?: string | null;
+            availableForRetail?: boolean;
+            availableForReseller?: boolean;
+            variantAttributes?: components["schemas"]["AttributeDto"][] | null;
+            variants?: components["schemas"]["VariantDto"][] | null;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        ProductPage: {
+            items?: components["schemas"]["ProductSummaryDto"][] | null;
+            /** Format: int32 */
+            total?: number;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            pageSize?: number;
+        };
+        ProductSummaryDto: {
+            /** Format: uuid */
+            id?: string;
+            name?: string | null;
+            slug?: string | null;
+            /** Format: uuid */
+            categoryId?: string;
+            categoryName?: string | null;
+            trackingMode?: string | null;
+            status?: string | null;
+            availableForRetail?: boolean;
+            availableForReseller?: boolean;
+            /** Format: int32 */
+            variantCount?: number;
+            /** Format: date-time */
+            createdAt?: string;
+        };
         ReasonRequest: {
+            reason?: string | null;
+        };
+        ReassignBranchRequest: {
+            /** Format: uuid */
+            branchId?: string;
             reason?: string | null;
         };
         RefreshRequest: {
             refreshToken?: string | null;
+        };
+        RegisterBarcodeRequest: {
+            code?: string | null;
+            reason?: string | null;
+        };
+        RetireBarcodeRequest: {
+            reason?: string | null;
         };
         RoleAssignmentDto: {
             /** Format: uuid */
@@ -550,6 +1390,45 @@ export interface components {
          * @enum {integer}
          */
         RoleScope: 1 | 2;
+        SaveCategoryRequest: {
+            /** Format: uuid */
+            parentId?: string | null;
+            name?: string | null;
+            /** Format: int32 */
+            sortOrder?: number;
+            isActive?: boolean;
+            reason?: string | null;
+        };
+        ScanResultDto: {
+            barcode?: string | null;
+            barcodeKind?: string | null;
+            /** Format: uuid */
+            inventoryItemId?: string | null;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            /** Format: uuid */
+            variantId?: string;
+            variantName?: string | null;
+            attributes?: components["schemas"]["VariantValueDto"][] | null;
+            /** Format: uuid */
+            productId?: string;
+            productName?: string | null;
+            productStatus?: string | null;
+            trackingMode?: string | null;
+            availableForRetail?: boolean;
+            availableForReseller?: boolean;
+        };
+        SetOptionStatusRequest: {
+            isActive?: boolean;
+            reason?: string | null;
+        };
+        SetPriorityRequest: {
+            branchIds?: string[] | null;
+            /** Format: int32 */
+            expectedVersion?: number;
+            reason?: string | null;
+        };
         SetRolePermissionsRequest: {
             permissions?: string[] | null;
             reason?: string | null;
@@ -561,6 +1440,31 @@ export interface components {
             refreshToken?: string | null;
             /** Format: date-time */
             refreshTokenExpiresAt?: string;
+        };
+        UpdateAttributeRequest: {
+            name?: string | null;
+            isActive?: boolean;
+            reason?: string | null;
+        };
+        UpdateBranchRequest: {
+            name?: string | null;
+            address?: components["schemas"]["BranchAddressDto"];
+            reason?: string | null;
+        };
+        UpdateEmployeeRequest: {
+            fullName?: string | null;
+            mobile?: string | null;
+            reason?: string | null;
+        };
+        UpdateProductRequest: {
+            /** Format: uuid */
+            categoryId?: string;
+            name?: string | null;
+            description?: string | null;
+            trackingMode?: string | null;
+            availableForRetail?: boolean;
+            availableForReseller?: boolean;
+            reason?: string | null;
         };
         UpdateRoleRequest: {
             name?: string | null;
@@ -587,6 +1491,25 @@ export interface components {
             /** Format: date-time */
             lastLoginAt?: string | null;
             roles?: components["schemas"]["RoleAssignmentDto"][] | null;
+        };
+        VariantDto: {
+            /** Format: uuid */
+            id?: string;
+            name?: string | null;
+            status?: string | null;
+            values?: components["schemas"]["VariantValueDto"][] | null;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            barcodes?: components["schemas"]["BarcodeDto"][] | null;
+        };
+        VariantValueDto: {
+            /** Format: uuid */
+            attributeId?: string;
+            attributeName?: string | null;
+            /** Format: uuid */
+            optionId?: string;
+            value?: string | null;
         };
     };
     responses: never;
@@ -898,6 +1821,1035 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+        };
+    };
+    ListBranches: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchDto"][];
+                };
+            };
+        };
+    };
+    CreateBranch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBranchRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GetBranch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchDto"];
+                };
+            };
+        };
+    };
+    UpdateBranch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBranchRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchDto"];
+                };
+            };
+        };
+    };
+    ChangeBranchStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeBranchStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchDto"];
+                };
+            };
+        };
+    };
+    GetFulfillmentPriority: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriorityDto"];
+                };
+            };
+        };
+    };
+    SetFulfillmentPriority: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPriorityRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriorityDto"];
+                };
+            };
+        };
+    };
+    GetFulfillmentPriorityHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriorityDto"][];
+                };
+            };
+        };
+    };
+    ListCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"][];
+                };
+            };
+        };
+    };
+    CreateCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCategoryRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+        };
+    };
+    UpdateCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCategoryRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+        };
+    };
+    ListAttributes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttributeDto"][];
+                };
+            };
+        };
+    };
+    CreateAttribute: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAttributeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttributeDto"];
+                };
+            };
+        };
+    };
+    UpdateAttribute: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAttributeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttributeDto"];
+                };
+            };
+        };
+    };
+    AddAttributeOption: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddOptionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttributeDto"];
+                };
+            };
+        };
+    };
+    SetAttributeOptionStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                optionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetOptionStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttributeDto"];
+                };
+            };
+        };
+    };
+    SearchProducts: {
+        parameters: {
+            query?: {
+                q?: string;
+                categoryId?: string;
+                status?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductPage"];
+                };
+            };
+        };
+    };
+    CreateProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProductRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GetProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto"];
+                };
+            };
+        };
+    };
+    UpdateProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProductRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto"];
+                };
+            };
+        };
+    };
+    ChangeProductStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto"];
+                };
+            };
+        };
+    };
+    AddVariant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateVariantRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto"];
+                };
+            };
+        };
+    };
+    ChangeVariantStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto"];
+                };
+            };
+        };
+    };
+    GenerateBarcode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                skuId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateBarcodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BarcodeDto"];
+                };
+            };
+        };
+    };
+    RegisterExternalBarcode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                skuId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterBarcodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BarcodeDto"];
+                };
+            };
+        };
+    };
+    RetireBarcode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetireBarcodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BarcodeDto"];
+                };
+            };
+        };
+    };
+    PrintBarcodeLabels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrintLabelsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabelDto"][];
+                };
+            };
+        };
+    };
+    LookupBarcode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScanResultDto"];
+                };
+            };
+        };
+    };
+    ListEmployees: {
+        parameters: {
+            query?: {
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDto"][];
+                };
+            };
+        };
+    };
+    CreateEmployee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEmployeeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GetEmployee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDto"];
+                };
+            };
+        };
+    };
+    UpdateEmployee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEmployeeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDto"];
+                };
+            };
+        };
+    };
+    GetEmployeeBranchHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchAssignmentDto"][];
+                };
+            };
+        };
+    };
+    ReassignEmployee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReassignBranchRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDto"];
+                };
+            };
+        };
+    };
+    ChangeEmployeeStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeEmployeeStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDto"];
+                };
+            };
+        };
+    };
+    ListAttendance: {
+        parameters: {
+            query?: {
+                branchId?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceDto"][];
+                };
+            };
+        };
+    };
+    CorrectAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectAttendanceRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceDto"];
+                };
+            };
+        };
+    };
+    MyAttendance_admin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyAttendanceDto"];
+                };
+            };
+        };
+    };
+    ClockIn_admin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceDto"];
+                };
+            };
+        };
+    };
+    ClockOut_admin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceDto"];
+                };
+            };
+        };
+    };
+    MyAttendance_pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyAttendanceDto"];
+                };
+            };
+        };
+    };
+    ClockIn_pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceDto"];
+                };
+            };
+        };
+    };
+    ClockOut_pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceDto"];
+                };
+            };
+        };
+    };
+    PosScan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScanResultDto"];
                 };
             };
         };

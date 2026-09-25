@@ -29,3 +29,14 @@ public interface IStartupSeeder
 
     Task SeedAsync(CancellationToken cancellationToken);
 }
+
+/// <summary>LOCAL/DEVELOPMENT ONLY sample data, run by the `seed-dev` CLI command (refused outside Development).</summary>
+public interface IDevelopmentSeeder
+{
+    int Order { get; }
+
+    Task SeedAsync(DevelopmentSeedContext context, CancellationToken cancellationToken);
+}
+
+/// <param name="Password">Password for seeded internal users (from MANOKSHA_DEV_SEED_PASSWORD).</param>
+public sealed record DevelopmentSeedContext(string Password);

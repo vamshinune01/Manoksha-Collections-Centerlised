@@ -1,4 +1,7 @@
 using Manoksha.Modules.Audit.Persistence;
+using Manoksha.Modules.Branches.Persistence;
+using Manoksha.Modules.Catalog.Persistence;
+using Manoksha.Modules.Employees.Persistence;
 using Manoksha.Modules.Identity.Persistence;
 using Manoksha.Modules.Settings.Persistence;
 using Manoksha.Persistence;
@@ -22,6 +25,9 @@ internal sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<M
             new IdentityModelConfiguration(),
             new AuditModelConfiguration(),
             new SettingsModelConfiguration(),
+            new BranchesModelConfiguration(),
+            new EmployeesModelConfiguration(),
+            new CatalogModelConfiguration(),
         ]);
     }
 }

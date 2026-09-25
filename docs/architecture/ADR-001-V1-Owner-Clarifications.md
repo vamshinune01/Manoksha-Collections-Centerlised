@@ -64,3 +64,16 @@ Payment gateway, SMS OTP/DLT, email, domains and GCP billing are not Phase 1 blo
   the environment files that need them; `EnvironmentConfigurationTests` guards this (Owner MFA required in Staging/Production).
 - Modules register HTTP-only services (authentication/authorization) through `IModule.AddApiServices`, so the non-web Worker host
   never builds them; `HostCompositionTests` guards this.
+
+## Engineering decisions recorded during Phase 2 (confirm or correct)
+- **Fulfillment priority always lists every branch.** A newly created branch is appended at the lowest priority (new, audited version);
+  the Owner reorders the full list. Inactive branches stay in the list and are skipped during routing.
+- **Nobody corrects their own attendance.** Corrections need `attendance.correct` for that branch, a reason, and are audited.
+- **Employee reassignment** requires `employees.manage` for both branches and no open clock-in. It does not change role
+  assignments, which remain Owner-only.
+- **Tracking mode** (per piece vs by quantity) can change only while a product is a draft.
+- **One SKU per variant**; a product without variant attributes has exactly one "Standard" variant.
+- **Barcodes:** internal codes are EAN-13 in the in-store `29` prefix range; supplier codes are check-digit validated; a code
+  is never reused, even after retirement. Label reprints are logged (append-only) and never create a new identity.
+- Serialized item-level barcodes are created at goods receipt (Phase 3); scan results gain location/status (Phase 3) and
+  applicable price (Phase 4).

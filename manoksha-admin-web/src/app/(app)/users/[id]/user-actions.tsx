@@ -26,7 +26,7 @@ function useAction() {
   return { error, busy, run };
 }
 
-export function AssignRoleForm({ userId, roles }: { userId: string; roles: { id: string; name: string; scope: "Global" | "Branch" }[] }) {
+export function AssignRoleForm({ userId, roles, branches }: { userId: string; roles: { id: string; name: string; scope: "Global" | "Branch" }[]; branches: { id: string; name: string }[] }) {
   const { error, busy, run } = useAction();
   const [roleId, setRoleId] = useState(roles[0]?.id ?? "");
   const scope = roles.find((r) => r.id === roleId)?.scope;
@@ -57,8 +57,8 @@ export function AssignRoleForm({ userId, roles }: { userId: string; roles: { id:
         </Select>
       </Field>
       {scope === "Branch" && (
-        <Field label="Branch ID" hint="Branch selection from the branch master arrives with Phase 2.">
-          <Input name="branchId" required pattern="[0-9a-fA-F-]{36}" />
+        <Field label="Branch">
+          <Select name="branchId" required>{branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</Select>
         </Field>
       )}
       <Field label="Reason"><Input name="reason" required /></Field>

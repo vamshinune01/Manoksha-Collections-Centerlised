@@ -44,37 +44,4 @@ public static class IdentityCommands
             return user.Id;
         }, ct);
     }
-
-    /// <summary>LOCAL/DEVELOPMENT ONLY: creates an Owner and one user per branch role at the Karimnagar dev branch.</summary>
-    public static async Task SeedDevelopmentUsersAsync(IServiceProvider services, string password, CancellationToken ct)
-    {
-        await using var scope = services.CreateAsyncScope();
-        var sp = scope.ServiceProvider;
-        var db = sp.GetRequiredService<ManokshaDbContext>();
-        var clock = sp.GetRequiredService<IClock>();
-        var hasher = sp.GetRequiredService<PasswordService>();
-        var roles = await db.Set<Role>().ToDictionaryAsync(r => r.Code, ct);
-
-        (string Email, string Name, string Role, Guid? Branch)[] seeds =
-        [
-            (DevelopmentSeedData.OwnerEmail, "Dev Owner", SystemRoles.Owner, null),
-            (DevelopmentSeedData.ManagerEmail, "Karimnagar Manager", SystemRoles.BranchManager, DevelopmentSeedData.BranchKarimnagar),
-            (DevelopmentSeedData.SalesEmail, "Karimnagar Sales", SystemRoles.SalesEmployee, DevelopmentSeedData.BranchKarimnagar),
-            (DevelopmentSeedData.InventoryEmail, "Karimnagar Inventory", SystemRoles.InventoryEmployee, DevelopmentSeedData.BranchKarimnagar),
-        ];
-
-        foreach (var s in seeds)
-        {
-            var normalized = EmailAddress.Normalize(s.Email);
-            if (await db.Set<User>().AnyAsync(u => u.AccountType == AccountType.Internal && u.EmailNormalized == normalized, ct))
-            {
-                continue;
-            }
-            var user = User.CreateInternal(s.Email, s.Name, null, clock.UtcNow, null);
-            user.SetPassword(hasher.Hash(user, password), mustChange: false);
-            db.Add(user);
-            db.Add(new UserRoleAssignment(user.Id, roles[s.Role].Id, s.Branch, null, "Development seed", clock.UtcNow));
-        }
-        await db.SaveChangesAsync(ct);
-    }
 }

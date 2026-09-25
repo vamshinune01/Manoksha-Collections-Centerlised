@@ -101,4 +101,28 @@ public static class ApiClient
         register.StatusCode.Should().Be(HttpStatusCode.OK, body.ToJsonString());
         return ToTokens(body);
     }
+
+    /// <summary>Internal user with a role AND an employee profile at the branch (via the Owner).</summary>
+    public static async Task<(Guid UserId, string Email, string Password, Guid EmployeeId)> CreateEmployeeAsync(
+        this ManokshaApiFactory factory, string roleCode, Guid branchId)
+    {
+        var (userId, email, password) = await factory.CreateInternalUserAsync(roleCode, branchId);
+        var owner = factory.Authorized((await factory.LoginOwnerAsync()).AccessToken);
+        var response = await owner.PostAsJsonAsync("/api/v1/admin/employees",
+            new { fullName = "Emp " + email[..6], existingUserId = userId, assignedBranchId = branchId, reason = "test setup" });
+        var body = await response.ReadJsonAsync();
+        response.StatusCode.Should().Be(HttpStatusCode.Created, body.ToJsonString());
+        return (userId, email, password, body["employee"]!["id"]!.GetValue<Guid>());
+    }
+
+    public static async Task<HttpClient> OwnerClientAsync(this ManokshaApiFactory factory) =>
+        factory.Authorized((await factory.LoginOwnerAsync()).AccessToken);
+
+    public static async Task<JsonNode> OkJsonAsync(this Task<HttpResponseMessage> call, HttpStatusCode expected = HttpStatusCode.OK)
+    {
+        var response = await call;
+        var body = await response.ReadJsonAsync();
+        response.StatusCode.Should().Be(expected, body.ToJsonString());
+        return body;
+    }
 }

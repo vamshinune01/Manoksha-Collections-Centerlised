@@ -58,6 +58,24 @@ public static class ManokshaHostBuilder
         }
     }
 
+    /// <summary>Runs every module's development seeder in order (LOCAL/DEVELOPMENT ONLY).</summary>
+    public static async Task SeedDevelopmentDataAsync(this IServiceProvider services, string password, CancellationToken cancellationToken)
+    {
+        foreach (var seederType in GetSeederOrder(services))
+        {
+            // Fresh scope per seeder so each commits independently and change trackers stay small.
+            await using var scope = services.CreateAsyncScope();
+            var seeder = scope.ServiceProvider.GetServices<IDevelopmentSeeder>().Single(s => s.GetType() == seederType);
+            await seeder.SeedAsync(new DevelopmentSeedContext(password), cancellationToken);
+        }
+    }
+
+    private static List<Type> GetSeederOrder(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        return scope.ServiceProvider.GetServices<IDevelopmentSeeder>().OrderBy(s => s.Order).Select(s => s.GetType()).ToList();
+    }
+
     public static async Task MigrateAsync(IServiceProvider scopedServices, ILogger logger, CancellationToken cancellationToken)
     {
         var db = scopedServices.GetRequiredService<ManokshaDbContext>();

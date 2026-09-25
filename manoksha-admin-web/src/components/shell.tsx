@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { type Me, NAV, can, shortId } from "@/lib/access";
+import { type Me, NAV, canAny, shortId } from "@/lib/access";
 import { LogoutButton } from "./logout-button";
 import { NavLink } from "./nav-link";
 
 /** Navigation is filtered by the user's permissions for convenience only — the backend authorizes every call. */
 export function Shell({ me, children }: { me: Me; children: ReactNode }) {
-  const items = NAV.filter((item) => !item.permission || can(me, item.permission));
+  const items = NAV.filter((item) => canAny(me, item.permission));
   const primaryRole = me.isOwner ? "Owner" : me.roles.map((r) => (r.branchId ? `${r.name} · ${shortId(r.branchId)}` : r.name)).join(", ") || "No role assigned";
 
   return (
@@ -21,7 +21,7 @@ export function Shell({ me, children }: { me: Me; children: ReactNode }) {
             <NavLink key={item.href} href={item.href} label={item.label} />
           ))}
         </nav>
-        <div className="border-t border-slate-100 p-4 text-xs text-slate-500">V1 · Phase 1 foundation</div>
+        <div className="border-t border-slate-100 p-4 text-xs text-slate-500">V1 · Phase 2</div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 py-3">

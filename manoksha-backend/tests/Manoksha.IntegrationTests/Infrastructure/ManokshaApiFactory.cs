@@ -1,3 +1,5 @@
+using Manoksha.Application.Modules;
+using Manoksha.Modules.Branches.Application;
 using Manoksha.Modules.Identity;
 using Manoksha.SharedKernel;
 using Microsoft.AspNetCore.Hosting;
@@ -58,6 +60,19 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
         // Building the host runs migrations + seeders.
         _ = Services;
         OwnerUserId = await IdentityCommands.BootstrapOwnerAsync(Services, OwnerEmail, "Test Owner", OwnerPassword, CancellationToken.None);
+
+        // The three V1 branches with the well-known development ids (Karimnagar P1, Hyderabad P2, Mulugu P3).
+        await using var scope = Services.CreateAsyncScope();
+        var branches = scope.ServiceProvider.GetRequiredService<BranchService>();
+        foreach (var (id, code, name) in new[]
+        {
+            (DevelopmentSeedData.BranchKarimnagar, "KNR", "Karimnagar"),
+            (DevelopmentSeedData.BranchHyderabad, "HYD", "Hyderabad"),
+            (DevelopmentSeedData.BranchMulugu, "MLG", "Mulugu"),
+        })
+        {
+            await branches.CreateAsync(id, new CreateBranchRequest(code, name, null, "test setup"), CancellationToken.None);
+        }
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

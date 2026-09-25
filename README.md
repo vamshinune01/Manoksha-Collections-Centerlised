@@ -44,8 +44,9 @@ cp manoksha-admin-web/.env.example manoksha-admin-web/.env.local
 npm run admin:dev
 ```
 
-Dev users (password = `MANOKSHA_DEV_SEED_PASSWORD`): `owner@manoksha.local`, `manager.karimnagar@manoksha.local`,
-`sales.karimnagar@manoksha.local`, `inventory.karimnagar@manoksha.local`. Development OTP codes are printed in the API log
+The dev seed creates branches Karimnagar (P1), Hyderabad (P2), Mulugu (P3) and users (password = `MANOKSHA_DEV_SEED_PASSWORD`):
+`owner@manoksha.local`, `manager.karimnagar@manoksha.local`, `sales.karimnagar@manoksha.local`, `inventory.karimnagar@manoksha.local`
+(the three Karimnagar users also have employee profiles). Development OTP codes are printed in the API log
 (`[FAKE SMS]`). Development-only adapters (fake SMS, logging email, local file storage) are refused in Production.
 
 A real environment's first Owner is created with:
@@ -69,5 +70,6 @@ npm run api-client:generate                                             # …the
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Foundation: solution/modules, PostgreSQL + migrations, identity (internal login, MFA, mobile OTP), RBAC with branch scope, audit, settings, outbox, idempotency, admin-web shell, CI | **Done** |
-| 2 | Branches, fulfillment priority, employees, attendance, catalog, variants, SKUs, barcodes | Next |
-| 3–10 | See design §22 | Planned |
+| 2 | Branches, fulfillment priority, employees, attendance, catalog (configurable variant attributes, SKUs, barcodes, label printing) | **Done** |
+| 3 | Suppliers, purchasing, goods receipt, FIFO inventory, transfers | Next |
+| 4–10 | See design §22 | Planned |

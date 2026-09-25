@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Manoksha.Modules.Employees</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Manoksha.Persistence\Manoksha.Persistence.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Branches\Manoksha.Modules.Branches.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Identity\Manoksha.Modules.Identity.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Manoksha.UnitTests" />
+    <InternalsVisibleTo Include="Manoksha.IntegrationTests" />
+  </ItemGroup>
+</Project>

@@ -8,5 +8,8 @@
     <ProjectReference Include="..\..\Modules\Manoksha.Modules.Identity\Manoksha.Modules.Identity.csproj" />
     <ProjectReference Include="..\..\Modules\Manoksha.Modules.Audit\Manoksha.Modules.Audit.csproj" />
     <ProjectReference Include="..\..\Modules\Manoksha.Modules.Settings\Manoksha.Modules.Settings.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Branches\Manoksha.Modules.Branches.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Employees\Manoksha.Modules.Employees.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Catalog\Manoksha.Modules.Catalog.csproj" />
   </ItemGroup>
 </Project>

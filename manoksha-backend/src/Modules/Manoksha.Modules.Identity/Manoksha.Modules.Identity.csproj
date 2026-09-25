@@ -9,6 +9,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\Manoksha.Persistence\Manoksha.Persistence.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Branches\Manoksha.Modules.Branches.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Manoksha.UnitTests" />

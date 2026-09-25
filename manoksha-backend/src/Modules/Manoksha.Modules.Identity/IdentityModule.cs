@@ -1,6 +1,7 @@
 using Manoksha.Application.Modules;
 using Manoksha.Application.Security;
 using Manoksha.Modules.Identity.Application;
+using Manoksha.Modules.Identity.Contracts;
 using Manoksha.Modules.Identity.Endpoints;
 using Manoksha.Modules.Identity.Infrastructure;
 using Manoksha.Modules.Identity.Persistence;
@@ -40,6 +41,8 @@ public sealed class IdentityModule : IModule
         services.AddScoped<RoleAdministrationService>();
         services.AddScoped<MeService>();
         services.AddScoped<IStartupSeeder, IdentitySeeder>();
+        services.AddScoped<IInternalUserAccounts, InternalUserAccounts>();
+        services.AddScoped<IDevelopmentSeeder, IdentityDevelopmentSeeder>();
     }
 
     public void AddApiServices(IServiceCollection services, IConfiguration configuration)

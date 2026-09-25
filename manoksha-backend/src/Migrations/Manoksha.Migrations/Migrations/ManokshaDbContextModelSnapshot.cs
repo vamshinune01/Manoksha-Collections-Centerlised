@@ -22,6 +22,12 @@ namespace Manoksha.Migrations.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.HasSequence("employee_code_seq", "employees");
+
+            modelBuilder.HasSequence("internal_barcode_seq", "catalog");
+
+            modelBuilder.HasSequence("sku_code_seq", "catalog");
+
             modelBuilder.Entity("Manoksha.Modules.Audit.Domain.AuditLogEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -132,6 +138,717 @@ namespace Manoksha.Migrations.Migrations
                         .HasDatabaseName("ix_audit_log_entity_type_entity_id");
 
                     b.ToTable("audit_log", "audit");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Branches.Domain.Branch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_branches");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_branches_code");
+
+                    b.ToTable("branches", "branches");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Branches.Domain.FulfillmentPriorityVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("reason");
+
+                    b.Property<int>("VersionNo")
+                        .HasColumnType("integer")
+                        .HasColumnName("version_no");
+
+                    b.HasKey("Id")
+                        .HasName("pk_fulfillment_priority_versions");
+
+                    b.HasIndex("VersionNo")
+                        .IsUnique()
+                        .HasDatabaseName("ix_fulfillment_priority_versions_version_no");
+
+                    b.ToTable("fulfillment_priority_versions", "branches");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Branches.Domain.FulfillmentPriorityVersionEntry", b =>
+                {
+                    b.Property<Guid>("VersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("version_id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("integer")
+                        .HasColumnName("priority");
+
+                    b.HasKey("VersionId", "BranchId")
+                        .HasName("pk_fulfillment_priority_entries");
+
+                    b.HasIndex("BranchId")
+                        .HasDatabaseName("ix_fulfillment_priority_entries_branch_id");
+
+                    b.HasIndex("VersionId", "Priority")
+                        .IsUnique()
+                        .HasDatabaseName("ix_fulfillment_priority_entries_version_id_priority");
+
+                    b.ToTable("fulfillment_priority_entries", "branches");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.AttributeDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("code");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attribute_definitions");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_attribute_definitions_code");
+
+                    b.ToTable("attribute_definitions", "catalog");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.AttributeOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AttributeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("attribute_id");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("value");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attribute_options");
+
+                    b.HasIndex("AttributeId", "Value")
+                        .IsUnique()
+                        .HasDatabaseName("ix_attribute_options_attribute_id_value");
+
+                    b.ToTable("attribute_options", "catalog");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Barcode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid?>("InventoryItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("inventory_item_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("RetireReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("retire_reason");
+
+                    b.Property<DateTimeOffset?>("RetiredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("retired_at");
+
+                    b.Property<Guid?>("RetiredBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("retired_by");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_barcodes");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_barcodes_code");
+
+                    b.HasIndex("InventoryItemId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_barcodes_inventory_item_id")
+                        .HasFilter("inventory_item_id IS NOT NULL");
+
+                    b.HasIndex("SkuId")
+                        .HasDatabaseName("ix_barcodes_sku_id");
+
+                    b.ToTable("barcodes", "catalog");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.BarcodePrint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BarcodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("barcode_id");
+
+                    b.Property<int>("Copies")
+                        .HasColumnType("integer")
+                        .HasColumnName("copies");
+
+                    b.Property<bool>("IsReprint")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_reprint");
+
+                    b.Property<DateTimeOffset>("PrintedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("printed_at");
+
+                    b.Property<Guid?>("PrintedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("printed_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_barcode_prints");
+
+                    b.HasIndex("BarcodeId", "PrintedAt")
+                        .HasDatabaseName("ix_barcode_prints_barcode_id_printed_at");
+
+                    b.ToTable("barcode_prints", "catalog");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_id");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("slug");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.HasKey("Id")
+                        .HasName("pk_categories");
+
+                    b.HasIndex("ParentId")
+                        .HasDatabaseName("ix_categories_parent_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_categories_slug");
+
+                    b.ToTable("categories", "catalog");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AvailableForReseller")
+                        .HasColumnType("boolean")
+                        .HasColumnName("available_for_reseller");
+
+                    b.Property<bool>("AvailableForRetail")
+                        .HasColumnType("boolean")
+                        .HasColumnName("available_for_retail");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("slug");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TrackingMode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tracking_mode");
+
+                    b.HasKey("Id")
+                        .HasName("pk_products");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_products_category_id");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_products_name");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_products_slug");
+
+                    b.ToTable("products", "catalog");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.ProductVariantAttribute", b =>
+                {
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<Guid>("AttributeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("attribute_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.HasKey("ProductId", "AttributeId")
+                        .HasName("pk_product_variant_attributes");
+
+                    b.HasIndex("AttributeId")
+                        .HasDatabaseName("ix_product_variant_attributes_attribute_id");
+
+                    b.ToTable("product_variant_attributes", "catalog");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Sku", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<Guid>("VariantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("variant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_skus");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_skus_code");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_skus_product_id");
+
+                    b.HasIndex("VariantId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_skus_variant_id");
+
+                    b.ToTable("skus", "catalog");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Variant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CombinationKey")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("combination_key");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_variants");
+
+                    b.HasIndex("ProductId", "CombinationKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_variants_product_id_combination_key");
+
+                    b.ToTable("variants", "catalog");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.VariantAttributeValue", b =>
+                {
+                    b.Property<Guid>("VariantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("variant_id");
+
+                    b.Property<Guid>("AttributeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("attribute_id");
+
+                    b.Property<Guid>("OptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("option_id");
+
+                    b.HasKey("VariantId", "AttributeId")
+                        .HasName("pk_variant_attribute_values");
+
+                    b.HasIndex("OptionId")
+                        .HasDatabaseName("ix_variant_attribute_values_option_id");
+
+                    b.ToTable("variant_attribute_values", "catalog");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Employees.Domain.AttendanceRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset>("ClockInAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("clock_in_at");
+
+                    b.Property<string>("ClockInSource")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("clock_in_source");
+
+                    b.Property<DateTimeOffset?>("ClockOutAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("clock_out_at");
+
+                    b.Property<string>("ClockOutSource")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("clock_out_source");
+
+                    b.Property<DateTimeOffset?>("CorrectedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("corrected_at");
+
+                    b.Property<Guid?>("CorrectedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("corrected_by");
+
+                    b.Property<string>("CorrectionReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("correction_reason");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attendance_records");
+
+                    b.HasIndex("EmployeeId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_attendance_one_open_per_employee")
+                        .HasFilter("clock_out_at IS NULL");
+
+                    b.HasIndex("BranchId", "ClockInAt")
+                        .HasDatabaseName("ix_attendance_records_branch_id_clock_in_at");
+
+                    b.HasIndex("EmployeeId", "ClockInAt")
+                        .HasDatabaseName("ix_attendance_records_employee_id_clock_in_at");
+
+                    b.ToTable("attendance_records", "employees");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Employees.Domain.Employee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AssignedBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_branch_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EmployeeCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("employee_code");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("full_name");
+
+                    b.Property<DateOnly>("JoinedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("joined_on");
+
+                    b.Property<string>("MobileE164")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("mobile_e164");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_employees");
+
+                    b.HasIndex("AssignedBranchId")
+                        .HasDatabaseName("ix_employees_assigned_branch_id");
+
+                    b.HasIndex("EmployeeCode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_employees_employee_code");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_employees_user_id");
+
+                    b.ToTable("employees", "employees");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Employees.Domain.EmployeeBranchAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AssignedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_by");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<DateTimeOffset>("FromAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("from_at");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("reason");
+
+                    b.Property<DateTimeOffset?>("ToAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("to_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_employee_branch_assignments");
+
+                    b.HasIndex("EmployeeId", "FromAt")
+                        .HasDatabaseName("ix_employee_branch_assignments_employee_id_from_at");
+
+                    b.ToTable("employee_branch_assignments", "employees");
                 });
 
             modelBuilder.Entity("Manoksha.Modules.Identity.Domain.AuthSession", b =>
@@ -839,6 +1556,199 @@ namespace Manoksha.Migrations.Migrations
                     b.ToTable("outbox_messages", "platform");
                 });
 
+            modelBuilder.Entity("Manoksha.Modules.Branches.Domain.Branch", b =>
+                {
+                    b.OwnsOne("Manoksha.Modules.Branches.Domain.BranchAddress", "Address", b1 =>
+                        {
+                            b1.Property<Guid>("BranchId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<string>("City")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("city");
+
+                            b1.Property<string>("Line1")
+                                .HasMaxLength(300)
+                                .HasColumnType("character varying(300)")
+                                .HasColumnName("address_line1");
+
+                            b1.Property<string>("Phone")
+                                .HasMaxLength(20)
+                                .HasColumnType("character varying(20)")
+                                .HasColumnName("phone");
+
+                            b1.Property<string>("Pin")
+                                .HasMaxLength(10)
+                                .HasColumnType("character varying(10)")
+                                .HasColumnName("pin");
+
+                            b1.Property<string>("State")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("state");
+
+                            b1.HasKey("BranchId");
+
+                            b1.ToTable("branches", "branches");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BranchId")
+                                .HasConstraintName("fk_branches_branches_id");
+                        });
+
+                    b.Navigation("Address")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Branches.Domain.FulfillmentPriorityVersionEntry", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Branches.Domain.Branch", null)
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_fulfillment_priority_entries_branches_branch_id");
+
+                    b.HasOne("Manoksha.Modules.Branches.Domain.FulfillmentPriorityVersion", null)
+                        .WithMany("_entries")
+                        .HasForeignKey("VersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_fulfillment_priority_entries_fulfillment_priority_versions_");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.AttributeOption", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.AttributeDefinition", null)
+                        .WithMany("Options")
+                        .HasForeignKey("AttributeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_attribute_options_attribute_definitions_attribute_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Barcode", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.Sku", null)
+                        .WithMany()
+                        .HasForeignKey("SkuId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_barcodes_skus_sku_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.BarcodePrint", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.Barcode", null)
+                        .WithMany()
+                        .HasForeignKey("BarcodeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_barcode_prints_barcodes_barcode_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Category", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.Category", null)
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_categories_categories_parent_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Product", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_products_categories_category_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.ProductVariantAttribute", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.AttributeDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("AttributeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_variant_attributes_attribute_definitions_attribute_");
+
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.Product", null)
+                        .WithMany("_variantAttributes")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_variant_attributes_products_product_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Sku", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_skus_products_product_id");
+
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.Variant", null)
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_skus_variants_variant_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Variant", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_variants_products_product_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.VariantAttributeValue", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.AttributeOption", null)
+                        .WithMany()
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_variant_attribute_values_attribute_options_option_id");
+
+                    b.HasOne("Manoksha.Modules.Catalog.Domain.Variant", null)
+                        .WithMany("Values")
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_variant_attribute_values_variants_variant_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Employees.Domain.AttendanceRecord", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Employees.Domain.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_attendance_records_employees_employee_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Employees.Domain.EmployeeBranchAssignment", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Employees.Domain.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_employee_branch_assignments_employees_employee_id");
+                });
+
             modelBuilder.Entity("Manoksha.Modules.Identity.Domain.AuthSession", b =>
                 {
                     b.HasOne("Manoksha.Modules.Identity.Domain.User", null)
@@ -891,6 +1801,26 @@ namespace Manoksha.Migrations.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_user_role_assignments_users_user_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Branches.Domain.FulfillmentPriorityVersion", b =>
+                {
+                    b.Navigation("_entries");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.AttributeDefinition", b =>
+                {
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Product", b =>
+                {
+                    b.Navigation("_variantAttributes");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Catalog.Domain.Variant", b =>
+                {
+                    b.Navigation("Values");
                 });
 
             modelBuilder.Entity("Manoksha.Modules.Identity.Domain.Role", b =>
