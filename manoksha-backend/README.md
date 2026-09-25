@@ -22,9 +22,11 @@ src/
     Manoksha.Modules.Inventory stock levels, serialized pieces, FIFO cost layers, movements, transfers, counts, adjustments,
                                discrepancies; StockEngine is the only code that changes stock (IStockReceiver)
     Manoksha.Modules.Purchasing suppliers, purchase orders, goods receipts (posts to Inventory in the same transaction)
-    Manoksha.Modules.Wallet    prepaid reseller wallets (ledger in Phase 5)
+    Manoksha.Modules.Wallet    prepaid wallets, append-only ledger, deposits (proof + Owner approval), Owner adjustments (IWallets)
     Manoksha.Modules.Resellers onboarding, status lifecycle, versioned commercial terms, reseller login gate
     Manoksha.Modules.Pricing   retail price history, product reseller discounts, IPriceCalculator, reseller catalog/quotes
+    Manoksha.Modules.Orders    orders with immutable price snapshots, reseller checkout (routing via IStockAllocator),
+                               reseller end-customers, fulfilment inquiries, WhatsApp help links
   Integrations/                ISmsSender / IEmailSender / IFileStorage adapters (dev fakes refused in Production)
   Migrations/                  EF Core migrations
   Hosts/

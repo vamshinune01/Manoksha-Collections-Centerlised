@@ -33,9 +33,10 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
     body,
     cache: "no-store",
   });
-  return new NextResponse(upstream.status === 204 ? null : await upstream.text(), {
+  // Stream the body unchanged (JSON, or binary files such as deposit proofs).
+  return new NextResponse(upstream.status === 204 ? null : upstream.body, {
     status: upstream.status,
-    headers: { "Content-Type": upstream.headers.get("content-type") ?? "application/json" },
+    headers: { "Content-Type": upstream.headers.get("content-type") ?? "application/json", "Cache-Control": "no-store" },
   });
 }
 

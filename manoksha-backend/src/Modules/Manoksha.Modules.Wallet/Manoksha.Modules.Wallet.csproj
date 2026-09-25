@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\Manoksha.Persistence\Manoksha.Persistence.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Resellers\Manoksha.Modules.Resellers.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Manoksha.UnitTests" />

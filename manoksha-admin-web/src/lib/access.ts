@@ -56,6 +56,11 @@ export const P = {
   resellersManage: "resellers.manage",
   pricingView: "pricing.view",
   pricingManage: "pricing.manage",
+  walletView: "wallet.view",
+  walletAdjust: "wallet.adjust",
+  depositApprove: "wallet.deposit.approve",
+  ordersView: "orders.view",
+  exceptionsView: "exceptions.view",
 } as const;
 
 export interface NavItem {
@@ -74,6 +79,8 @@ export const NAV: NavItem[] = [
   { href: "/catalog", label: "Catalog", permission: P.catalogView },
   { href: "/pricing", label: "Pricing", permission: P.pricingView },
   { href: "/resellers", label: "Resellers", permission: P.resellersView },
+  { href: "/wallet-deposits", label: "Wallet deposits", permission: P.walletView },
+  { href: "/orders", label: "Orders", permission: P.ordersView },
   { href: "/purchasing", label: "Purchasing", permission: [P.purchasingView, P.goodsReceipt] },
   { href: "/inventory", label: "Inventory", permission: [P.inventoryView, P.inventoryCount] },
   { href: "/users", label: "Users", permission: P.usersView },

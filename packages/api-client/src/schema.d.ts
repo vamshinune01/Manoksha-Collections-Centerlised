@@ -1348,6 +1348,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/fulfillment-inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListFulfillmentInquiries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pos/scan/{code}": {
         parameters: {
             query?: never;
@@ -1620,6 +1668,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reseller/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerWallet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/wallet/deposits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerDeposits"];
+        put?: never;
+        post: operations["SubmitDeposit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/wallet/deposits/{id}/proof": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerDepositProof"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reseller/me": {
         parameters: {
             query?: never;
@@ -1678,6 +1774,86 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["ResellerPriceQuote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ResellerCheckout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerCustomers"];
+        put?: never;
+        post: operations["CreateResellerCustomer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/customers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["UpdateResellerCustomer"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1940,6 +2116,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/wallet/resellers/{resellerId}/ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetResellerLedger"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/wallet/resellers/{resellerId}/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdjustResellerWallet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/wallet/deposits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListDeposits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/wallet/deposits/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ApproveDeposit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/wallet/deposits/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RejectDeposit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/wallet/deposits/{id}/proof": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetDepositProof"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2146,6 +2418,19 @@ export interface components {
             status?: string | null;
             reason?: string | null;
         };
+        CheckoutLineRequest: {
+            /** Format: uuid */
+            skuId?: string;
+            /** Format: int32 */
+            quantity?: number;
+        };
+        CheckoutResult: {
+            outcome?: string | null;
+            order?: components["schemas"]["OrderDto"];
+            /** Format: double */
+            walletBalance?: number | null;
+            inquiry?: components["schemas"]["InquiryDto"];
+        };
         CommercialTermDto: {
             /** Format: uuid */
             id?: string;
@@ -2329,6 +2614,37 @@ export interface components {
         DecisionRequest: {
             note?: string | null;
         };
+        DeliveryDto: {
+            name?: string | null;
+            mobile?: string | null;
+            email?: string | null;
+            addressLine?: string | null;
+            city?: string | null;
+            state?: string | null;
+            pin?: string | null;
+        };
+        DepositDto: {
+            /** Format: uuid */
+            id?: string;
+            number?: string | null;
+            /** Format: uuid */
+            resellerId?: string;
+            resellerNumber?: string | null;
+            resellerName?: string | null;
+            /** Format: double */
+            amount?: number;
+            method?: string | null;
+            reference?: string | null;
+            resellerNote?: string | null;
+            status?: string | null;
+            /** Format: date-time */
+            submittedAt?: string;
+            /** Format: date-time */
+            reviewedAt?: string | null;
+            reviewNote?: string | null;
+            /** Format: uuid */
+            ledgerEntryId?: string | null;
+        };
         DiscrepancyDto: {
             /** Format: uuid */
             id?: string;
@@ -2382,6 +2698,22 @@ export interface components {
         FirstPasswordChangeRequest: {
             challengeToken?: string | null;
             newPassword?: string | null;
+        };
+        FulfillmentInquiryDto: {
+            /** Format: uuid */
+            id?: string;
+            reference?: string | null;
+            channel?: string | null;
+            /** Format: uuid */
+            resellerId?: string | null;
+            contactName?: string | null;
+            contactMobile?: string | null;
+            cart?: string | null;
+            evaluations?: string | null;
+            failureReason?: string | null;
+            status?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
         };
         FulfillmentPriorityEntry: {
             /** Format: int32 */
@@ -2438,6 +2770,11 @@ export interface components {
             /** Format: double */
             unitCost?: number | null;
         };
+        InquiryDto: {
+            reference?: string | null;
+            message?: string | null;
+            whatsAppUrl?: string | null;
+        };
         InternalLoginRequest: {
             email?: string | null;
             password?: string | null;
@@ -2472,6 +2809,39 @@ export interface components {
             copies?: number;
             isReprint?: boolean;
         };
+        LedgerEntryDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: int64 */
+            seq?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            type?: string | null;
+            direction?: string | null;
+            /** Format: double */
+            amount?: number;
+            /** Format: double */
+            balanceBefore?: number;
+            /** Format: double */
+            balanceAfter?: number;
+            /** Format: uuid */
+            orderId?: string | null;
+            orderNumber?: string | null;
+            /** Format: uuid */
+            depositRequestId?: string | null;
+            /** Format: uuid */
+            reversesEntryId?: string | null;
+            reason?: string | null;
+            /** Format: uuid */
+            createdBy?: string | null;
+        };
+        LedgerPage: {
+            /** Format: double */
+            balance?: number;
+            entries?: components["schemas"]["LedgerEntryDto"][] | null;
+            /** Format: int64 */
+            nextBeforeSeq?: number | null;
+        };
         LineQuantityRequest: {
             /** Format: uuid */
             lineId?: string;
@@ -2484,6 +2854,12 @@ export interface components {
         };
         LogoutRequest: {
             refreshToken?: string | null;
+        };
+        ManualAdjustmentRequest: {
+            direction?: string | null;
+            /** Format: double */
+            amount?: number;
+            reason?: string | null;
         };
         MeResponse: {
             /** Format: uuid */
@@ -2554,6 +2930,65 @@ export interface components {
             /** Format: uuid */
             assignedBranchId?: string | null;
             assignedBranchName?: string | null;
+        };
+        OrderDto: {
+            /** Format: uuid */
+            id?: string;
+            number?: string | null;
+            channel?: string | null;
+            status?: string | null;
+            /** Format: uuid */
+            resellerId?: string | null;
+            /** Format: uuid */
+            fulfillmentBranchId?: string;
+            fulfillmentBranchName?: string | null;
+            delivery?: components["schemas"]["DeliveryDto"];
+            /** Format: double */
+            merchandiseTotal?: number;
+            /** Format: double */
+            shippingFee?: number;
+            /** Format: double */
+            grandTotal?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            confirmedAt?: string | null;
+            lines?: components["schemas"]["OrderLineDto"][] | null;
+            history?: components["schemas"]["OrderStatusChangeDto"][] | null;
+            helpWhatsAppUrl?: string | null;
+            /** Format: double */
+            costOfGoods?: number | null;
+        };
+        OrderLineDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            /** Format: int32 */
+            quantity?: number;
+            /** Format: double */
+            retailUnitPrice?: number;
+            discountSource?: string | null;
+            /** Format: double */
+            discountPct?: number;
+            /** Format: double */
+            discountAmountPerUnit?: number;
+            /** Format: double */
+            finalUnitPrice?: number;
+            /** Format: double */
+            lineTotal?: number;
+            /** Format: int32 */
+            commercialTermVersion?: number | null;
+        };
+        OrderStatusChangeDto: {
+            fromStatus?: string | null;
+            toStatus?: string | null;
+            note?: string | null;
+            /** Format: date-time */
+            occurredAt?: string;
         };
         OtpRequestRequest: {
             mobile?: string | null;
@@ -2800,6 +3235,9 @@ export interface components {
             code?: string | null;
             reason?: string | null;
         };
+        RejectDepositRequest: {
+            reason?: string | null;
+        };
         ResellerCatalogItemDto: {
             /** Format: uuid */
             skuId?: string;
@@ -2825,6 +3263,22 @@ export interface components {
             page?: number;
             /** Format: int32 */
             pageSize?: number;
+        };
+        ResellerCheckoutRequest: {
+            lines?: components["schemas"]["CheckoutLineRequest"][] | null;
+            /** Format: uuid */
+            resellerCustomerId?: string | null;
+            delivery?: components["schemas"]["DeliveryDto"];
+            saveCustomer?: boolean;
+        };
+        ResellerCustomerDto: {
+            /** Format: uuid */
+            id?: string;
+            details?: components["schemas"]["DeliveryDto"];
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
         ResellerDetailDto: {
             /** Format: uuid */
@@ -2940,6 +3394,9 @@ export interface components {
         RetireBarcodeRequest: {
             reason?: string | null;
         };
+        ReviewDepositRequest: {
+            note?: string | null;
+        };
         RoleAssignmentDto: {
             /** Format: uuid */
             assignmentId?: string;
@@ -2976,6 +3433,9 @@ export interface components {
             sortOrder?: number;
             isActive?: boolean;
             reason?: string | null;
+        };
+        SaveResellerCustomerRequest: {
+            details?: components["schemas"]["DeliveryDto"];
         };
         SaveSupplierRequest: {
             name?: string | null;
@@ -5607,6 +6067,73 @@ export interface operations {
             };
         };
     };
+    ListOrders: {
+        parameters: {
+            query?: {
+                channel?: string;
+                status?: string;
+                branchId?: string;
+                resellerId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"][];
+                };
+            };
+        };
+    };
+    GetOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    ListFulfillmentInquiries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FulfillmentInquiryDto"][];
+                };
+            };
+        };
+    };
     PosScan: {
         parameters: {
             query?: never;
@@ -6137,6 +6664,101 @@ export interface operations {
             };
         };
     };
+    ResellerWallet: {
+        parameters: {
+            query?: {
+                beforeSeq?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LedgerPage"];
+                };
+            };
+        };
+    };
+    ResellerDeposits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepositDto"][];
+                };
+            };
+        };
+    };
+    SubmitDeposit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: double */
+                    amount: number;
+                    method: string;
+                    reference: string;
+                    note?: string;
+                    /** Format: binary */
+                    proof?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepositDto"];
+                };
+            };
+        };
+    };
+    ResellerDepositProof: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ResellerMe: {
         parameters: {
             query?: never;
@@ -6222,6 +6844,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResellerPriceLine"][];
+                };
+            };
+        };
+    };
+    ResellerCheckout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResellerCheckoutRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutResult"];
+                };
+            };
+        };
+    };
+    ResellerOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"][];
+                };
+            };
+        };
+    };
+    ResellerOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    ResellerCustomers: {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerCustomerDto"][];
+                };
+            };
+        };
+    };
+    CreateResellerCustomer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveResellerCustomerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerCustomerDto"];
+                };
+            };
+        };
+    };
+    UpdateResellerCustomer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveResellerCustomerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerCustomerDto"];
                 };
             };
         };
@@ -6711,6 +7471,152 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PermissionDto"][];
                 };
+            };
+        };
+    };
+    GetResellerLedger: {
+        parameters: {
+            query?: {
+                beforeSeq?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                resellerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LedgerPage"];
+                };
+            };
+        };
+    };
+    AdjustResellerWallet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                resellerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualAdjustmentRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LedgerEntryDto"];
+                };
+            };
+        };
+    };
+    ListDeposits: {
+        parameters: {
+            query?: {
+                status?: string;
+                resellerId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepositDto"][];
+                };
+            };
+        };
+    };
+    ApproveDeposit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewDepositRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepositDto"];
+                };
+            };
+        };
+    };
+    RejectDeposit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectDepositRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepositDto"];
+                };
+            };
+        };
+    };
+    GetDepositProof: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

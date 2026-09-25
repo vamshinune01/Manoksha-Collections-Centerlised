@@ -110,3 +110,20 @@ Engineering decisions for Phase 4 (confirm or correct):
 - Discount percentages allow up to 2 decimals (0–100). Reseller price = retail × (1 − discount/100), rounded HALF-UP to paisa.
 - Commercial-term PDF/email notifications are delivered with the notifications module (Phase 9); every term version is stored now.
 - The reseller wallet (₹0) is created at onboarding; its ledger, deposits and checkout arrive in Phase 5.
+
+## Phase 5 Owner decisions (25 Sep 2026)
+20. **Direct/PhonePe deposit proof:** both the payment reference (UTR/transaction id) **and** a screenshot are mandatory.
+21. **Every reseller order needs delivery details entered at checkout** — name, mobile and full address — whether the order is
+    for an end-customer or for the reseller themselves. The details are snapshotted on the order.
+22. **End-customer details:** name, mobile and full delivery address (line, city, state, PIN) are required; email optional. Saved
+    only to that reseller's own customer list.
+
+Engineering decisions for Phase 5 (confirm or correct):
+- A payment reference can back only one pending/approved deposit (prevents the same payment being credited twice).
+- Provider-confirmed online deposits (SPEC §17.1) are delivered with the UPI gateway integration in Phase 6.
+- The reseller cart lives in the browser (non-authoritative); the backend re-prices and re-validates everything at checkout.
+- A reseller order that no branch can fulfil completely is not created and nothing is debited; a fulfilment inquiry
+  reference (MC-FUL-XXXXXXXX) is issued with the WhatsApp help link, as for customers (SPEC §12).
+- Reseller orders commit stock immediately (AVAILABLE → SOLD) together with the wallet debit and order creation; FIFO cost is
+  consumed at that point for gross-profit reporting.
+- The Owner's manual wallet adjustment (credit or debit) is Owner-only with a mandatory reason, and can never take the balance below ₹0.

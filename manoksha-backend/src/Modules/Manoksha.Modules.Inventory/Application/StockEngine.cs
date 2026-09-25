@@ -32,7 +32,7 @@ internal sealed class StockEngine(ManokshaDbContext db, ICurrentUser currentUser
     }
 
     /// <summary>Removes units from a status. Fails (nothing changes) when fewer units are available.</summary>
-    public async Task RemoveQuantityAsync(Guid skuId, Guid branchId, InventoryStatus status, int quantity, MovementContext ctx, bool recordMovement = true, CancellationToken ct = default)
+    public async Task RemoveQuantityAsync(Guid skuId, Guid branchId, InventoryStatus status, int quantity, MovementContext ctx, bool recordMovement = true, InventoryStatus? recordedToStatus = null, CancellationToken ct = default)
     {
         Positive(quantity);
         var s = status.ToString();
@@ -51,13 +51,13 @@ internal sealed class StockEngine(ManokshaDbContext db, ICurrentUser currentUser
         }
         if (recordMovement)
         {
-            Record(skuId, null, quantity, branchId, null, status, null, ctx);
+            Record(skuId, null, quantity, branchId, null, status, recordedToStatus, ctx);
         }
     }
 
     public async Task MoveQuantityAsync(Guid skuId, Guid branchId, InventoryStatus from, InventoryStatus to, int quantity, MovementContext ctx, Guid? toBranchId = null, CancellationToken ct = default)
     {
-        await RemoveQuantityAsync(skuId, branchId, from, quantity, ctx, recordMovement: false, ct);
+        await RemoveQuantityAsync(skuId, branchId, from, quantity, ctx, recordMovement: false, ct: ct);
         var destination = toBranchId ?? branchId;
         var now = clock.UtcNow;
         var s = to.ToString();
@@ -67,6 +67,19 @@ internal sealed class StockEngine(ManokshaDbContext db, ICurrentUser currentUser
             ON CONFLICT (sku_id, branch_id, status) DO UPDATE SET quantity = stock_levels.quantity + EXCLUDED.quantity, updated_at = EXCLUDED.updated_at
             """, ct);
         Record(skuId, null, quantity, branchId, destination, from, to, ctx);
+    }
+
+    /// <summary>Claims up to <paramref name="quantity"/> AVAILABLE pieces, skipping pieces another transaction is claiming.</summary>
+    public async Task<List<Guid>> ClaimAvailableItemsAsync(Guid skuId, Guid branchId, int quantity, CancellationToken ct = default)
+    {
+        var available = InventoryStatus.Available.ToString();
+        return await db.Database.SqlQuery<Guid>($"""
+            SELECT id AS "Value" FROM inventory.inventory_items
+            WHERE sku_id = {skuId} AND branch_id = {branchId} AND status = {available} AND written_off_at IS NULL
+            ORDER BY received_at
+            LIMIT {quantity}
+            FOR UPDATE SKIP LOCKED
+            """).ToListAsync(ct);
     }
 
     public async Task<int> QuantityAsync(Guid skuId, Guid branchId, InventoryStatus status, CancellationToken ct = default) =>

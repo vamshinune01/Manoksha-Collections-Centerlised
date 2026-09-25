@@ -4,6 +4,7 @@ WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY packages/api-client/package.json packages/api-client/
 COPY manoksha-admin-web/package.json manoksha-admin-web/
+COPY manoksha-customer-web/package.json manoksha-customer-web/
 RUN npm ci
 
 FROM node:22-alpine AS build

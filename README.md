@@ -14,7 +14,7 @@ Multi-branch retail platform (imitation jewellery, sarees, kids dresses) for Kar
 |---|---|---|
 | [`manoksha-backend/`](manoksha-backend) | The **one** central business backend (modular monolith: API + Worker) | .NET 8, EF Core, PostgreSQL |
 | [`manoksha-admin-web/`](manoksha-admin-web) | Internal app for Owner, branch managers, employees (role-based) | Next.js 16, TypeScript, Tailwind 4 |
-| [`manoksha-customer-web/`](manoksha-customer-web) | Public storefront + separated `/reseller` area | Next.js (Phase 5–6) |
+| [`manoksha-customer-web/`](manoksha-customer-web) | Public storefront (Phase 6) + separated `/reseller` area (live) | Next.js 16, TypeScript, Tailwind 4 |
 | [`manoksha-mobile-pos/`](manoksha-mobile-pos) | Store POS, scanning, stock operations | Flutter (Phase 8) |
 | [`packages/api-client/`](packages/api-client) | TypeScript types generated from the backend OpenAPI contract — no business logic | openapi-typescript |
 | [`contracts/openapi/`](contracts/openapi) | Committed OpenAPI snapshot; CI fails if it drifts from the API | |
@@ -38,10 +38,12 @@ dotnet run --project manoksha-backend/src/Hosts/Manoksha.Api -- seed-dev
 dotnet run --project manoksha-backend/src/Hosts/Manoksha.Api
 dotnet run --project manoksha-backend/src/Hosts/Manoksha.Worker
 
-# 4. Admin web on http://localhost:3001
+# 4. Admin web on http://localhost:3001 and customer/reseller web on http://localhost:3002
 npm install
 cp manoksha-admin-web/.env.example manoksha-admin-web/.env.local
+cp manoksha-customer-web/.env.example manoksha-customer-web/.env.local
 npm run admin:dev
+npm run customer:dev
 ```
 
 The dev seed creates branches Karimnagar (P1), Hyderabad (P2), Mulugu (P3) and users (password = `MANOKSHA_DEV_SEED_PASSWORD`):
@@ -73,5 +75,6 @@ npm run api-client:generate                                             # …the
 | 2 | Branches, fulfillment priority, employees, attendance, catalog (configurable variant attributes, SKUs, barcodes, label printing) | **Done** |
 | 3 | Suppliers, purchase orders (amend/close), goods receipt, hybrid stock (pieces + quantities), FIFO cost layers per SKU per branch, transfers, blind counts, adjustments with value-based approval, discrepancies | **Done** |
 | 4 | Retail price history, product reseller discounts, reseller pricing calculator, reseller onboarding (PENDING → OTP → ACTIVE), status rules, versioned commercial terms, ₹0 wallet | **Done** |
-| 5 | Wallet ledger, deposits, reseller checkout, reseller web area | Next |
-| 6–10 | See design §22 | Planned |
+| 5 | Append-only wallet ledger, proof-based deposits with idempotent Owner approval, Owner adjustments, reseller checkout (branch priority, no split, atomic stock + wallet + order, idempotent), fulfilment inquiries, reseller end-customers, reseller web area | **Done** |
+| 6 | Customer storefront, 5-minute reservation, UPI payment, late-payment recovery, online wallet deposits | Next |
+| 7–10 | See design §22 | Planned |

@@ -1,9 +1,14 @@
 # manoksha-customer-web
 
-Public storefront (mobile OTP login, catalog, cart, checkout with ₹100 shipping per order, UPI payment, order history and
-tracking, "Need help with this order?" WhatsApp link — no self-service cancellation) and the separated, authenticated
-`/reseller` area (reseller prices, wallet, deposits, orders, end-customers).
+Next.js app for external users. Talks only to the central backend (`MANOKSHA_API_URL`, server-side).
 
-Next.js + TypeScript + Tailwind, same BFF/session pattern as `manoksha-admin-web`, separate token audiences
-(`customer`, `reseller`). Scaffolded in **Phase 5 (reseller area)** and **Phase 6 (storefront)**; the backend OTP
-authentication it will use is already implemented (`/api/v1/auth/otp/*`, `/api/v1/auth/customer/register`).
+- **`/reseller/*` — reseller area (Phase 5, live):** mobile OTP sign-in (first sign-in activates an Owner-created reseller),
+  dashboard, priced catalog, cart (per-browser, non-authoritative) and checkout with an Idempotency-Key, orders with the
+  "Need help with this order?" WhatsApp link (no self-cancellation), wallet ledger, deposit requests with reference + screenshot,
+  own customer list, commercial-term history. Separate `reseller` token audience and cookies (`mk_rs_*`).
+- **Storefront — Phase 6:** customer OTP login, browsing, cart, checkout with 5-minute reservation and UPI payment.
+
+```bash
+cp .env.example .env.local
+npm run customer:dev   # http://localhost:3002
+```

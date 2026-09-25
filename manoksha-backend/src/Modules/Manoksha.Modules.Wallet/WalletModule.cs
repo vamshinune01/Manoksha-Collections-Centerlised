@@ -1,6 +1,8 @@
 using Manoksha.Application.Modules;
+using Manoksha.Modules.Resellers.Contracts;
 using Manoksha.Modules.Wallet.Application;
 using Manoksha.Modules.Wallet.Contracts;
+using Manoksha.Modules.Wallet.Endpoints;
 using Manoksha.Modules.Wallet.Persistence;
 using Manoksha.Persistence;
 using Microsoft.AspNetCore.Routing;
@@ -17,11 +19,12 @@ public sealed class WalletModule : IModule
     public void AddServices(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.AddSingleton<IModuleModelConfiguration, WalletModelConfiguration>();
-        services.AddScoped<IWallets, WalletService>();
+        services.AddScoped<WalletService>();
+        services.AddScoped<IWallets>(sp => sp.GetRequiredService<WalletService>());
+        services.AddScoped<IResellerOnboardingParticipant>(sp => sp.GetRequiredService<WalletService>());
+        services.AddScoped<IResellerBalanceView>(sp => sp.GetRequiredService<WalletService>());
+        services.AddScoped<DepositService>();
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints)
-    {
-        // Wallet ledger, deposits and endpoints arrive in Phase 5.
-    }
+    public void MapEndpoints(IEndpointRouteBuilder endpoints) => WalletEndpoints.Map(endpoints);
 }

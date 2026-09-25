@@ -14,3 +14,20 @@ public interface IResellerDirectory
 
     Task<ResellerTerms> GetCurrentTermsAsync(Guid resellerId, CancellationToken cancellationToken = default);
 }
+
+/// <summary>
+/// Modules that must set something up for every new reseller (the Wallet module opens the ₹0 wallet). Called inside the
+/// onboarding transaction; <see cref="IsReadyAsync"/> is part of the activation eligibility check.
+/// </summary>
+public interface IResellerOnboardingParticipant
+{
+    Task OnResellerCreatedAsync(Guid resellerId, CancellationToken cancellationToken = default);
+
+    Task<bool> IsReadyAsync(Guid resellerId, CancellationToken cancellationToken = default);
+}
+
+/// <summary>Read-only wallet balance for reseller screens (implemented by the Wallet module).</summary>
+public interface IResellerBalanceView
+{
+    Task<decimal?> GetBalanceAsync(Guid resellerId, CancellationToken cancellationToken = default);
+}

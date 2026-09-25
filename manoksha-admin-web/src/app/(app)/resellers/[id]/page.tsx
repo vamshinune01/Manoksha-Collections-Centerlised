@@ -2,14 +2,17 @@ import Link from "next/link";
 import { Alert, Badge, Card, PageHeader, formatDateTime } from "@/components/ui";
 import { P, can, inr } from "@/lib/access";
 import { backendFetch, getMe } from "@/lib/backend";
-import type { ResellerDetail } from "@/lib/types";
+import type { LedgerPage, ResellerDetail } from "@/lib/types";
 import { RESELLER_TONE } from "../reseller-status";
-import { PricePreview, ResellerStatusActions, TermsForm } from "./reseller-actions";
+import { PricePreview, ResellerStatusActions, TermsForm, WalletAdjustment } from "./reseller-actions";
 
 export default async function ResellerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const me = (await getMe())!;
-  const reseller = await backendFetch<ResellerDetail>(`admin/resellers/${id}`);
+  const [reseller, ledger] = await Promise.all([
+    backendFetch<ResellerDetail>(`admin/resellers/${id}`),
+    can(me, P.walletView) ? backendFetch<LedgerPage>(`admin/wallet/resellers/${id}/ledger?limit=20`) : Promise.resolve(null),
+  ]);
   if (!reseller.ok) return <Alert>{reseller.problem.title}</Alert>;
   const r = reseller.data;
   const manage = can(me, P.resellersManage);
@@ -35,7 +38,21 @@ export default async function ResellerPage({ params }: { params: Promise<{ id: s
           {manage && r.status !== "Closed" && <TermsForm reseller={r} />}
         </Card>
         <div className="space-y-6">
-          <Card title="Wallet"><p className="text-2xl font-semibold">{inr(r.walletBalance)}</p><p className="text-xs text-slate-500">Prepaid; ledger and deposits arrive in the next phase.</p></Card>
+          <Card title="Wallet">
+            <p className="text-2xl font-semibold">{inr(r.walletBalance)}</p>
+            {ledger?.ok && (
+              <ul className="mt-3 space-y-1 text-xs">
+                {ledger.data.entries.map((e) => (
+                  <li key={e.id} className="flex justify-between gap-2">
+                    <span>{formatDateTime(e.createdAt)} · {e.type}{e.orderNumber ? ` ${e.orderNumber}` : ""}{e.reason && !e.orderNumber ? ` · ${e.reason}` : ""}</span>
+                    <span className={e.direction === "Credit" ? "text-emerald-700" : "text-red-700"}>{e.direction === "Credit" ? "+" : "−"}{inr(e.amount)} → {inr(e.balanceAfter)}</span>
+                  </li>
+                ))}
+                {ledger.data.entries.length === 0 && <li className="text-slate-500">No transactions yet.</li>}
+              </ul>
+            )}
+            {can(me, P.walletAdjust) && <WalletAdjustment resellerId={r.id} />}
+          </Card>
           <Card title="Profile">
             <dl className="space-y-1 text-sm">
               <div><dt className="inline text-slate-500">Email: </dt><dd className="inline">{r.profile.email}</dd></div>

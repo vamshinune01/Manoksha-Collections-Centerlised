@@ -508,3 +508,90 @@ export interface PricePreview {
   appliedPct: number;
   finalUnitPrice: number;
 }
+
+export interface LedgerEntry {
+  id: string;
+  seq: number;
+  createdAt: string;
+  type: "Deposit" | "Debit" | "Reversal" | "Adjustment";
+  direction: "Credit" | "Debit";
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  orderId: string | null;
+  orderNumber: string | null;
+  depositRequestId: string | null;
+  reason: string | null;
+}
+
+export interface LedgerPage {
+  balance: number;
+  entries: LedgerEntry[];
+  nextBeforeSeq: number | null;
+}
+
+export interface Deposit {
+  id: string;
+  number: string;
+  resellerId: string;
+  resellerNumber: string | null;
+  resellerName: string | null;
+  amount: number;
+  method: string;
+  reference: string;
+  resellerNote: string | null;
+  status: "Pending" | "Approved" | "Credited" | "Rejected";
+  submittedAt: string;
+  reviewedAt: string | null;
+  reviewNote: string | null;
+}
+
+export interface OrderLine {
+  id: string;
+  skuId: string;
+  skuCode: string;
+  productName: string;
+  variantName: string;
+  quantity: number;
+  retailUnitPrice: number;
+  discountSource: string;
+  discountPct: number;
+  discountAmountPerUnit: number;
+  finalUnitPrice: number;
+  lineTotal: number;
+  commercialTermVersion: number | null;
+}
+
+export interface Order {
+  id: string;
+  number: string;
+  channel: string;
+  status: string;
+  resellerId: string | null;
+  fulfillmentBranchId: string;
+  fulfillmentBranchName: string;
+  delivery: { name: string; mobile: string; email: string | null; addressLine: string; city: string; state: string; pin: string };
+  merchandiseTotal: number;
+  shippingFee: number;
+  grandTotal: number;
+  createdAt: string;
+  confirmedAt: string | null;
+  lines: OrderLine[];
+  history: { fromStatus: string | null; toStatus: string; note: string | null; occurredAt: string }[];
+  helpWhatsAppUrl: string;
+  costOfGoods: number | null;
+}
+
+export interface FulfillmentInquiry {
+  id: string;
+  reference: string;
+  channel: string;
+  resellerId: string | null;
+  contactName: string | null;
+  contactMobile: string | null;
+  cart: string;
+  evaluations: string;
+  failureReason: string;
+  status: string;
+  createdAt: string;
+}

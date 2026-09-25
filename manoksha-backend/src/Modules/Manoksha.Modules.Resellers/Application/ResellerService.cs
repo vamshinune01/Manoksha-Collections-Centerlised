@@ -3,7 +3,6 @@ using Manoksha.Application.Security;
 using Manoksha.Modules.Identity.Contracts;
 using Manoksha.Modules.Resellers.Contracts;
 using Manoksha.Modules.Resellers.Domain;
-using Manoksha.Modules.Wallet.Contracts;
 using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +33,8 @@ internal sealed class ResellerService(
     ManokshaDbContext db,
     IUnitOfWork unitOfWork,
     IResellerAccounts accounts,
-    IWallets wallets,
+    IEnumerable<IResellerOnboardingParticipant> participants,
+    IResellerBalanceView balances,
     IAuditWriter audit,
     IOutbox outbox,
     ICurrentUser currentUser,
@@ -61,9 +61,8 @@ internal sealed class ResellerService(
         foreach (var r in resellers)
         {
             var terms = await GetCurrentTermsAsync(r.Id, ct);
-            var wallet = await wallets.FindAsync(r.Id, ct);
             result.Add(new ResellerSummaryDto(r.Id, r.ResellerNumber, r.Profile.ContactName, r.Profile.BusinessName, r.MobileE164, r.Profile.City, r.Status.ToString(),
-                terms.DiscountPct, wallet?.Balance ?? 0m, r.CreatedAt, r.ActivatedAt));
+                terms.DiscountPct, await balances.GetBalanceAsync(r.Id, ct) ?? 0m, r.CreatedAt, r.ActivatedAt));
         }
         return result;
     }
@@ -91,7 +90,10 @@ internal sealed class ResellerService(
             db.Add(new ResellerStatusChange(reseller.Id, null, ResellerStatus.Pending, currentUser.UserId, req.Reason, now));
             var term = new CommercialTerm(reseller.Id, 1, req.ResellerDiscountPct, req.Notes?.Trim(), "Initial commercial terms", currentUser.UserId, now);
             db.Add(term);
-            await wallets.OpenAsync(reseller.Id, innerCt);
+            foreach (var participant in participants)
+            {
+                await participant.OnResellerCreatedAsync(reseller.Id, innerCt);
+            }
 
             await audit.RecordAsync(new AuditRecord("resellers.reseller.created", "Reseller", reseller.Id.ToString(),
                 After: new { reseller.ResellerNumber, mobile = MobileNumber.Mask(mobile), profile.ContactName, profile.BusinessName, status = "Pending", discountPct = req.ResellerDiscountPct, walletOpeningBalance = 0m },
@@ -182,9 +184,8 @@ internal sealed class ResellerService(
     {
         var r = await LoadSelfAsync(ct);
         var terms = await GetCurrentTermsAsync(r.Id, ct);
-        var wallet = await wallets.FindAsync(r.Id, ct);
         return new ResellerSelfDto(r.ResellerNumber, r.Profile.ContactName, r.Profile.BusinessName, r.MobileE164, r.Profile.Email, r.Status.ToString(),
-            r.Status == ResellerStatus.Active, terms.DiscountPct, terms.Version, wallet?.Balance ?? 0m);
+            r.Status == ResellerStatus.Active, terms.DiscountPct, terms.Version, await balances.GetBalanceAsync(r.Id, ct) ?? 0m);
     }
 
     public async Task<IReadOnlyList<ResellerTermDto>> GetSelfTermsAsync(CancellationToken ct)
@@ -227,8 +228,12 @@ internal sealed class ResellerService(
         {
             case ResellerStatus.Pending:
                 var hasTerms = await db.Set<CommercialTerm>().AnyAsync(t => t.ResellerId == r.Id, cancellationToken);
-                var wallet = await wallets.FindAsync(r.Id, cancellationToken);
-                if (!hasTerms || wallet is null)
+                var ready = true;
+                foreach (var participant in participants)
+                {
+                    ready &= await participant.IsReadyAsync(r.Id, cancellationToken);
+                }
+                if (!hasTerms || !ready)
                 {
                     return ResellerLoginDecision.Deny("RESELLER_NOT_ELIGIBLE", "Your reseller account setup is incomplete. Please contact Manoksha Collections.");
                 }
@@ -254,12 +259,12 @@ internal sealed class ResellerService(
     {
         var terms = await db.Set<CommercialTerm>().AsNoTracking().Where(t => t.ResellerId == r.Id).OrderByDescending(t => t.Version).ToListAsync(ct);
         var history = await db.Set<ResellerStatusChange>().AsNoTracking().Where(s => s.ResellerId == r.Id).OrderByDescending(s => s.OccurredAt).ToListAsync(ct);
-        var wallet = await wallets.FindAsync(r.Id, ct);
+        var balance = await balances.GetBalanceAsync(r.Id, ct) ?? 0m;
         var termDtos = terms.Select((t, i) => new CommercialTermDto(t.Id, t.Version, t.DiscountPct, t.Notes, t.Reason, t.EffectiveFrom, i == 0)).ToList();
         var p = r.Profile;
         return new ResellerDetailDto(r.Id, r.ResellerNumber, r.UserId, r.MobileE164, r.Status.ToString(),
             new ResellerProfileDto(p.ContactName, p.BusinessName, p.Email, p.AddressLine, p.City, p.State, p.Pin, p.Notes),
-            wallet?.Balance ?? 0m, termDtos[0], termDtos,
+            balance, termDtos[0], termDtos,
             history.Select(h => new StatusChangeDto(h.FromStatus?.ToString(), h.ToStatus.ToString(), h.Reason, h.ActorUserId, h.OccurredAt)).ToList(),
             r.CreatedAt, r.ActivatedAt);
     }

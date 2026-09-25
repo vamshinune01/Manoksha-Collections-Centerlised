@@ -76,3 +76,28 @@ export function PricePreview({ resellerId }: { resellerId: string }) {
     </div>
   );
 }
+
+export function WalletAdjustment({ resellerId }: { resellerId: string }) {
+  const { error, busy, run } = useAction();
+  const [open, setOpen] = useState(false);
+  if (!open) return <Button variant="ghost" className="mt-2" onClick={() => setOpen(true)}>Manual adjustment</Button>;
+  return (
+    <form className="mt-3 space-y-2 border-t border-slate-100 pt-3" onSubmit={async (e) => {
+      e.preventDefault();
+      const f = new FormData(e.currentTarget);
+      const ok = await run(() => callApi(`admin/wallet/resellers/${resellerId}/adjustments`, "POST", {
+        direction: f.get("direction"), amount: Number(f.get("amount")), reason: f.get("reason"),
+      }));
+      if (ok) setOpen(false);
+    }}>
+      {error && <Alert>{error}</Alert>}
+      <div className="flex gap-2">
+        <select name="direction" className="rounded-md border border-slate-300 px-2 text-sm"><option>Credit</option><option>Debit</option></select>
+        <Input name="amount" type="number" min={0.01} step="0.01" placeholder="₹" required />
+      </div>
+      <Input name="reason" placeholder="Reason (required, audited)" required />
+      <div className="flex gap-2"><Button type="submit" disabled={busy}>Post adjustment</Button><Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button></div>
+      <p className="text-xs text-slate-500">Creates a new ledger entry; existing entries are never edited. The balance can never go below ₹0.</p>
+    </form>
+  );
+}

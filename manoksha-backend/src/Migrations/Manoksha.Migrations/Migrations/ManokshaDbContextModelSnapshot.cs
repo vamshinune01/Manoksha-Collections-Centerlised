@@ -26,13 +26,19 @@ namespace Manoksha.Migrations.Migrations
 
             modelBuilder.HasSequence("count_seq", "inventory");
 
+            modelBuilder.HasSequence("deposit_seq", "wallet");
+
             modelBuilder.HasSequence("discrepancy_seq", "inventory");
 
             modelBuilder.HasSequence("employee_code_seq", "employees");
 
             modelBuilder.HasSequence("grn_seq", "purchasing");
 
+            modelBuilder.HasSequence("inquiry_number_seq", "orders");
+
             modelBuilder.HasSequence("internal_barcode_seq", "catalog");
+
+            modelBuilder.HasSequence("order_number_seq", "orders");
 
             modelBuilder.HasSequence("po_seq", "purchasing");
 
@@ -2244,6 +2250,356 @@ namespace Manoksha.Migrations.Migrations
                     b.ToTable("transfer_line_items", "inventory");
                 });
 
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.FulfillmentInquiry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CartJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("cart");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("channel");
+
+                    b.Property<string>("ContactMobile")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("contact_mobile");
+
+                    b.Property<string>("ContactName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("contact_name");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EvaluationsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("evaluations");
+
+                    b.Property<string>("FailureReason")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("reference");
+
+                    b.Property<Guid?>("ResellerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reseller_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_fulfillment_inquiries");
+
+                    b.HasIndex("Reference")
+                        .IsUnique()
+                        .HasDatabaseName("ix_fulfillment_inquiries_reference");
+
+                    b.HasIndex("Status", "CreatedAt")
+                        .HasDatabaseName("ix_fulfillment_inquiries_status_created_at");
+
+                    b.ToTable("fulfillment_inquiries", "orders");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("channel");
+
+                    b.Property<DateTimeOffset?>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("FulfillmentBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("fulfillment_branch_id");
+
+                    b.Property<decimal>("GrandTotal")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("grand_total");
+
+                    b.Property<decimal>("MerchandiseTotal")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("merchandise_total");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("number");
+
+                    b.Property<Guid>("PlacedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("placed_by");
+
+                    b.Property<Guid?>("ResellerCustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reseller_customer_id");
+
+                    b.Property<Guid?>("ResellerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reseller_id");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<decimal>("ShippingFee")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("shipping_fee");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid?>("WalletLedgerEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("wallet_ledger_entry_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_orders");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_orders_number");
+
+                    b.HasIndex("FulfillmentBranchId", "Status")
+                        .HasDatabaseName("ix_orders_fulfillment_branch_id_status");
+
+                    b.HasIndex("ResellerId", "CreatedAt")
+                        .HasDatabaseName("ix_orders_reseller_id_created_at");
+
+                    b.ToTable("orders", "orders", t =>
+                        {
+                            t.HasCheckConstraint("ck_orders_totals", "grand_total = merchandise_total + shipping_fee AND merchandise_total >= 0 AND shipping_fee >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.OrderLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("CommercialTermId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("commercial_term_id");
+
+                    b.Property<int?>("CommercialTermVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("commercial_term_version");
+
+                    b.Property<decimal>("CostAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("cost_amount");
+
+                    b.Property<decimal>("DiscountAmountPerUnit")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("discount_amount_per_unit");
+
+                    b.Property<decimal>("DiscountPct")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("numeric(7,4)")
+                        .HasColumnName("discount_pct");
+
+                    b.Property<string>("DiscountSource")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("discount_source");
+
+                    b.Property<decimal>("FinalUnitPrice")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("final_unit_price");
+
+                    b.Property<Guid[]>("ItemIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("item_ids");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("line_total");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<Guid?>("ProductDiscountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_discount_id");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("product_name");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid?>("RetailPriceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("retail_price_id");
+
+                    b.Property<decimal>("RetailUnitPrice")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("retail_unit_price");
+
+                    b.Property<string>("SkuCode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("sku_code");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<string>("VariantName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("variant_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_order_lines");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_order_lines_order_id");
+
+                    b.HasIndex("SkuId")
+                        .HasDatabaseName("ix_order_lines_sku_id");
+
+                    b.ToTable("order_lines", "orders", t =>
+                        {
+                            t.HasCheckConstraint("ck_order_lines_amounts", "quantity > 0 AND final_unit_price >= 0 AND final_unit_price <= retail_unit_price AND line_total = final_unit_price * quantity");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.OrderStatusChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("from_status");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("note");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("to_status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_order_status_changes");
+
+                    b.HasIndex("OrderId", "OccurredAt")
+                        .HasDatabaseName("ix_order_status_changes_order_id_occurred_at");
+
+                    b.ToTable("order_status_changes", "orders");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.ResellerCustomer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("ResellerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reseller_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_reseller_customers");
+
+                    b.HasIndex("ResellerId")
+                        .HasDatabaseName("ix_reseller_customers_reseller_id");
+
+                    b.ToTable("reseller_customers", "orders");
+                });
+
             modelBuilder.Entity("Manoksha.Modules.Pricing.Domain.ProductResellerDiscount", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2908,6 +3264,113 @@ namespace Manoksha.Migrations.Migrations
                     b.ToTable("system_setting_changes", "settings");
                 });
 
+            modelBuilder.Entity("Manoksha.Modules.Wallet.Domain.DepositRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid?>("LedgerEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("ledger_entry_id");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("method");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("number");
+
+                    b.Property<Guid>("ProofFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("proof_file_id");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("reference");
+
+                    b.Property<Guid>("ResellerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reseller_id");
+
+                    b.Property<string>("ResellerNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("reseller_note");
+
+                    b.Property<string>("ReviewNote")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("review_note");
+
+                    b.Property<DateTimeOffset?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at");
+
+                    b.Property<Guid?>("ReviewedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewed_by");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<Guid>("SubmittedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submitted_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_deposit_requests");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_deposit_requests_number");
+
+                    b.HasIndex("ProofFileId")
+                        .HasDatabaseName("ix_deposit_requests_proof_file_id");
+
+                    b.HasIndex("Reference")
+                        .IsUnique()
+                        .HasDatabaseName("ux_deposit_reference_active")
+                        .HasFilter("status <> 'Rejected'");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_deposit_requests_status");
+
+                    b.HasIndex("ResellerId", "SubmittedAt")
+                        .HasDatabaseName("ix_deposit_requests_reseller_id_submitted_at");
+
+                    b.ToTable("deposit_requests", "wallet", t =>
+                        {
+                            t.HasCheckConstraint("ck_deposit_amount_positive", "amount > 0");
+                        });
+                });
+
             modelBuilder.Entity("Manoksha.Modules.Wallet.Domain.ResellerWallet", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2948,6 +3411,162 @@ namespace Manoksha.Migrations.Migrations
                     b.ToTable("wallets", "wallet", t =>
                         {
                             t.HasCheckConstraint("ck_wallets_balance_non_negative", "balance >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Wallet.Domain.WalletFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("content_type");
+
+                    b.Property<string>("ObjectKey")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("object_key");
+
+                    b.Property<string>("Sha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("sha256");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("uploaded_at");
+
+                    b.Property<Guid>("UploadedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("uploaded_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_files");
+
+                    b.ToTable("files", "wallet");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Wallet.Domain.WalletLedgerEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<decimal>("BalanceAfter")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("balance_after");
+
+                    b.Property<decimal>("BalanceBefore")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("balance_before");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid?>("DepositRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deposit_request_id");
+
+                    b.Property<string>("Direction")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("direction");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("OrderNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("order_number");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("ResellerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reseller_id");
+
+                    b.Property<Guid?>("ReversesEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reverses_entry_id");
+
+                    b.Property<long>("Seq")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("seq");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Seq"));
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("type");
+
+                    b.Property<Guid>("WalletId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("wallet_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_ledger_entries");
+
+                    b.HasIndex("DepositRequestId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_ledger_entries_deposit_request_id")
+                        .HasFilter("deposit_request_id IS NOT NULL");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_ledger_one_debit_per_order")
+                        .HasFilter("type = 'Debit' AND order_id IS NOT NULL");
+
+                    b.HasIndex("ReversesEntryId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_ledger_entries_reverses_entry_id")
+                        .HasFilter("reverses_entry_id IS NOT NULL");
+
+                    b.HasIndex("WalletId")
+                        .HasDatabaseName("ix_ledger_entries_wallet_id");
+
+                    b.HasIndex("ResellerId", "Seq")
+                        .HasDatabaseName("ix_ledger_entries_reseller_id_seq");
+
+                    b.ToTable("ledger_entries", "wallet", t =>
+                        {
+                            t.HasCheckConstraint("ck_ledger_amount_positive", "amount > 0");
+
+                            t.HasCheckConstraint("ck_ledger_balance_after_non_negative", "balance_after >= 0");
+
+                            t.HasCheckConstraint("ck_ledger_balance_arithmetic", "(direction = 'Credit' AND balance_after = balance_before + amount) OR (direction = 'Debit' AND balance_after = balance_before - amount)");
                         });
                 });
 
@@ -3370,6 +3989,150 @@ namespace Manoksha.Migrations.Migrations
                         .HasConstraintName("fk_transfer_line_items_transfer_lines_transfer_line_id");
                 });
 
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.Order", b =>
+                {
+                    b.OwnsOne("Manoksha.Modules.Orders.Domain.DeliveryDetails", "Delivery", b1 =>
+                        {
+                            b1.Property<Guid>("OrderId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<string>("AddressLine")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("delivery_address_line");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("delivery_city");
+
+                            b1.Property<string>("Email")
+                                .HasMaxLength(254)
+                                .HasColumnType("character varying(254)")
+                                .HasColumnName("delivery_email");
+
+                            b1.Property<string>("Mobile")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("character varying(20)")
+                                .HasColumnName("delivery_mobile");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("delivery_name");
+
+                            b1.Property<string>("Pin")
+                                .IsRequired()
+                                .HasMaxLength(6)
+                                .HasColumnType("character varying(6)")
+                                .HasColumnName("delivery_pin");
+
+                            b1.Property<string>("State")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("delivery_state");
+
+                            b1.HasKey("OrderId");
+
+                            b1.ToTable("orders", "orders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId")
+                                .HasConstraintName("fk_orders_orders_id");
+                        });
+
+                    b.Navigation("Delivery")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.OrderLine", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Orders.Domain.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_order_lines_orders_order_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.OrderStatusChange", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Orders.Domain.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_order_status_changes_orders_order_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.ResellerCustomer", b =>
+                {
+                    b.OwnsOne("Manoksha.Modules.Orders.Domain.DeliveryDetails", "Details", b1 =>
+                        {
+                            b1.Property<Guid>("ResellerCustomerId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<string>("AddressLine")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("address_line");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("city");
+
+                            b1.Property<string>("Email")
+                                .HasMaxLength(254)
+                                .HasColumnType("character varying(254)")
+                                .HasColumnName("email");
+
+                            b1.Property<string>("Mobile")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("character varying(20)")
+                                .HasColumnName("mobile");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("name");
+
+                            b1.Property<string>("Pin")
+                                .IsRequired()
+                                .HasMaxLength(6)
+                                .HasColumnType("character varying(6)")
+                                .HasColumnName("pin");
+
+                            b1.Property<string>("State")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("state");
+
+                            b1.HasKey("ResellerCustomerId");
+
+                            b1.ToTable("reseller_customers", "orders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ResellerCustomerId")
+                                .HasConstraintName("fk_reseller_customers_reseller_customers_id");
+                        });
+
+                    b.Navigation("Details")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.GoodsReceipt", b =>
                 {
                     b.HasOne("Manoksha.Modules.Purchasing.Domain.PurchaseOrder", null)
@@ -3502,6 +4265,26 @@ namespace Manoksha.Migrations.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_reseller_status_changes_resellers_reseller_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Wallet.Domain.DepositRequest", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Wallet.Domain.WalletFile", null)
+                        .WithMany()
+                        .HasForeignKey("ProofFileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_deposit_requests_wallet_file_proof_file_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Wallet.Domain.WalletLedgerEntry", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Wallet.Domain.ResellerWallet", null)
+                        .WithMany()
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_ledger_entries_wallets_wallet_id");
                 });
 
             modelBuilder.Entity("Manoksha.Modules.Branches.Domain.FulfillmentPriorityVersion", b =>

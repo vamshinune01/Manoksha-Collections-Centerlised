@@ -21,6 +21,7 @@ public sealed class InventoryModule : IModule
         services.AddScoped<StockEngine>();
         services.AddScoped<InventoryAccess>();
         services.AddScoped<IStockReceiver, StockReceiver>();
+        services.AddScoped<IStockAllocator, StockAllocator>();
         services.AddScoped<TransferService>();
         services.AddScoped<DiscrepancyService>();
         services.AddScoped<CountService>();
