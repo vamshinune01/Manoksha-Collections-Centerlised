@@ -219,6 +219,25 @@ internal sealed partial class ProductService(
         }, ct);
     }
 
+    /// <summary>SKU picker: product name, SKU code or barcode.</summary>
+    public async Task<IReadOnlyList<SkuInfo>> SearchSkusAsync(string? q, int? limit, CancellationToken ct)
+    {
+        var take = Math.Clamp(limit ?? 20, 1, 50);
+        var skus = db.Set<Sku>().AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = q.Trim();
+            var upper = term.ToUpperInvariant();
+            var pattern = $"%{term.Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal)}%";
+            var byBarcode = db.Set<Barcode>().Where(b => b.Code == term).Select(b => b.SkuId);
+            var byName = db.Set<Product>().Where(p => EF.Functions.ILike(p.Name, pattern)).Select(p => p.Id);
+            skus = skus.Where(s => s.Code.StartsWith(upper) || byBarcode.Contains(s.Id) || byName.Contains(s.ProductId));
+        }
+        var ids = await skus.OrderBy(s => s.Code).Take(take).Select(s => s.Id).ToListAsync(ct);
+        var found = await FindSkusAsync(ids, ct);
+        return ids.Where(found.ContainsKey).Select(id => found[id]).ToList();
+    }
+
     public async Task<SkuInfo?> FindSkuAsync(Guid skuId, CancellationToken cancellationToken = default) =>
         (await FindSkusAsync([skuId], cancellationToken)).GetValueOrDefault(skuId);
 

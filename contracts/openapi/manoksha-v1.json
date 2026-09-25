@@ -1371,6 +1371,46 @@
         }
       }
     },
+    "/api/v1/admin/catalog/skus": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "SearchSkus",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SkuInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/employees": {
       "get": {
         "tags": [
@@ -1821,6 +1861,1574 @@
         }
       }
     },
+    "/api/v1/admin/inventory/stock": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetStock",
+        "parameters": [
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "skuId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StockRowDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/items": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetItems",
+        "parameters": [
+          {
+            "name": "skuId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/movements": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetMovements",
+        "parameters": [
+          {
+            "name": "skuId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "reference",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "beforeSeq",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MovementDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/transfers": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ListTransfers",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "CreateTransfer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransferRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/transfers/{id}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetTransfer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/transfers/{id}/approve": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ApproveTransfer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/transfers/{id}/reject": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "RejectTransfer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/transfers/{id}/prepare": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "PrepareTransfer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/transfers/{id}/dispatch": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "DispatchTransfer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/transfers/{id}/receive": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ReceiveTransfer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/transfers/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "CancelTransfer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/counts": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ListCounts",
+        "parameters": [
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CountDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "CreateCount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/counts/{id}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetCount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/counts/{id}/lines": {
+      "put": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "RecordCounts",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordCountsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/counts/{id}/submit": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "SubmitCount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/stock": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetStock_Pos",
+        "parameters": [
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "skuId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StockRowDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/items": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetItems_Pos",
+        "parameters": [
+          {
+            "name": "skuId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/movements": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetMovements_Pos",
+        "parameters": [
+          {
+            "name": "skuId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "reference",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "beforeSeq",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MovementDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/transfers": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ListTransfers_Pos",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "CreateTransfer_Pos",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransferRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/transfers/{id}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetTransfer_Pos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/transfers/{id}/approve": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ApproveTransfer_Pos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/transfers/{id}/reject": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "RejectTransfer_Pos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/transfers/{id}/prepare": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "PrepareTransfer_Pos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/transfers/{id}/dispatch": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "DispatchTransfer_Pos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/transfers/{id}/receive": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ReceiveTransfer_Pos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/transfers/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "CancelTransfer_Pos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/counts": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ListCounts_Pos",
+        "parameters": [
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CountDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "CreateCount_Pos",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/counts/{id}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetCount_Pos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/counts/{id}/lines": {
+      "put": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "RecordCounts_Pos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordCountsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pos/inventory/counts/{id}/submit": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "SubmitCount_Pos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/adjustments": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ListAdjustments",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdjustmentDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "RequestAdjustment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAdjustmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdjustmentDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/adjustments/{id}/approve": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ApproveAdjustment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveAdjustmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdjustmentDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/adjustments/{id}/reject": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "RejectAdjustment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdjustmentDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/discrepancies": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ListDiscrepancies",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DiscrepancyDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/discrepancies/{id}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "GetDiscrepancy",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscrepancyDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/discrepancies/{id}/resolve": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "operationId": "ResolveDiscrepancy",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveDiscrepancyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscrepancyDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/pos/scan/{code}": {
       "get": {
         "tags": [
@@ -1843,7 +3451,512 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScanResultDto"
+                  "$ref": "#/components/schemas/PosScanDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/purchasing/suppliers": {
+      "get": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "ListSuppliers",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupplierDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "CreateSupplier",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSupplierRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/purchasing/suppliers/{id}": {
+      "get": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "GetSupplier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "UpdateSupplier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSupplierRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/purchasing/purchase-orders": {
+      "get": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "ListPurchaseOrders",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PurchaseOrderDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "CreatePurchaseOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePurchaseOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/purchasing/purchase-orders/{id}": {
+      "get": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "GetPurchaseOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "UpdatePurchaseOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePurchaseOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/purchasing/purchase-orders/{id}/lines": {
+      "post": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "AmendPurchaseOrderLine",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmendLineRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/purchasing/purchase-orders/{id}/issue": {
+      "post": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "IssuePurchaseOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PoReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/purchasing/purchase-orders/{id}/close": {
+      "post": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "ClosePurchaseOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PoReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/purchasing/purchase-orders/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "CancelPurchaseOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PoReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/purchasing/purchase-orders/{id}/receipts": {
+      "post": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "RecordGoodsReceipt",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGoodsReceiptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReceiptDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/purchasing/goods-receipts": {
+      "get": {
+        "tags": [
+          "Purchasing"
+        ],
+        "operationId": "ListGoodsReceipts",
+        "parameters": [
+          {
+            "name": "purchaseOrderId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GoodsReceiptDto"
+                  }
                 }
               }
             }
@@ -2319,6 +4432,165 @@
         },
         "additionalProperties": false
       },
+      "AdjustmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "productName": {
+            "type": "string",
+            "nullable": true
+          },
+          "kind": {
+            "type": "string",
+            "nullable": true
+          },
+          "fromStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "toStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "reasonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "discrepancyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "decidedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "decidedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "decisionNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "valueAtCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "estimatedValue": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "requiresOwner": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AmendLineRequest": {
+        "type": "object",
+        "properties": {
+          "lineId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "orderedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "expectedUnitCost": {
+            "type": "number",
+            "format": "double"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApproveAdjustmentRequest": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "AssignRoleRequest": {
         "type": "object",
         "properties": {
@@ -2567,6 +4839,24 @@
         },
         "additionalProperties": false
       },
+      "BranchAvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "available": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "BranchDto": {
         "type": "object",
         "properties": {
@@ -2713,6 +5003,167 @@
         },
         "additionalProperties": false
       },
+      "CountDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountLineDto"
+            },
+            "nullable": true
+          },
+          "discrepancyIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CountLineDto": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "productName": {
+            "type": "string",
+            "nullable": true
+          },
+          "variantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "countedQty": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "systemQty": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "variance": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CountLineRequest": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "countedQty": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateAdjustmentRequest": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "nullable": true
+          },
+          "fromStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "toStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "itemIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "reasonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "discrepancyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateAttributeRequest": {
         "type": "object",
         "properties": {
@@ -2759,6 +5210,28 @@
         },
         "additionalProperties": false
       },
+      "CreateCountRequest": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateEmployeeRequest": {
         "type": "object",
         "properties": {
@@ -2790,6 +5263,32 @@
           },
           "reason": {
             "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateGoodsReceiptRequest": {
+        "type": "object",
+        "properties": {
+          "supplierInvoiceRef": {
+            "type": "string",
+            "nullable": true
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReceiptLineRequest"
+            },
             "nullable": true
           }
         },
@@ -2857,6 +5356,44 @@
         },
         "additionalProperties": false
       },
+      "CreatePurchaseOrderRequest": {
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receivingBranchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "supplierReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PoLineRequest"
+            },
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateRoleRequest": {
         "type": "object",
         "properties": {
@@ -2879,6 +5416,31 @@
             "type": "array",
             "items": {
               "type": "string"
+            },
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateTransferRequest": {
+        "type": "object",
+        "properties": {
+          "sourceBranchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "destinationBranchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferLineRequest"
             },
             "nullable": true
           },
@@ -2927,6 +5489,107 @@
           },
           "email": {
             "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DecisionRequest": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DiscrepancyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "sourceType": {
+            "type": "string",
+            "nullable": true
+          },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "productName": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "actualQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "variance": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "outstandingQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "missingItemIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolution": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolutionNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -3031,6 +5694,126 @@
         },
         "additionalProperties": false
       },
+      "GoodsReceiptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "purchaseOrderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purchaseOrderNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "supplierId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "supplierName": {
+            "type": "string",
+            "nullable": true
+          },
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "supplierInvoiceRef": {
+            "type": "string",
+            "nullable": true
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "receivedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GoodsReceiptLineDto"
+            },
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReceivedItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GoodsReceiptLineDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "poLineId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "productName": {
+            "type": "string",
+            "nullable": true
+          },
+          "variantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "receivedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "damagedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "acceptedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "InternalLoginRequest": {
         "type": "object",
         "properties": {
@@ -3045,6 +5828,53 @@
           "client": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InventoryReasonRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "barcode": {
+            "type": "string",
+            "nullable": true
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "writtenOff": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -3082,6 +5912,42 @@
           },
           "isReprint": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LineQuantityRequest": {
+        "type": "object",
+        "properties": {
+          "lineId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "itemIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LinesRequest": {
+        "type": "object",
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LineQuantityRequest"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -3227,6 +6093,72 @@
         },
         "additionalProperties": false
       },
+      "MovementDto": {
+        "type": "object",
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fromBranchId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "toBranchId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "fromStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "toStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "movementType": {
+            "type": "string",
+            "nullable": true
+          },
+          "referenceType": {
+            "type": "string",
+            "nullable": true
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "actorUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "MyAttendanceDto": {
         "type": "object",
         "properties": {
@@ -3317,6 +6249,169 @@
           },
           "ownerOnly": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PoLineDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "productName": {
+            "type": "string",
+            "nullable": true
+          },
+          "variantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingMode": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "expectedUnitCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "receivedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "damagedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "remainingQty": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PoLineRequest": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "expectedUnitCost": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PoReasonRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PosScanDto": {
+        "type": "object",
+        "properties": {
+          "barcode": {
+            "type": "string",
+            "nullable": true
+          },
+          "barcodeKind": {
+            "type": "string",
+            "nullable": true
+          },
+          "inventoryItemId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "itemStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemBranchId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "itemBranchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "variantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "variantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScanAttributeDto"
+            },
+            "nullable": true
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productName": {
+            "type": "string",
+            "nullable": true
+          },
+          "productStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingMode": {
+            "type": "string",
+            "nullable": true
+          },
+          "availableForRetail": {
+            "type": "boolean"
+          },
+          "availableForReseller": {
+            "type": "boolean"
+          },
+          "availability": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BranchAvailabilityDto"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -3505,6 +6600,83 @@
         },
         "additionalProperties": false
       },
+      "PurchaseOrderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "supplierId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "supplierName": {
+            "type": "string",
+            "nullable": true
+          },
+          "receivingBranchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receivingBranchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "supplierReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "closeReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedTotal": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PoLineDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ReasonRequest": {
         "type": "object",
         "properties": {
@@ -3529,6 +6701,67 @@
         },
         "additionalProperties": false
       },
+      "ReceiptLineRequest": {
+        "type": "object",
+        "properties": {
+          "poLineId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receivedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "damagedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitCost": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReceivedItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "barcodeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "barcode": {
+            "type": "string",
+            "nullable": true
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RecordCountsRequest": {
+        "type": "object",
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountLineRequest"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "RefreshRequest": {
         "type": "object",
         "properties": {
@@ -3547,6 +6780,33 @@
             "nullable": true
           },
           "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResolveDiscrepancyRequest": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "itemIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "notes": {
             "type": "string",
             "nullable": true
           }
@@ -3661,6 +6921,57 @@
             "type": "boolean"
           },
           "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SaveSupplierRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactName": {
+            "type": "string",
+            "nullable": true
+          },
+          "mobile": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "gstin": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScanAttributeDto": {
+        "type": "object",
+        "properties": {
+          "attributeName": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
             "type": "string",
             "nullable": true
           }
@@ -3783,6 +7094,144 @@
         },
         "additionalProperties": false
       },
+      "SkuInfo": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "variantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "variantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "variantActive": {
+            "type": "boolean"
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productName": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingMode": {
+            "type": "string",
+            "nullable": true
+          },
+          "productStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "availableForRetail": {
+            "type": "boolean"
+          },
+          "availableForReseller": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StockRowDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "productName": {
+            "type": "string",
+            "nullable": true
+          },
+          "variantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingMode": {
+            "type": "string",
+            "nullable": true
+          },
+          "byStatus": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "available": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "onHand": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SupplierDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactName": {
+            "type": "string",
+            "nullable": true
+          },
+          "mobile": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "gstin": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "TokenPair": {
         "type": "object",
         "properties": {
@@ -3801,6 +7250,183 @@
           "refreshTokenExpiresAt": {
             "type": "string",
             "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "sourceBranchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceBranchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "destinationBranchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "destinationBranchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "approvedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "approvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ownerSelfAuthorized": {
+            "type": "boolean"
+          },
+          "decisionNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "preparedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dispatchedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferLineDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "barcode": {
+            "type": "string",
+            "nullable": true
+          },
+          "outcome": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferLineDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "productName": {
+            "type": "string",
+            "nullable": true
+          },
+          "variantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "serialized": {
+            "type": "boolean"
+          },
+          "requestedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "preparedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dispatchedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "receivedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "resolvedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "outstandingQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferLineRequest": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -3881,6 +7507,37 @@
           },
           "availableForReseller": {
             "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdatePurchaseOrderRequest": {
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receivingBranchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "supplierReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
           },
           "reason": {
             "type": "string",

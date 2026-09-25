@@ -49,8 +49,7 @@ internal static class CatalogEndpoints
             .RequirePermission(Permissions.Catalog.BarcodesPrint).WithName("PrintBarcodeLabels");
         admin.MapGet("/barcodes/lookup/{code}", (string code, BarcodeService s, CancellationToken ct) => s.LookupAsync(code, ct)).RequirePermission(view).WithName("LookupBarcode");
 
-        // POS / mobile scanning.
-        endpoints.MapGet("/api/v1/pos/scan/{code}", (string code, BarcodeService s, CancellationToken ct) => s.LookupAsync(code, ct))
-            .WithTags("POS").RequireAudience(Audiences.Pos).RequirePermission(view).WithName("PosScan");
+        admin.MapGet("/skus", (string? q, int? limit, ProductService s, CancellationToken ct) => s.SearchSkusAsync(q, limit, ct))
+            .RequirePermission(view).WithName("SearchSkus");
     }
 }

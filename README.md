@@ -71,5 +71,6 @@ npm run api-client:generate                                             # …the
 |---|---|---|
 | 1 | Foundation: solution/modules, PostgreSQL + migrations, identity (internal login, MFA, mobile OTP), RBAC with branch scope, audit, settings, outbox, idempotency, admin-web shell, CI | **Done** |
 | 2 | Branches, fulfillment priority, employees, attendance, catalog (configurable variant attributes, SKUs, barcodes, label printing) | **Done** |
-| 3 | Suppliers, purchasing, goods receipt, FIFO inventory, transfers | Next |
-| 4–10 | See design §22 | Planned |
+| 3 | Suppliers, purchase orders (amend/close), goods receipt, hybrid stock (pieces + quantities), FIFO cost layers per SKU per branch, transfers, blind counts, adjustments with value-based approval, discrepancies | **Done** |
+| 4 | Pricing, reseller onboarding, commercial terms | Next |
+| 5–10 | See design §22 | Planned |

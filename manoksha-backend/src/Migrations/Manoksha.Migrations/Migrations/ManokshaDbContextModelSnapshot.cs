@@ -22,11 +22,25 @@ namespace Manoksha.Migrations.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.HasSequence("adjustment_seq", "inventory");
+
+            modelBuilder.HasSequence("count_seq", "inventory");
+
+            modelBuilder.HasSequence("discrepancy_seq", "inventory");
+
             modelBuilder.HasSequence("employee_code_seq", "employees");
+
+            modelBuilder.HasSequence("grn_seq", "purchasing");
 
             modelBuilder.HasSequence("internal_barcode_seq", "catalog");
 
+            modelBuilder.HasSequence("po_seq", "purchasing");
+
             modelBuilder.HasSequence("sku_code_seq", "catalog");
+
+            modelBuilder.HasSequence("supplier_seq", "purchasing");
+
+            modelBuilder.HasSequence("transfer_seq", "inventory");
 
             modelBuilder.Entity("Manoksha.Modules.Audit.Domain.AuditLogEntry", b =>
                 {
@@ -1365,6 +1379,1179 @@ namespace Manoksha.Migrations.Migrations
                     b.ToTable("user_role_assignments", "identity");
                 });
 
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.CostLayer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("LayerDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("layer_date");
+
+                    b.Property<Guid?>("OriginLayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("origin_layer_id");
+
+                    b.Property<int>("OriginalQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("original_qty");
+
+                    b.Property<int>("RemainingQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("remaining_qty");
+
+                    b.Property<long>("Seq")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("seq");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Seq"));
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_id");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("source_type");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_cost");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cost_layers");
+
+                    b.HasIndex("SkuId", "BranchId", "LayerDate", "Seq")
+                        .HasDatabaseName("ix_cost_layers_fifo")
+                        .HasFilter("remaining_qty > 0");
+
+                    b.ToTable("cost_layers", "inventory", t =>
+                        {
+                            t.HasCheckConstraint("ck_cost_layers_remaining", "remaining_qty >= 0 AND remaining_qty <= original_qty");
+
+                            t.HasCheckConstraint("ck_cost_layers_unit_cost", "unit_cost >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.CostLayerConsumption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("LayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("layer_id");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("ReferenceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reference_id");
+
+                    b.Property<string>("ReferenceType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("reference_type");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_cost");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cost_layer_consumptions");
+
+                    b.HasIndex("LayerId")
+                        .HasDatabaseName("ix_cost_layer_consumptions_layer_id");
+
+                    b.HasIndex("ReferenceType", "ReferenceId")
+                        .HasDatabaseName("ix_cost_layer_consumptions_reference_type_reference_id");
+
+                    b.ToTable("cost_layer_consumptions", "inventory");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.InventoryAdjustment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decided_at");
+
+                    b.Property<Guid?>("DecidedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("decided_by");
+
+                    b.Property<string>("DecisionNote")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("decision_note");
+
+                    b.Property<Guid?>("DiscrepancyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("discrepancy_id");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("from_status");
+
+                    b.Property<Guid[]>("ItemIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("item_ids");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("number");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("ReasonCode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("reason_code");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("requested_at");
+
+                    b.Property<Guid>("RequestedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requested_by");
+
+                    b.Property<bool>("RequiredOwner")
+                        .HasColumnType("boolean")
+                        .HasColumnName("required_owner");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("ToStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("to_status");
+
+                    b.Property<decimal?>("UnitCost")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_cost");
+
+                    b.Property<decimal?>("ValueAtCost")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("value_at_cost");
+
+                    b.HasKey("Id")
+                        .HasName("pk_adjustments");
+
+                    b.HasIndex("DiscrepancyId")
+                        .HasDatabaseName("ix_adjustments_discrepancy_id");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_adjustments_number");
+
+                    b.HasIndex("BranchId", "Status")
+                        .HasDatabaseName("ix_adjustments_branch_id_status");
+
+                    b.ToTable("adjustments", "inventory");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.InventoryDiscrepancy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("ActualQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("actual_qty");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("ExpectedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("expected_qty");
+
+                    b.Property<Guid[]>("MissingItemIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("missing_item_ids");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("number");
+
+                    b.Property<string>("Resolution")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("resolution");
+
+                    b.Property<string>("ResolutionNotes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("resolution_notes");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("resolved_at");
+
+                    b.Property<Guid?>("ResolvedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resolved_by");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_id");
+
+                    b.Property<string>("SourceNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("source_number");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("source_type");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_discrepancies");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_discrepancies_number");
+
+                    b.HasIndex("BranchId", "Status")
+                        .HasDatabaseName("ix_discrepancies_branch_id_status");
+
+                    b.HasIndex("SourceType", "SourceId")
+                        .HasDatabaseName("ix_discrepancies_source_type_source_id");
+
+                    b.ToTable("discrepancies", "inventory");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.InventoryItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("barcode");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("received_at");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_id");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("source_type");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<DateTimeOffset?>("WrittenOffAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("written_off_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_inventory_items");
+
+                    b.HasIndex("Barcode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_inventory_items_barcode");
+
+                    b.HasIndex("SkuId", "BranchId")
+                        .HasDatabaseName("ix_inventory_items_available")
+                        .HasFilter("status = 'Available'");
+
+                    b.HasIndex("SkuId", "BranchId", "Status")
+                        .HasDatabaseName("ix_inventory_items_sku_id_branch_id_status");
+
+                    b.ToTable("inventory_items", "inventory");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.InventoryMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<Guid?>("FromBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("from_branch_id");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("from_status");
+
+                    b.Property<Guid?>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<string>("MovementType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("movement_type");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("ReferenceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reference_id");
+
+                    b.Property<string>("ReferenceNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("reference_number");
+
+                    b.Property<string>("ReferenceType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("reference_type");
+
+                    b.Property<long>("Seq")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("seq");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Seq"));
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<Guid?>("ToBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("to_branch_id");
+
+                    b.Property<string>("ToStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("to_status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_inventory_movements");
+
+                    b.HasIndex("ItemId")
+                        .HasDatabaseName("ix_inventory_movements_item_id");
+
+                    b.HasIndex("ReferenceType", "ReferenceId")
+                        .HasDatabaseName("ix_inventory_movements_reference_type_reference_id");
+
+                    b.HasIndex("SkuId", "Seq")
+                        .HasDatabaseName("ix_inventory_movements_sku_id_seq");
+
+                    b.ToTable("inventory_movements", "inventory");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.StockCount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("number");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<Guid?>("SubmittedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submitted_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stock_counts");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_stock_counts_number");
+
+                    b.HasIndex("BranchId", "Status")
+                        .HasDatabaseName("ix_stock_counts_branch_id_status");
+
+                    b.ToTable("stock_counts", "inventory");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.StockCountLine", b =>
+                {
+                    b.Property<Guid>("CountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("count_id");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<int?>("CountedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("counted_qty");
+
+                    b.Property<int?>("SystemQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("system_qty");
+
+                    b.HasKey("CountId", "SkuId")
+                        .HasName("pk_stock_count_lines");
+
+                    b.ToTable("stock_count_lines", "inventory");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.StockLevel", b =>
+                {
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("SkuId", "BranchId", "Status")
+                        .HasName("pk_stock_levels");
+
+                    b.HasIndex("BranchId", "Status")
+                        .HasDatabaseName("ix_stock_levels_branch_id_status");
+
+                    b.ToTable("stock_levels", "inventory", t =>
+                        {
+                            t.HasCheckConstraint("ck_stock_levels_quantity_non_negative", "quantity >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.Transfer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("approved_at");
+
+                    b.Property<Guid?>("ApprovedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("approved_by");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cancelled_at");
+
+                    b.Property<Guid?>("CancelledBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cancelled_by");
+
+                    b.Property<string>("DecisionNote")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("decision_note");
+
+                    b.Property<Guid>("DestinationBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("destination_branch_id");
+
+                    b.Property<DateTimeOffset?>("DispatchedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("dispatched_at");
+
+                    b.Property<Guid?>("DispatchedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("dispatched_by");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("number");
+
+                    b.Property<bool>("OwnerSelfAuthorized")
+                        .HasColumnType("boolean")
+                        .HasColumnName("owner_self_authorized");
+
+                    b.Property<DateTimeOffset?>("PreparedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("prepared_at");
+
+                    b.Property<Guid?>("PreparedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("prepared_by");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("reason");
+
+                    b.Property<DateTimeOffset?>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("received_at");
+
+                    b.Property<Guid?>("ReceivedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("received_by");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("requested_at");
+
+                    b.Property<Guid>("RequestedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requested_by");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid>("SourceBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_branch_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_transfers");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_transfers_number");
+
+                    b.HasIndex("DestinationBranchId", "Status")
+                        .HasDatabaseName("ix_transfers_destination_branch_id_status");
+
+                    b.HasIndex("SourceBranchId", "Status")
+                        .HasDatabaseName("ix_transfers_source_branch_id_status");
+
+                    b.ToTable("transfers", "inventory");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.TransferCostAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("LayerDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("layer_date");
+
+                    b.Property<long>("LayerSeq")
+                        .HasColumnType("bigint")
+                        .HasColumnName("layer_seq");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<int>("SettledQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("settled_qty");
+
+                    b.Property<Guid>("SourceLayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_layer_id");
+
+                    b.Property<Guid>("TransferLineId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transfer_line_id");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_cost");
+
+                    b.HasKey("Id")
+                        .HasName("pk_transfer_cost_allocations");
+
+                    b.HasIndex("TransferLineId")
+                        .HasDatabaseName("ix_transfer_cost_allocations_transfer_line_id");
+
+                    b.ToTable("transfer_cost_allocations", "inventory", t =>
+                        {
+                            t.HasCheckConstraint("ck_transfer_alloc_settled", "settled_qty >= 0 AND settled_qty <= quantity");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.TransferLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("DispatchedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("dispatched_qty");
+
+                    b.Property<int>("PreparedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("prepared_qty");
+
+                    b.Property<int>("ReceivedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("received_qty");
+
+                    b.Property<int>("RequestedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("requested_qty");
+
+                    b.Property<int>("ResolvedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("resolved_qty");
+
+                    b.Property<bool>("Serialized")
+                        .HasColumnType("boolean")
+                        .HasColumnName("serialized");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<Guid>("TransferId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transfer_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_transfer_lines");
+
+                    b.HasIndex("TransferId", "SkuId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_transfer_lines_transfer_id_sku_id");
+
+                    b.ToTable("transfer_lines", "inventory");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.TransferLineItem", b =>
+                {
+                    b.Property<Guid>("TransferLineId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transfer_line_id");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<string>("Outcome")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("outcome");
+
+                    b.HasKey("TransferLineId", "ItemId")
+                        .HasName("pk_transfer_line_items");
+
+                    b.HasIndex("ItemId")
+                        .HasDatabaseName("ix_transfer_line_items_item_id");
+
+                    b.ToTable("transfer_line_items", "inventory");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.GoodsReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("number");
+
+                    b.Property<Guid>("PurchaseOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("purchase_order_id");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("received_at");
+
+                    b.Property<Guid>("ReceivedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("received_by");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("supplier_id");
+
+                    b.Property<string>("SupplierInvoiceRef")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("supplier_invoice_ref");
+
+                    b.HasKey("Id")
+                        .HasName("pk_goods_receipts");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_goods_receipts_number");
+
+                    b.HasIndex("PurchaseOrderId")
+                        .HasDatabaseName("ix_goods_receipts_purchase_order_id");
+
+                    b.HasIndex("BranchId", "ReceivedAt")
+                        .HasDatabaseName("ix_goods_receipts_branch_id_received_at");
+
+                    b.ToTable("goods_receipts", "purchasing");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.GoodsReceiptLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("DamagedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("damaged_qty");
+
+                    b.Property<Guid>("GoodsReceiptId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("goods_receipt_id");
+
+                    b.Property<Guid>("PurchaseOrderLineId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("purchase_order_line_id");
+
+                    b.Property<int>("ReceivedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("received_qty");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_cost");
+
+                    b.HasKey("Id")
+                        .HasName("pk_goods_receipt_lines");
+
+                    b.HasIndex("GoodsReceiptId")
+                        .HasDatabaseName("ix_goods_receipt_lines_goods_receipt_id");
+
+                    b.HasIndex("PurchaseOrderLineId")
+                        .HasDatabaseName("ix_goods_receipt_lines_purchase_order_line_id");
+
+                    b.ToTable("goods_receipt_lines", "purchasing");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.PurchaseOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CloseReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("close_reason");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<Guid?>("ClosedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("closed_by");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateOnly?>("ExpectedDate")
+                        .HasColumnType("date")
+                        .HasColumnName("expected_date");
+
+                    b.Property<DateTimeOffset?>("IssuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issued_at");
+
+                    b.Property<Guid?>("IssuedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("issued_by");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("number");
+
+                    b.Property<Guid>("ReceivingBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("receiving_branch_id");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("supplier_id");
+
+                    b.Property<string>("SupplierReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("supplier_reference");
+
+                    b.HasKey("Id")
+                        .HasName("pk_purchase_orders");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_purchase_orders_number");
+
+                    b.HasIndex("SupplierId")
+                        .HasDatabaseName("ix_purchase_orders_supplier_id");
+
+                    b.HasIndex("ReceivingBranchId", "Status")
+                        .HasDatabaseName("ix_purchase_orders_receiving_branch_id_status");
+
+                    b.ToTable("purchase_orders", "purchasing");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.PurchaseOrderLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("DamagedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("damaged_qty");
+
+                    b.Property<decimal>("ExpectedUnitCost")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("expected_unit_cost");
+
+                    b.Property<int>("OrderedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("ordered_qty");
+
+                    b.Property<Guid>("PurchaseOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("purchase_order_id");
+
+                    b.Property<int>("ReceivedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("received_qty");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_purchase_order_lines");
+
+                    b.HasIndex("PurchaseOrderId", "SkuId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_purchase_order_lines_purchase_order_id_sku_id");
+
+                    b.ToTable("purchase_order_lines", "purchasing", t =>
+                        {
+                            t.HasCheckConstraint("ck_po_lines_received", "received_qty >= 0 AND received_qty <= ordered_qty AND damaged_qty >= 0 AND damaged_qty <= received_qty");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.Supplier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("address");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("code");
+
+                    b.Property<string>("ContactName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("contact_name");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Gstin")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("gstin");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("MobileE164")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("mobile_e164");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_suppliers");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_suppliers_code");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_suppliers_name");
+
+                    b.ToTable("suppliers", "purchasing");
+                });
+
             modelBuilder.Entity("Manoksha.Modules.Settings.Domain.SystemSetting", b =>
                 {
                     b.Property<string>("Key")
@@ -1801,6 +2988,119 @@ namespace Manoksha.Migrations.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_user_role_assignments_users_user_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.CostLayerConsumption", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Inventory.Domain.CostLayer", null)
+                        .WithMany()
+                        .HasForeignKey("LayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cost_layer_consumptions_cost_layers_layer_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.InventoryAdjustment", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Inventory.Domain.InventoryDiscrepancy", null)
+                        .WithMany()
+                        .HasForeignKey("DiscrepancyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_adjustments_discrepancies_discrepancy_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.StockCountLine", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Inventory.Domain.StockCount", null)
+                        .WithMany()
+                        .HasForeignKey("CountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_count_lines_stock_counts_count_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.TransferCostAllocation", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Inventory.Domain.TransferLine", null)
+                        .WithMany()
+                        .HasForeignKey("TransferLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_transfer_cost_allocations_transfer_lines_transfer_line_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.TransferLine", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Inventory.Domain.Transfer", null)
+                        .WithMany()
+                        .HasForeignKey("TransferId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_transfer_lines_transfers_transfer_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Inventory.Domain.TransferLineItem", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Inventory.Domain.InventoryItem", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_transfer_line_items_inventory_items_item_id");
+
+                    b.HasOne("Manoksha.Modules.Inventory.Domain.TransferLine", null)
+                        .WithMany()
+                        .HasForeignKey("TransferLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_transfer_line_items_transfer_lines_transfer_line_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.GoodsReceipt", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Purchasing.Domain.PurchaseOrder", null)
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_goods_receipts_purchase_orders_purchase_order_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.GoodsReceiptLine", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Purchasing.Domain.GoodsReceipt", null)
+                        .WithMany()
+                        .HasForeignKey("GoodsReceiptId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_goods_receipt_lines_goods_receipts_goods_receipt_id");
+
+                    b.HasOne("Manoksha.Modules.Purchasing.Domain.PurchaseOrderLine", null)
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_goods_receipt_lines_purchase_order_lines_purchase_order_lin");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.PurchaseOrder", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Purchasing.Domain.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_orders_suppliers_supplier_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.PurchaseOrderLine", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Purchasing.Domain.PurchaseOrder", null)
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_order_lines_purchase_orders_purchase_order_id");
                 });
 
             modelBuilder.Entity("Manoksha.Modules.Branches.Domain.FulfillmentPriorityVersion", b =>

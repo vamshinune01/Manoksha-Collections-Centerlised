@@ -548,6 +548,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/catalog/skus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SearchSkus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/employees": {
         parameters: {
             query?: never;
@@ -756,6 +772,582 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/inventory/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetStock"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetMovements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListTransfers"];
+        put?: never;
+        post: operations["CreateTransfer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetTransfer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ApproveTransfer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RejectTransfer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers/{id}/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PrepareTransfer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers/{id}/dispatch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DispatchTransfer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers/{id}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ReceiveTransfer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CancelTransfer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListCounts"];
+        put?: never;
+        post: operations["CreateCount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/counts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/counts/{id}/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["RecordCounts"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/counts/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SubmitCount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetStock_Pos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetItems_Pos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetMovements_Pos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListTransfers_Pos"];
+        put?: never;
+        post: operations["CreateTransfer_Pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/transfers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetTransfer_Pos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/transfers/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ApproveTransfer_Pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/transfers/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RejectTransfer_Pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/transfers/{id}/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PrepareTransfer_Pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/transfers/{id}/dispatch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["DispatchTransfer_Pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/transfers/{id}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ReceiveTransfer_Pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/transfers/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CancelTransfer_Pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListCounts_Pos"];
+        put?: never;
+        post: operations["CreateCount_Pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/counts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetCount_Pos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/counts/{id}/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["RecordCounts_Pos"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/inventory/counts/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SubmitCount_Pos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListAdjustments"];
+        put?: never;
+        post: operations["RequestAdjustment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/adjustments/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ApproveAdjustment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/adjustments/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RejectAdjustment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/discrepancies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListDiscrepancies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/discrepancies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetDiscrepancy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/discrepancies/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ResolveDiscrepancy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pos/scan/{code}": {
         parameters: {
             query?: never;
@@ -764,6 +1356,166 @@ export interface paths {
             cookie?: never;
         };
         get: operations["PosScan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchasing/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListSuppliers"];
+        put?: never;
+        post: operations["CreateSupplier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchasing/suppliers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetSupplier"];
+        put: operations["UpdateSupplier"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchasing/purchase-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListPurchaseOrders"];
+        put?: never;
+        post: operations["CreatePurchaseOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchasing/purchase-orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPurchaseOrder"];
+        put: operations["UpdatePurchaseOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchasing/purchase-orders/{id}/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AmendPurchaseOrderLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchasing/purchase-orders/{id}/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["IssuePurchaseOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchasing/purchase-orders/{id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClosePurchaseOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchasing/purchase-orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CancelPurchaseOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchasing/purchase-orders/{id}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RecordGoodsReceipt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchasing/goods-receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListGoodsReceipts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -972,6 +1724,61 @@ export interface components {
             value?: string | null;
             reason?: string | null;
         };
+        AdjustmentDto: {
+            /** Format: uuid */
+            id?: string;
+            number?: string | null;
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            kind?: string | null;
+            fromStatus?: string | null;
+            toStatus?: string | null;
+            /** Format: int32 */
+            quantity?: number;
+            itemIds?: string[] | null;
+            reasonCode?: string | null;
+            notes?: string | null;
+            /** Format: uuid */
+            discrepancyId?: string | null;
+            status?: string | null;
+            /** Format: uuid */
+            requestedBy?: string;
+            /** Format: date-time */
+            requestedAt?: string;
+            /** Format: uuid */
+            decidedBy?: string | null;
+            /** Format: date-time */
+            decidedAt?: string | null;
+            decisionNote?: string | null;
+            /** Format: double */
+            unitCost?: number | null;
+            /** Format: double */
+            valueAtCost?: number | null;
+            /** Format: double */
+            estimatedValue?: number | null;
+            requiresOwner?: boolean | null;
+        };
+        AmendLineRequest: {
+            /** Format: uuid */
+            lineId?: string | null;
+            /** Format: uuid */
+            skuId?: string | null;
+            /** Format: int32 */
+            orderedQty?: number;
+            /** Format: double */
+            expectedUnitCost?: number;
+            reason?: string | null;
+        };
+        ApproveAdjustmentRequest: {
+            note?: string | null;
+            /** Format: double */
+            unitCost?: number | null;
+        };
         AssignRoleRequest: {
             /** Format: uuid */
             roleId?: string;
@@ -1057,6 +1864,13 @@ export interface components {
             assignedBy?: string | null;
             reason?: string | null;
         };
+        BranchAvailabilityDto: {
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: int32 */
+            available?: number;
+        };
         BranchDto: {
             /** Format: uuid */
             id?: string;
@@ -1105,6 +1919,59 @@ export interface components {
             clockOutAt?: string | null;
             reason?: string | null;
         };
+        CountDto: {
+            /** Format: uuid */
+            id?: string;
+            number?: string | null;
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            status?: string | null;
+            notes?: string | null;
+            /** Format: uuid */
+            createdBy?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            submittedAt?: string | null;
+            lines?: components["schemas"]["CountLineDto"][] | null;
+            discrepancyIds?: string[] | null;
+        };
+        CountLineDto: {
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            /** Format: int32 */
+            countedQty?: number | null;
+            /** Format: int32 */
+            systemQty?: number | null;
+            /** Format: int32 */
+            variance?: number | null;
+        };
+        CountLineRequest: {
+            /** Format: uuid */
+            skuId?: string;
+            /** Format: int32 */
+            countedQty?: number;
+        };
+        CreateAdjustmentRequest: {
+            /** Format: uuid */
+            branchId?: string;
+            /** Format: uuid */
+            skuId?: string;
+            kind?: string | null;
+            fromStatus?: string | null;
+            toStatus?: string | null;
+            /** Format: int32 */
+            quantity?: number | null;
+            itemIds?: string[] | null;
+            reasonCode?: string | null;
+            notes?: string | null;
+            /** Format: uuid */
+            discrepancyId?: string | null;
+        };
         CreateAttributeRequest: {
             code?: string | null;
             name?: string | null;
@@ -1117,6 +1984,12 @@ export interface components {
             address?: components["schemas"]["BranchAddressDto"];
             reason?: string | null;
         };
+        CreateCountRequest: {
+            /** Format: uuid */
+            branchId?: string;
+            skuIds?: string[] | null;
+            notes?: string | null;
+        };
         CreateEmployeeRequest: {
             fullName?: string | null;
             email?: string | null;
@@ -1128,6 +2001,13 @@ export interface components {
             /** Format: date */
             joinedOn?: string | null;
             reason?: string | null;
+        };
+        CreateGoodsReceiptRequest: {
+            supplierInvoiceRef?: string | null;
+            /** Format: date-time */
+            receivedAt?: string | null;
+            notes?: string | null;
+            lines?: components["schemas"]["ReceiptLineRequest"][] | null;
         };
         CreateInternalUserRequest: {
             email?: string | null;
@@ -1146,12 +2026,32 @@ export interface components {
             availableForReseller?: boolean;
             reason?: string | null;
         };
+        CreatePurchaseOrderRequest: {
+            /** Format: uuid */
+            supplierId?: string;
+            /** Format: uuid */
+            receivingBranchId?: string;
+            supplierReference?: string | null;
+            /** Format: date */
+            expectedDate?: string | null;
+            notes?: string | null;
+            lines?: components["schemas"]["PoLineRequest"][] | null;
+            reason?: string | null;
+        };
         CreateRoleRequest: {
             code?: string | null;
             name?: string | null;
             description?: string | null;
             scope?: components["schemas"]["RoleScope"];
             permissions?: string[] | null;
+            reason?: string | null;
+        };
+        CreateTransferRequest: {
+            /** Format: uuid */
+            sourceBranchId?: string;
+            /** Format: uuid */
+            destinationBranchId?: string;
+            lines?: components["schemas"]["TransferLineRequest"][] | null;
             reason?: string | null;
         };
         CreateVariantRequest: {
@@ -1164,6 +2064,41 @@ export interface components {
             registrationToken?: string | null;
             fullName?: string | null;
             email?: string | null;
+        };
+        DecisionRequest: {
+            note?: string | null;
+        };
+        DiscrepancyDto: {
+            /** Format: uuid */
+            id?: string;
+            number?: string | null;
+            sourceType?: string | null;
+            /** Format: uuid */
+            sourceId?: string;
+            sourceNumber?: string | null;
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            /** Format: int32 */
+            expectedQty?: number;
+            /** Format: int32 */
+            actualQty?: number;
+            /** Format: int32 */
+            variance?: number;
+            /** Format: int32 */
+            outstandingQty?: number;
+            missingItemIds?: string[] | null;
+            status?: string | null;
+            resolution?: string | null;
+            resolutionNotes?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            resolvedAt?: string | null;
         };
         EmployeeDto: {
             /** Format: uuid */
@@ -1199,10 +2134,70 @@ export interface components {
         GenerateBarcodeRequest: {
             reason?: string | null;
         };
+        GoodsReceiptDto: {
+            /** Format: uuid */
+            id?: string;
+            number?: string | null;
+            /** Format: uuid */
+            purchaseOrderId?: string;
+            purchaseOrderNumber?: string | null;
+            /** Format: uuid */
+            supplierId?: string;
+            supplierName?: string | null;
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            supplierInvoiceRef?: string | null;
+            /** Format: date-time */
+            receivedAt?: string;
+            /** Format: uuid */
+            receivedBy?: string;
+            notes?: string | null;
+            /** Format: double */
+            totalCost?: number | null;
+            lines?: components["schemas"]["GoodsReceiptLineDto"][] | null;
+            items?: components["schemas"]["ReceivedItemDto"][] | null;
+        };
+        GoodsReceiptLineDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            poLineId?: string;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            /** Format: int32 */
+            receivedQty?: number;
+            /** Format: int32 */
+            damagedQty?: number;
+            /** Format: int32 */
+            acceptedQty?: number;
+            /** Format: double */
+            unitCost?: number | null;
+        };
         InternalLoginRequest: {
             email?: string | null;
             password?: string | null;
             client?: string | null;
+        };
+        InventoryReasonRequest: {
+            reason?: string | null;
+        };
+        ItemDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            skuId?: string;
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            status?: string | null;
+            barcode?: string | null;
+            /** Format: date-time */
+            receivedAt?: string;
+            writtenOff?: boolean;
         };
         LabelDto: {
             /** Format: uuid */
@@ -1215,6 +2210,16 @@ export interface components {
             /** Format: int32 */
             copies?: number;
             isReprint?: boolean;
+        };
+        LineQuantityRequest: {
+            /** Format: uuid */
+            lineId?: string;
+            /** Format: int32 */
+            quantity?: number | null;
+            itemIds?: string[] | null;
+        };
+        LinesRequest: {
+            lines?: components["schemas"]["LineQuantityRequest"][] | null;
         };
         LogoutRequest: {
             refreshToken?: string | null;
@@ -1256,6 +2261,30 @@ export interface components {
             challengeToken?: string | null;
             code?: string | null;
         };
+        MovementDto: {
+            /** Format: int64 */
+            seq?: number;
+            /** Format: date-time */
+            occurredAt?: string;
+            /** Format: uuid */
+            skuId?: string;
+            /** Format: uuid */
+            itemId?: string | null;
+            /** Format: int32 */
+            quantity?: number;
+            /** Format: uuid */
+            fromBranchId?: string | null;
+            /** Format: uuid */
+            toBranchId?: string | null;
+            fromStatus?: string | null;
+            toStatus?: string | null;
+            movementType?: string | null;
+            referenceType?: string | null;
+            referenceNumber?: string | null;
+            /** Format: uuid */
+            actorUserId?: string | null;
+            reason?: string | null;
+        };
         MyAttendanceDto: {
             isEmployee?: boolean;
             isClockedIn?: boolean;
@@ -1284,6 +2313,62 @@ export interface components {
             code?: string | null;
             module?: string | null;
             ownerOnly?: boolean;
+        };
+        PoLineDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            trackingMode?: string | null;
+            /** Format: int32 */
+            orderedQty?: number;
+            /** Format: double */
+            expectedUnitCost?: number | null;
+            /** Format: int32 */
+            receivedQty?: number;
+            /** Format: int32 */
+            damagedQty?: number;
+            /** Format: int32 */
+            remainingQty?: number;
+        };
+        PoLineRequest: {
+            /** Format: uuid */
+            skuId?: string;
+            /** Format: int32 */
+            orderedQty?: number;
+            /** Format: double */
+            expectedUnitCost?: number;
+        };
+        PoReasonRequest: {
+            reason?: string | null;
+        };
+        PosScanDto: {
+            barcode?: string | null;
+            barcodeKind?: string | null;
+            /** Format: uuid */
+            inventoryItemId?: string | null;
+            itemStatus?: string | null;
+            /** Format: uuid */
+            itemBranchId?: string | null;
+            itemBranchName?: string | null;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            /** Format: uuid */
+            variantId?: string;
+            variantName?: string | null;
+            attributes?: components["schemas"]["ScanAttributeDto"][] | null;
+            /** Format: uuid */
+            productId?: string;
+            productName?: string | null;
+            productStatus?: string | null;
+            trackingMode?: string | null;
+            availableForRetail?: boolean;
+            availableForReseller?: boolean;
+            availability?: components["schemas"]["BranchAvailabilityDto"][] | null;
         };
         PrintLabelsRequest: {
             barcodeIds?: string[] | null;
@@ -1344,6 +2429,32 @@ export interface components {
             /** Format: date-time */
             createdAt?: string;
         };
+        PurchaseOrderDto: {
+            /** Format: uuid */
+            id?: string;
+            number?: string | null;
+            status?: string | null;
+            /** Format: uuid */
+            supplierId?: string;
+            supplierName?: string | null;
+            /** Format: uuid */
+            receivingBranchId?: string;
+            receivingBranchName?: string | null;
+            supplierReference?: string | null;
+            /** Format: date */
+            expectedDate?: string | null;
+            notes?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            issuedAt?: string | null;
+            /** Format: date-time */
+            closedAt?: string | null;
+            closeReason?: string | null;
+            /** Format: double */
+            expectedTotal?: number | null;
+            lines?: components["schemas"]["PoLineDto"][] | null;
+        };
         ReasonRequest: {
             reason?: string | null;
         };
@@ -1352,12 +2463,42 @@ export interface components {
             branchId?: string;
             reason?: string | null;
         };
+        ReceiptLineRequest: {
+            /** Format: uuid */
+            poLineId?: string;
+            /** Format: int32 */
+            receivedQty?: number;
+            /** Format: int32 */
+            damagedQty?: number;
+            /** Format: double */
+            unitCost?: number;
+        };
+        ReceivedItemDto: {
+            /** Format: uuid */
+            itemId?: string;
+            /** Format: uuid */
+            barcodeId?: string;
+            barcode?: string | null;
+            /** Format: uuid */
+            skuId?: string;
+            status?: string | null;
+        };
+        RecordCountsRequest: {
+            lines?: components["schemas"]["CountLineRequest"][] | null;
+        };
         RefreshRequest: {
             refreshToken?: string | null;
         };
         RegisterBarcodeRequest: {
             code?: string | null;
             reason?: string | null;
+        };
+        ResolveDiscrepancyRequest: {
+            action?: string | null;
+            /** Format: int32 */
+            quantity?: number | null;
+            itemIds?: string[] | null;
+            notes?: string | null;
         };
         RetireBarcodeRequest: {
             reason?: string | null;
@@ -1399,6 +2540,20 @@ export interface components {
             isActive?: boolean;
             reason?: string | null;
         };
+        SaveSupplierRequest: {
+            name?: string | null;
+            contactName?: string | null;
+            mobile?: string | null;
+            email?: string | null;
+            gstin?: string | null;
+            address?: string | null;
+            isActive?: boolean;
+            reason?: string | null;
+        };
+        ScanAttributeDto: {
+            attributeName?: string | null;
+            value?: string | null;
+        };
         ScanResultDto: {
             barcode?: string | null;
             barcodeKind?: string | null;
@@ -1433,6 +2588,52 @@ export interface components {
             permissions?: string[] | null;
             reason?: string | null;
         };
+        SkuInfo: {
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            /** Format: uuid */
+            variantId?: string;
+            variantName?: string | null;
+            variantActive?: boolean;
+            /** Format: uuid */
+            productId?: string;
+            productName?: string | null;
+            trackingMode?: string | null;
+            productStatus?: string | null;
+            availableForRetail?: boolean;
+            availableForReseller?: boolean;
+        };
+        StockRowDto: {
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            trackingMode?: string | null;
+            byStatus?: {
+                [key: string]: number;
+            } | null;
+            /** Format: int32 */
+            available?: number;
+            /** Format: int32 */
+            onHand?: number;
+        };
+        SupplierDto: {
+            /** Format: uuid */
+            id?: string;
+            code?: string | null;
+            name?: string | null;
+            contactName?: string | null;
+            mobile?: string | null;
+            email?: string | null;
+            gstin?: string | null;
+            address?: string | null;
+            isActive?: boolean;
+        };
         TokenPair: {
             accessToken?: string | null;
             /** Format: date-time */
@@ -1440,6 +2641,71 @@ export interface components {
             refreshToken?: string | null;
             /** Format: date-time */
             refreshTokenExpiresAt?: string;
+        };
+        TransferDto: {
+            /** Format: uuid */
+            id?: string;
+            number?: string | null;
+            status?: string | null;
+            /** Format: uuid */
+            sourceBranchId?: string;
+            sourceBranchName?: string | null;
+            /** Format: uuid */
+            destinationBranchId?: string;
+            destinationBranchName?: string | null;
+            reason?: string | null;
+            /** Format: uuid */
+            requestedBy?: string;
+            /** Format: date-time */
+            requestedAt?: string;
+            /** Format: uuid */
+            approvedBy?: string | null;
+            /** Format: date-time */
+            approvedAt?: string | null;
+            ownerSelfAuthorized?: boolean;
+            decisionNote?: string | null;
+            /** Format: date-time */
+            preparedAt?: string | null;
+            /** Format: date-time */
+            dispatchedAt?: string | null;
+            /** Format: date-time */
+            receivedAt?: string | null;
+            lines?: components["schemas"]["TransferLineDto"][] | null;
+        };
+        TransferItemDto: {
+            /** Format: uuid */
+            itemId?: string;
+            barcode?: string | null;
+            outcome?: string | null;
+        };
+        TransferLineDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            serialized?: boolean;
+            /** Format: int32 */
+            requestedQty?: number;
+            /** Format: int32 */
+            preparedQty?: number;
+            /** Format: int32 */
+            dispatchedQty?: number;
+            /** Format: int32 */
+            receivedQty?: number;
+            /** Format: int32 */
+            resolvedQty?: number;
+            /** Format: int32 */
+            outstandingQty?: number;
+            items?: components["schemas"]["TransferItemDto"][] | null;
+        };
+        TransferLineRequest: {
+            /** Format: uuid */
+            skuId?: string;
+            /** Format: int32 */
+            quantity?: number;
         };
         UpdateAttributeRequest: {
             name?: string | null;
@@ -1464,6 +2730,17 @@ export interface components {
             trackingMode?: string | null;
             availableForRetail?: boolean;
             availableForReseller?: boolean;
+            reason?: string | null;
+        };
+        UpdatePurchaseOrderRequest: {
+            /** Format: uuid */
+            supplierId?: string;
+            /** Format: uuid */
+            receivingBranchId?: string;
+            supplierReference?: string | null;
+            /** Format: date */
+            expectedDate?: string | null;
+            notes?: string | null;
             reason?: string | null;
         };
         UpdateRoleRequest: {
@@ -2496,6 +3773,29 @@ export interface operations {
             };
         };
     };
+    SearchSkus: {
+        parameters: {
+            query?: {
+                q?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkuInfo"][];
+                };
+            };
+        };
+    };
     ListEmployees: {
         parameters: {
             query?: {
@@ -2832,6 +4132,996 @@ export interface operations {
             };
         };
     };
+    GetStock: {
+        parameters: {
+            query?: {
+                branchId?: string;
+                skuId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockRowDto"][];
+                };
+            };
+        };
+    };
+    GetItems: {
+        parameters: {
+            query: {
+                skuId: string;
+                branchId?: string;
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"][];
+                };
+            };
+        };
+    };
+    GetMovements: {
+        parameters: {
+            query?: {
+                skuId?: string;
+                itemId?: string;
+                branchId?: string;
+                reference?: string;
+                beforeSeq?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementDto"][];
+                };
+            };
+        };
+    };
+    ListTransfers: {
+        parameters: {
+            query?: {
+                status?: string;
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"][];
+                };
+            };
+        };
+    };
+    CreateTransfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTransferRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    GetTransfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    ApproveTransfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    RejectTransfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InventoryReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    PrepareTransfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    DispatchTransfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    ReceiveTransfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    CancelTransfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InventoryReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    ListCounts: {
+        parameters: {
+            query?: {
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDto"][];
+                };
+            };
+        };
+    };
+    CreateCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDto"];
+                };
+            };
+        };
+    };
+    GetCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDto"];
+                };
+            };
+        };
+    };
+    RecordCounts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordCountsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDto"];
+                };
+            };
+        };
+    };
+    SubmitCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDto"];
+                };
+            };
+        };
+    };
+    GetStock_Pos: {
+        parameters: {
+            query?: {
+                branchId?: string;
+                skuId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockRowDto"][];
+                };
+            };
+        };
+    };
+    GetItems_Pos: {
+        parameters: {
+            query: {
+                skuId: string;
+                branchId?: string;
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto"][];
+                };
+            };
+        };
+    };
+    GetMovements_Pos: {
+        parameters: {
+            query?: {
+                skuId?: string;
+                itemId?: string;
+                branchId?: string;
+                reference?: string;
+                beforeSeq?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementDto"][];
+                };
+            };
+        };
+    };
+    ListTransfers_Pos: {
+        parameters: {
+            query?: {
+                status?: string;
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"][];
+                };
+            };
+        };
+    };
+    CreateTransfer_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTransferRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    GetTransfer_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    ApproveTransfer_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    RejectTransfer_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InventoryReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    PrepareTransfer_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    DispatchTransfer_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    ReceiveTransfer_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    CancelTransfer_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InventoryReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferDto"];
+                };
+            };
+        };
+    };
+    ListCounts_Pos: {
+        parameters: {
+            query?: {
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDto"][];
+                };
+            };
+        };
+    };
+    CreateCount_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDto"];
+                };
+            };
+        };
+    };
+    GetCount_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDto"];
+                };
+            };
+        };
+    };
+    RecordCounts_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordCountsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDto"];
+                };
+            };
+        };
+    };
+    SubmitCount_Pos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountDto"];
+                };
+            };
+        };
+    };
+    ListAdjustments: {
+        parameters: {
+            query?: {
+                status?: string;
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdjustmentDto"][];
+                };
+            };
+        };
+    };
+    RequestAdjustment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAdjustmentRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdjustmentDto"];
+                };
+            };
+        };
+    };
+    ApproveAdjustment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveAdjustmentRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdjustmentDto"];
+                };
+            };
+        };
+    };
+    RejectAdjustment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InventoryReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdjustmentDto"];
+                };
+            };
+        };
+    };
+    ListDiscrepancies: {
+        parameters: {
+            query?: {
+                status?: string;
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscrepancyDto"][];
+                };
+            };
+        };
+    };
+    GetDiscrepancy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscrepancyDto"];
+                };
+            };
+        };
+    };
+    ResolveDiscrepancy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveDiscrepancyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscrepancyDto"];
+                };
+            };
+        };
+    };
     PosScan: {
         parameters: {
             query?: never;
@@ -2849,7 +5139,347 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ScanResultDto"];
+                    "application/json": components["schemas"]["PosScanDto"];
+                };
+            };
+        };
+    };
+    ListSuppliers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierDto"][];
+                };
+            };
+        };
+    };
+    CreateSupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSupplierRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierDto"];
+                };
+            };
+        };
+    };
+    GetSupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierDto"];
+                };
+            };
+        };
+    };
+    UpdateSupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSupplierRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierDto"];
+                };
+            };
+        };
+    };
+    ListPurchaseOrders: {
+        parameters: {
+            query?: {
+                status?: string;
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderDto"][];
+                };
+            };
+        };
+    };
+    CreatePurchaseOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePurchaseOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+        };
+    };
+    GetPurchaseOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+        };
+    };
+    UpdatePurchaseOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePurchaseOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+        };
+    };
+    AmendPurchaseOrderLine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AmendLineRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+        };
+    };
+    IssuePurchaseOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PoReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+        };
+    };
+    ClosePurchaseOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PoReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+        };
+    };
+    CancelPurchaseOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PoReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+        };
+    };
+    RecordGoodsReceipt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGoodsReceiptRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoodsReceiptDto"];
+                };
+            };
+        };
+    };
+    ListGoodsReceipts: {
+        parameters: {
+            query?: {
+                purchaseOrderId?: string;
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoodsReceiptDto"][];
                 };
             };
         };

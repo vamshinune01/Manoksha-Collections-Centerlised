@@ -22,6 +22,8 @@ public sealed class CatalogModule : IModule
         services.AddScoped<ProductService>();
         services.AddScoped<BarcodeService>();
         services.AddScoped<ICatalogLookup>(sp => sp.GetRequiredService<ProductService>());
+        services.AddScoped<IItemBarcodeIssuer>(sp => sp.GetRequiredService<BarcodeService>());
+        services.AddScoped<ICatalogBarcodes>(sp => sp.GetRequiredService<BarcodeService>());
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => CatalogEndpoints.Map(endpoints);

@@ -215,3 +215,219 @@ export interface Label {
   copies: number;
   isReprint: boolean;
 }
+
+export interface SkuInfo {
+  skuId: string;
+  skuCode: string;
+  variantId: string;
+  variantName: string;
+  variantActive: boolean;
+  productId: string;
+  productName: string;
+  trackingMode: "Serialized" | "Quantity";
+  productStatus: string;
+  availableForRetail: boolean;
+  availableForReseller: boolean;
+}
+
+export interface Supplier {
+  id: string;
+  code: string;
+  name: string;
+  contactName: string | null;
+  mobile: string | null;
+  email: string | null;
+  gstin: string | null;
+  address: string | null;
+  isActive: boolean;
+}
+
+export interface PoLine {
+  id: string;
+  skuId: string;
+  skuCode: string;
+  productName: string;
+  variantName: string;
+  trackingMode: string;
+  orderedQty: number;
+  expectedUnitCost: number | null;
+  receivedQty: number;
+  damagedQty: number;
+  remainingQty: number;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  number: string;
+  status: "Draft" | "Issued" | "PartiallyReceived" | "Received" | "Closed" | "Cancelled";
+  supplierId: string;
+  supplierName: string;
+  receivingBranchId: string;
+  receivingBranchName: string;
+  supplierReference: string | null;
+  expectedDate: string | null;
+  notes: string | null;
+  createdAt: string;
+  issuedAt: string | null;
+  closedAt: string | null;
+  closeReason: string | null;
+  expectedTotal: number | null;
+  lines: PoLine[];
+}
+
+export interface GoodsReceipt {
+  id: string;
+  number: string;
+  purchaseOrderId: string;
+  purchaseOrderNumber: string;
+  supplierName: string;
+  branchId: string;
+  branchName: string;
+  supplierInvoiceRef: string;
+  receivedAt: string;
+  notes: string | null;
+  totalCost: number | null;
+  lines: { id: string; skuCode: string; productName: string; variantName: string; receivedQty: number; damagedQty: number; acceptedQty: number; unitCost: number | null }[];
+  items: { itemId: string; barcodeId: string; barcode: string; skuId: string; status: string }[];
+}
+
+export interface StockRow {
+  branchId: string;
+  branchName: string;
+  skuId: string;
+  skuCode: string;
+  productName: string;
+  variantName: string;
+  trackingMode: string;
+  byStatus: Record<string, number>;
+  available: number;
+  onHand: number;
+}
+
+export interface InventoryItem {
+  id: string;
+  skuId: string;
+  branchId: string;
+  branchName: string;
+  status: string;
+  barcode: string;
+  receivedAt: string;
+  writtenOff: boolean;
+}
+
+export interface Movement {
+  seq: number;
+  occurredAt: string;
+  skuId: string;
+  itemId: string | null;
+  quantity: number;
+  fromBranchId: string | null;
+  toBranchId: string | null;
+  fromStatus: string | null;
+  toStatus: string | null;
+  movementType: string;
+  referenceType: string;
+  referenceNumber: string | null;
+  reason: string | null;
+}
+
+export interface TransferLine {
+  id: string;
+  skuId: string;
+  skuCode: string;
+  productName: string;
+  variantName: string;
+  serialized: boolean;
+  requestedQty: number;
+  preparedQty: number;
+  dispatchedQty: number;
+  receivedQty: number;
+  resolvedQty: number;
+  outstandingQty: number;
+  items: { itemId: string; barcode: string; outcome: string | null }[];
+}
+
+export interface Transfer {
+  id: string;
+  number: string;
+  status: "Requested" | "Approved" | "Prepared" | "InTransit" | "Received" | "Discrepancy" | "Rejected" | "Cancelled";
+  sourceBranchId: string;
+  sourceBranchName: string;
+  destinationBranchId: string;
+  destinationBranchName: string;
+  reason: string;
+  requestedBy: string;
+  requestedAt: string;
+  approvedBy: string | null;
+  approvedAt: string | null;
+  ownerSelfAuthorized: boolean;
+  decisionNote: string | null;
+  preparedAt: string | null;
+  dispatchedAt: string | null;
+  receivedAt: string | null;
+  lines: TransferLine[];
+}
+
+export interface Discrepancy {
+  id: string;
+  number: string;
+  sourceType: "TRANSFER" | "COUNT";
+  sourceId: string;
+  sourceNumber: string;
+  branchId: string;
+  branchName: string;
+  skuId: string;
+  skuCode: string;
+  productName: string;
+  expectedQty: number;
+  actualQty: number;
+  variance: number;
+  outstandingQty: number;
+  missingItemIds: string[];
+  status: "Open" | "Resolved";
+  resolution: string | null;
+  resolutionNotes: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export interface StockCount {
+  id: string;
+  number: string;
+  branchId: string;
+  branchName: string;
+  status: "Open" | "Submitted";
+  notes: string | null;
+  createdAt: string;
+  submittedAt: string | null;
+  lines: { skuId: string; skuCode: string; productName: string; variantName: string; countedQty: number | null; systemQty: number | null; variance: number | null }[];
+  discrepancyIds: string[];
+}
+
+export interface Adjustment {
+  id: string;
+  number: string;
+  branchId: string;
+  branchName: string;
+  skuId: string;
+  skuCode: string;
+  productName: string;
+  kind: "StatusChange" | "WriteOff" | "Found";
+  fromStatus: string | null;
+  toStatus: string | null;
+  quantity: number;
+  itemIds: string[];
+  reasonCode: string;
+  notes: string;
+  discrepancyId: string | null;
+  status: "Pending" | "Applied" | "Rejected";
+  requestedBy: string;
+  requestedAt: string;
+  decidedBy: string | null;
+  decidedAt: string | null;
+  decisionNote: string | null;
+  unitCost: number | null;
+  valueAtCost: number | null;
+  estimatedValue: number | null;
+  requiresOwner: boolean | null;
+}

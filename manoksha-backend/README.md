@@ -19,6 +19,9 @@ src/
     Manoksha.Modules.Branches  branch master, versioned fulfillment priority (IBranchDirectory, IFulfillmentPriorityProvider)
     Manoksha.Modules.Employees employee profiles, branch assignment history, attendance
     Manoksha.Modules.Catalog   categories, configurable variant attributes, products, variants, SKUs, barcodes (ICatalogLookup)
+    Manoksha.Modules.Inventory stock levels, serialized pieces, FIFO cost layers, movements, transfers, counts, adjustments,
+                               discrepancies; StockEngine is the only code that changes stock (IStockReceiver)
+    Manoksha.Modules.Purchasing suppliers, purchase orders, goods receipts (posts to Inventory in the same transaction)
   Integrations/                ISmsSender / IEmailSender / IFileStorage adapters (dev fakes refused in Production)
   Migrations/                  EF Core migrations
   Hosts/

@@ -77,3 +77,22 @@ Payment gateway, SMS OTP/DLT, email, domains and GCP billing are not Phase 1 blo
   is never reused, even after retirement. Label reprints are logged (append-only) and never create a new identity.
 - Serialized item-level barcodes are created at goods receipt (Phase 3); scan results gain location/status (Phase 3) and
   applicable price (Phase 4).
+
+## Phase 3 Owner decisions (25 Sep 2026)
+13. **Over-receipt is blocked.** A goods receipt cannot exceed the remaining ordered quantity; the PO must first be amended
+    (audited) by someone with purchasing permission.
+14. **Adjustment approval threshold = value only** (quantity × unit cost at FIFO/purchase cost), configured by the Owner in
+    `inventory.adjustment.manager_max_value`. Default **₹0**, so every adjustment needs Owner approval until the Owner raises it.
+    Within the limit, a user with `inventory.adjust.approve` for that branch may approve.
+15. **No self-approval of adjustments — including the Owner.** The approver must always be a different authorized person
+    (the Owner self-authorization exception applies to transfers only, §7).
+16. **Found stock cost:** the approver must enter the unit cost when approving a "found" adjustment; that cost creates the
+    FIFO layer and is used for the threshold check.
+
+Engineering decisions for Phase 3 (confirm or correct):
+- Transfer receipt cannot exceed the dispatched quantity; missing units create a discrepancy (resolved as received late,
+  returned to source, or written off). Extra units found later are handled through a stock count.
+- FIFO layers cover all owned on-hand units at a branch (any status except sold/in transit). A transfer consumes the source's
+  oldest layers at dispatch and recreates them at the destination with the original unit costs and dates.
+- Stock counts are blind (counters do not see the system quantity until submission). Differences become discrepancies,
+  resolved by an approved adjustment or dismissed with a reason.

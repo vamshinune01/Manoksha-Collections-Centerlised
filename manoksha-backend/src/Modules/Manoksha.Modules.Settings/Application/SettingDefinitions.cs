@@ -33,6 +33,10 @@ internal static class SettingDefinitions
             "WhatsApp number used for customer order-help deep links (SPEC §12, §21).",
             SettingValueKind.String, "\"9741404304\"",
             v => v.ValueKind == JsonValueKind.String && MobileNumber.TryNormalize(v.GetString(), out _) ? null : "Must be a valid 10-digit Indian mobile number."),
+        new(SettingKeys.AdjustmentManagerMaxValue,
+            "Largest inventory adjustment (value at cost, INR) a branch approver may approve. Above it only the Owner may approve. 0 = Owner approves all (ADR-001 §14).",
+            SettingValueKind.Money, "0.00",
+            v => v.ValueKind == JsonValueKind.Number && v.TryGetDecimal(out var d) && d >= 0 && Money.HasValidScale(d) ? null : "Must be a non-negative amount with at most 2 decimals."),
     ];
 
     public static SettingDefinition? Find(string key) => All.FirstOrDefault(d => d.Key == key);

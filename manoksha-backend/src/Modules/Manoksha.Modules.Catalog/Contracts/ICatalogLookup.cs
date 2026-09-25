@@ -20,3 +20,21 @@ public interface ICatalogLookup
 
     Task<IReadOnlyDictionary<Guid, SkuInfo>> FindSkusAsync(IReadOnlyCollection<Guid> skuIds, CancellationToken cancellationToken = default);
 }
+
+public sealed record AttributeValue(string Attribute, string Value);
+
+/// <summary>What a scanned code refers to (catalog facts only; inventory adds location/status).</summary>
+public sealed record CatalogBarcode(string Code, string Kind, bool IsActive, Guid? InventoryItemId, SkuInfo Sku, IReadOnlyList<AttributeValue> Attributes);
+
+public sealed record IssuedBarcode(Guid BarcodeId, string Code);
+
+/// <summary>Issues the unique barcode of one serialized inventory item (called by Inventory at goods receipt).</summary>
+public interface IItemBarcodeIssuer
+{
+    Task<IssuedBarcode> IssueForItemAsync(Guid skuId, Guid inventoryItemId, CancellationToken cancellationToken = default);
+}
+
+public interface ICatalogBarcodes
+{
+    Task<CatalogBarcode?> FindAsync(string code, CancellationToken cancellationToken = default);
+}

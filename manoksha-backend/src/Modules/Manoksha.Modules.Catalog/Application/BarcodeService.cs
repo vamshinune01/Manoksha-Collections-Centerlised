@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Manoksha.Application.Abstractions;
 using Manoksha.Application.Security;
+using Manoksha.Modules.Catalog.Contracts;
 using Manoksha.Modules.Catalog.Domain;
 using Manoksha.Persistence;
 using Manoksha.SharedKernel;
@@ -14,8 +15,36 @@ internal sealed partial class BarcodeService(
     IUnitOfWork unitOfWork,
     IAuditWriter audit,
     ICurrentUser currentUser,
-    IClock clock)
+    ICatalogLookup lookup,
+    IClock clock) : IItemBarcodeIssuer, ICatalogBarcodes
 {
+    public async Task<IssuedBarcode> IssueForItemAsync(Guid skuId, Guid inventoryItemId, CancellationToken cancellationToken = default)
+    {
+        await EnsureSkuAsync(skuId, cancellationToken);
+        var seq = await db.Database.SqlQuery<long>($"SELECT nextval('catalog.internal_barcode_seq') AS \"Value\"").SingleAsync(cancellationToken);
+        var barcode = new Barcode(Gtin.CreateInternalEan13(seq), skuId, inventoryItemId, BarcodeKind.InternalEan13, currentUser.UserIdOrNull, clock.UtcNow);
+        db.Add(barcode);
+        return new IssuedBarcode(barcode.Id, barcode.Code);
+    }
+
+    public async Task<CatalogBarcode?> FindAsync(string code, CancellationToken cancellationToken = default)
+    {
+        var trimmed = (code ?? string.Empty).Trim();
+        var barcode = await db.Set<Barcode>().AsNoTracking().SingleOrDefaultAsync(b => b.Code == trimmed, cancellationToken);
+        if (barcode is null)
+        {
+            return null;
+        }
+        var sku = await lookup.FindSkuAsync(barcode.SkuId, cancellationToken);
+        var values = await (
+            from x in db.Set<VariantAttributeValue>()
+            join a in db.Set<AttributeDefinition>() on x.AttributeId equals a.Id
+            join o in db.Set<AttributeOption>() on x.OptionId equals o.Id
+            where x.VariantId == sku!.VariantId
+            select new AttributeValue(a.Name, o.Value)).AsNoTracking().ToListAsync(cancellationToken);
+        return new CatalogBarcode(barcode.Code, barcode.Kind.ToString(), barcode.Status == RecordStatus.Active, barcode.InventoryItemId, sku!, values);
+    }
+
     public Task<BarcodeDto> GenerateInternalAsync(Guid skuId, string reason, CancellationToken ct)
     {
         CatalogSetupService.RequireReason(reason);

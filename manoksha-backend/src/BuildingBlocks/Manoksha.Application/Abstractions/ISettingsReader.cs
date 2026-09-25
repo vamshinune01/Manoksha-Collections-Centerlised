@@ -16,4 +16,10 @@ public static class SettingKeys
 
     /// <summary>WhatsApp number for customer order-help deep links (SPEC §12, §21; 9741404304).</summary>
     public const string SupportWhatsAppNumber = "support.whatsapp_number";
+
+    /// <summary>
+    /// Max value at cost (INR) of an inventory adjustment a branch approver may approve; above it only the Owner may
+    /// (ADR-001 §14). Default 0 = every adjustment needs the Owner.
+    /// </summary>
+    public const string AdjustmentManagerMaxValue = "inventory.adjustment.manager_max_value";
 }

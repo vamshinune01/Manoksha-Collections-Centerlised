@@ -40,6 +40,18 @@ export const P = {
   catalogView: "catalog.view",
   catalogManage: "catalog.manage",
   barcodesPrint: "barcodes.print",
+  purchasingView: "purchasing.view",
+  purchasingManage: "purchasing.manage",
+  goodsReceipt: "goods_receipt.record",
+  inventoryView: "inventory.view",
+  inventoryCount: "inventory.count",
+  adjustRequest: "inventory.adjust.request",
+  adjustApprove: "inventory.adjust.approve",
+  discrepancyResolve: "inventory.discrepancy.resolve",
+  transfersCreate: "transfers.create",
+  transfersApprove: "transfers.approve",
+  transfersDispatch: "transfers.dispatch",
+  transfersReceive: "transfers.receive",
 } as const;
 
 export interface NavItem {
@@ -56,6 +68,8 @@ export const NAV: NavItem[] = [
   { href: "/employees", label: "Employees", permission: P.employeesView },
   { href: "/attendance", label: "Attendance", permission: [P.attendanceSelf, P.attendanceView] },
   { href: "/catalog", label: "Catalog", permission: P.catalogView },
+  { href: "/purchasing", label: "Purchasing", permission: [P.purchasingView, P.goodsReceipt] },
+  { href: "/inventory", label: "Inventory", permission: [P.inventoryView, P.inventoryCount] },
   { href: "/users", label: "Users", permission: P.usersView },
   { href: "/roles", label: "Roles & permissions", permission: P.rolesView },
   { href: "/settings", label: "Business settings", permission: P.settingsView },
@@ -66,6 +80,15 @@ export const NAV: NavItem[] = [
 export function canAny(me: Me, permission: string | string[] | undefined): boolean {
   if (!permission) return true;
   return (Array.isArray(permission) ? permission : [permission]).some((p) => can(me, p));
+}
+
+/** True when the user holds the permission globally or for this branch. */
+export function canAt(me: Me, permission: string, branchId: string): boolean {
+  return me.globalPermissions.includes(permission) || (me.branchPermissions[branchId] ?? []).includes(permission);
+}
+
+export function inr(value: number | null | undefined): string {
+  return value == null ? "—" : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 2 }).format(value);
 }
 
 export function shortId(id: string | null | undefined): string {
