@@ -28,6 +28,8 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
     private string? _externalServer;
     private string? _externalDatabase;
 
+    public const string SimulatorWebhookSecret = "integration-test-simulator-secret";
+
     public TestClock Clock { get; } = new();
 
     public Guid OwnerUserId { get; private set; }
@@ -88,6 +90,8 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
         builder.UseSetting("Integrations:Email:Provider", "Logging");
         builder.UseSetting("Integrations:Storage:Provider", "Local");
         builder.UseSetting("Integrations:Storage:Local:RootPath", Path.Combine(Path.GetTempPath(), "manoksha-it-files"));
+        builder.UseSetting("Integrations:Payments:Provider", "Simulator");
+        builder.UseSetting("Integrations:Payments:Simulator:WebhookSecret", SimulatorWebhookSecret);
 
         builder.ConfigureTestServices(services =>
         {

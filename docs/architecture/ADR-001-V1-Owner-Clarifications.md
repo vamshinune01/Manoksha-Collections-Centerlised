@@ -137,3 +137,29 @@ Phase 5 completion items (engineering, 25 Sep 2026):
   it on demand (`GET /api/v1/admin/wallet/integrity`).
 - The Owner sees each reseller's saved end-customers on the reseller page (§5 global visibility); resellers add and edit their
   own saved customers in the reseller web area.
+
+## Engineering decisions recorded during Phase 6 (confirm or correct)
+- **UPI gateway:** built behind `IPaymentGateway` with a development **simulator** (refused in Production). The real provider
+  adapter is added once the Owner selects a gateway; nothing else changes. A webhook is only a trigger — the backend always
+  re-queries the provider server-to-server and checks amount/currency before acting.
+- **Payment attempt amount = order grand total (merchandise + ₹100 shipping)**, set by the backend. No extra payment limits are
+  invented; the provider's own limits apply (a rejected session fails safely and releases the reservation).
+- **Online order lifecycle:** checkout reserves the complete basket (AVAILABLE → RESERVED) at the first priority branch that can
+  fulfil it, for `reservation.minutes` (default 5). Payment success within the window sells the reserved stock and consumes FIFO
+  cost; failure releases immediately; expiry releases via the Worker sweeper (every 15 s).
+- **Late success (SPEC §14.2):** any success after the window, or after a FAILED/EXPIRED status, is rechecked: stale holds are
+  released, then Owner priority is re-run for the snapshotted basket at the original prices. The order may be recovered at a
+  different branch than originally reserved. If no branch can fulfil it → `PAYMENT_RECONCILIATION_REQUIRED` + reconciliation case
+  (`MC-REC-…`), audited, CRITICAL event for the Owner. Owner actions / refund markers on the case arrive with the Exception Center
+  (Phase 9).
+- **Paid amount ≠ amount due** → never confirmed; the hold is released and a reconciliation case (`AMOUNT_MISMATCH`) is opened.
+- **Missed webhooks:** the Worker polls live attempts every 30 s and failed/expired ones every 5 min for 24 h after initiation.
+- **A failed payment is not retried on the same order**: stock is released immediately (SPEC §13); the customer checks out again.
+- **Customers see their own online orders**, including ones whose payment did not complete (clearly labelled). Checkout is
+  prefilled from the customer's latest delivery details; there is no separate address book in V1.
+- **Storefront stock** shows only an "in stock" hint (some branch has AVAILABLE units); checkout decides per branch.
+- **Online reseller deposits (SPEC §17.1):** amount chosen by the reseller; payment window setting `payments.online_deposit_minutes`
+  (default 15). Credited once, only after provider confirmation (unique ledger link); a success after the window is still
+  credited because the money was received. Not available while the reseller is FROZEN/SUSPENDED/CLOSED (ADR-001 §17).
+- Product images/descriptions are not yet shown on the storefront (catalog image management was not part of Phases 2–6); cards
+  show the product name, variant and price.

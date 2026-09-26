@@ -602,3 +602,63 @@ export interface ResellerCustomer {
   createdAt: string;
   updatedAt: string;
 }
+
+// ---- Online payments (Phase 6) ----
+
+export interface PaymentAttempt {
+  id: string;
+  purpose: "ORDER" | "WALLET_DEPOSIT";
+  referenceId: string;
+  referenceNumber: string;
+  payerUserId: string;
+  provider: string;
+  amount: number;
+  status: string;
+  providerOrderRef: string | null;
+  providerPaymentRef: string | null;
+  initiatedAt: string;
+  expiresAt: string;
+  completedAt: string | null;
+  failureReason: string | null;
+  history: { fromStatus: string | null; toStatus: string; source: string; note: string | null; occurredAt: string }[];
+}
+
+export interface PaymentReconciliation {
+  id: string;
+  caseNumber: string;
+  paymentAttemptId: string;
+  provider: string;
+  providerOrderRef: string | null;
+  providerPaymentRef: string | null;
+  expectedAmount: number;
+  paidAmount: number | null;
+  payerUserId: string;
+  purpose: string;
+  referenceId: string;
+  referenceNumber: string;
+  reasonCode: string;
+  detail: string | null;
+  status: string;
+  ownerAction: string | null;
+  externalRefundRef: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export const PAYMENT_TONE: Record<string, "green" | "amber" | "red" | "slate" | "brand"> = {
+  SUCCESS: "green",
+  ORDER_RECOVERED: "green",
+  PENDING: "amber",
+  INITIATED: "amber",
+  LATE_SUCCESS_RECHECK: "amber",
+  FAILED: "slate",
+  EXPIRED: "slate",
+  PAYMENT_RECONCILIATION_REQUIRED: "red",
+};
+
+export function orderStatusTone(status: string): "green" | "amber" | "red" | "slate" | "brand" {
+  if (["Confirmed", "Processing", "Packed", "Shipped", "Delivered", "Completed"].includes(status)) return "green";
+  if (status === "PaymentPending" || status === "FulfillmentException") return "amber";
+  if (["PaymentFailed", "PaymentExpired", "Cancelled"].includes(status)) return "red";
+  return "slate";
+}

@@ -25,6 +25,7 @@ public class EnvironmentConfigurationTests
         config["Integrations:Sms:Provider"].Should().NotBe("Fake");
         config["Integrations:Email:Provider"].Should().NotBe("Logging");
         config["Integrations:Storage:Provider"].Should().NotBe("Local");
+        config["Integrations:Payments:Provider"].Should().NotBeNull().And.NotBe("Simulator", "the UPI simulator must never take payments in Production");
         config["Database:MigrateOnStartup"].Should().Be("False", "production migrations run as a separate job");
     }
 

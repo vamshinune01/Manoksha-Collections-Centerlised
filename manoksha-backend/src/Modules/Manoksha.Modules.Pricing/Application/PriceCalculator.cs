@@ -20,6 +20,37 @@ internal sealed class PriceCalculator(ManokshaDbContext db, ICatalogLookup catal
             .Where(d => productIds.Contains(d.ProductId) && d.EffectiveTo == null)
             .ToDictionaryAsync(d => d.ProductId, d => (d.Id, d.DiscountPct), ct);
 
+    public async Task<IReadOnlyList<RetailPriceLine>> QuoteForRetailAsync(IReadOnlyCollection<Guid> skuIds, CancellationToken cancellationToken = default)
+    {
+        var ids = skuIds.Distinct().ToList();
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+        var skus = await catalog.FindSkusAsync(ids, cancellationToken);
+        var retail = await GetRetailPricesAsync(ids, cancellationToken);
+        foreach (var id in ids)
+        {
+            if (!skus.TryGetValue(id, out var sku))
+            {
+                throw new NotFoundException("SKU_NOT_FOUND", "A requested item does not exist.");
+            }
+            if (!sku.AvailableForRetail || sku.ProductStatus != "Active" || !sku.VariantActive)
+            {
+                var ex = new BusinessRuleException("SKU_NOT_AVAILABLE_ONLINE", $"{sku.ProductName} ({sku.VariantName}) is not available online.", 422);
+                ex.Details["skuId"] = id;
+                throw ex;
+            }
+            if (!retail.ContainsKey(id))
+            {
+                var ex = new BusinessRuleException("SKU_NOT_PRICED", $"{sku.ProductName} ({sku.VariantName}) has no price yet and cannot be sold.", 422);
+                ex.Details["skuId"] = id;
+                throw ex;
+            }
+        }
+        return ids.Select(id => new RetailPriceLine(id, retail[id].RetailPriceId, retail[id].Price)).ToList();
+    }
+
     public async Task<IReadOnlyList<ResellerPriceLine>> QuoteForResellerAsync(Guid resellerId, IReadOnlyCollection<Guid> skuIds, CancellationToken cancellationToken = default)
     {
         var ids = skuIds.Distinct().ToList();

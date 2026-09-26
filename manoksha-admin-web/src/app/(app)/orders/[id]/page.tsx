@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { Alert, Badge, Card, PageHeader, Table, formatDateTime } from "@/components/ui";
-import { inr } from "@/lib/access";
-import { backendFetch } from "@/lib/backend";
-import type { Order } from "@/lib/types";
+import { P, can, inr } from "@/lib/access";
+import { backendFetch, getMe } from "@/lib/backend";
+import { PAYMENT_TONE, orderStatusTone, type Order, type PaymentAttempt } from "@/lib/types";
 
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const order = await backendFetch<Order>(`admin/orders/${id}`);
   if (!order.ok) return <Alert>{order.problem.title}</Alert>;
   const o = order.data;
+  const me = (await getMe())!;
+  const payments = o.channel === "Online" && can(me, P.exceptionsView) ? await backendFetch<PaymentAttempt[]>(`admin/payments?referenceId=${o.id}`) : null;
   return (
     <>
       <PageHeader title={o.number} description={`${o.channel} order · fulfilled by ${o.fulfillmentBranchName}`}
@@ -39,9 +41,22 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             <p className="text-sm">{o.delivery.name} · {o.delivery.mobile}<br />{o.delivery.addressLine}, {o.delivery.city}, {o.delivery.state} {o.delivery.pin}</p>
           </Card>
           <Card title="Status">
-            <Badge tone="green">{o.status}</Badge>
+            <Badge tone={orderStatusTone(o.status)}>{o.status}</Badge>
             <ul className="mt-2 space-y-1 text-xs text-slate-600">{o.history.map((h) => <li key={h.occurredAt}>{formatDateTime(h.occurredAt)} · {h.toStatus}{h.note ? ` · ${h.note}` : ""}</li>)}</ul>
           </Card>
+          {payments?.ok && payments.data.length > 0 && (
+            <Card title="UPI payment">
+              {payments.data.map((p) => (
+                <div key={p.id} className="space-y-1 text-sm">
+                  <Badge tone={PAYMENT_TONE[p.status] ?? "slate"}>{p.status}</Badge>
+                  <div className="font-mono text-xs text-slate-500">{p.provider} · {p.providerOrderRef ?? "no session"}{p.providerPaymentRef ? ` · ${p.providerPaymentRef}` : ""}</div>
+                  <ul className="space-y-0.5 text-xs text-slate-600">
+                    {p.history.map((h) => <li key={h.occurredAt + h.toStatus}>{formatDateTime(h.occurredAt)} · {h.toStatus} ({h.source}){h.note ? ` · ${h.note}` : ""}</li>)}
+                  </ul>
+                </div>
+              ))}
+            </Card>
+          )}
         </div>
       </div>
     </>

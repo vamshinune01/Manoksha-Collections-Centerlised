@@ -42,6 +42,8 @@ namespace Manoksha.Migrations.Migrations
 
             modelBuilder.HasSequence("po_seq", "purchasing");
 
+            modelBuilder.HasSequence("reconciliation_seq", "payments");
+
             modelBuilder.HasSequence("reseller_number_seq", "resellers");
 
             modelBuilder.HasSequence("sku_code_seq", "catalog");
@@ -2347,6 +2349,10 @@ namespace Manoksha.Migrations.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("CustomerUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_user_id");
+
                     b.Property<Guid>("FulfillmentBranchId")
                         .HasColumnType("uuid")
                         .HasColumnName("fulfillment_branch_id");
@@ -2366,6 +2372,10 @@ namespace Manoksha.Migrations.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
                         .HasColumnName("number");
+
+                    b.Property<Guid?>("PaymentAttemptId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payment_attempt_id");
 
                     b.Property<Guid>("PlacedBy")
                         .HasColumnType("uuid")
@@ -2407,6 +2417,14 @@ namespace Manoksha.Migrations.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_orders_number");
 
+                    b.HasIndex("PaymentAttemptId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_orders_payment_attempt_id")
+                        .HasFilter("payment_attempt_id IS NOT NULL");
+
+                    b.HasIndex("CustomerUserId", "CreatedAt")
+                        .HasDatabaseName("ix_orders_customer_user_id_created_at");
+
                     b.HasIndex("FulfillmentBranchId", "Status")
                         .HasDatabaseName("ix_orders_fulfillment_branch_id_status");
 
@@ -2434,7 +2452,7 @@ namespace Manoksha.Migrations.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("commercial_term_version");
 
-                    b.Property<decimal>("CostAmount")
+                    b.Property<decimal?>("CostAmount")
                         .HasPrecision(14, 2)
                         .HasColumnType("numeric(14,2)")
                         .HasColumnName("cost_amount");
@@ -2598,6 +2616,564 @@ namespace Manoksha.Migrations.Migrations
                         .HasDatabaseName("ix_reseller_customers_reseller_id");
 
                     b.ToTable("reseller_customers", "orders");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.Reservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<string>("CloseReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("close_reason");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_reservations");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("ix_reservations_active_expiry")
+                        .HasFilter("status = 'Active'");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_reservations_one_active_per_order")
+                        .HasFilter("status = 'Active'");
+
+                    b.ToTable("reservations", "orders");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.ReservationLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("CostAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("cost_amount");
+
+                    b.Property<Guid[]>("ItemIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("item_ids");
+
+                    b.Property<Guid>("OrderLineId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_line_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("ReservationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reservation_id");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_reservation_lines");
+
+                    b.HasIndex("OrderLineId")
+                        .HasDatabaseName("ix_reservation_lines_order_line_id");
+
+                    b.HasIndex("ReservationId")
+                        .HasDatabaseName("ix_reservation_lines_reservation_id");
+
+                    b.ToTable("reservation_lines", "orders", t =>
+                        {
+                            t.HasCheckConstraint("ck_reservation_lines_quantity", "quantity > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Payments.Domain.PaymentAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<DateTimeOffset>("InitiatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("initiated_at");
+
+                    b.Property<DateTimeOffset?>("NextPollAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_poll_at");
+
+                    b.Property<Guid>("PayerUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payer_user_id");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("ProviderOrderRef")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("provider_order_ref");
+
+                    b.Property<string>("ProviderPaymentRef")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("provider_payment_ref");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("purpose");
+
+                    b.Property<string>("RedirectUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("redirect_url");
+
+                    b.Property<Guid>("ReferenceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reference_id");
+
+                    b.Property<string>("ReferenceNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("reference_number");
+
+                    b.Property<string>("ReturnPath")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("return_path");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_payment_attempts");
+
+                    b.HasIndex("Provider", "ProviderOrderRef")
+                        .IsUnique()
+                        .HasDatabaseName("ix_payment_attempts_provider_provider_order_ref")
+                        .HasFilter("provider_order_ref IS NOT NULL");
+
+                    b.HasIndex("Provider", "ProviderPaymentRef")
+                        .IsUnique()
+                        .HasDatabaseName("ix_payment_attempts_provider_provider_payment_ref")
+                        .HasFilter("provider_payment_ref IS NOT NULL");
+
+                    b.HasIndex("Purpose", "ReferenceId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_payment_attempts_one_live")
+                        .HasFilter("status IN ('Initiated', 'Pending')");
+
+                    b.HasIndex("Status", "NextPollAt")
+                        .HasDatabaseName("ix_payment_attempts_status_next_poll_at");
+
+                    b.ToTable("payment_attempts", "payments", t =>
+                        {
+                            t.HasCheckConstraint("ck_payment_attempts_amount_positive", "amount > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Payments.Domain.PaymentReconciliation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CaseNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("case_number");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Detail")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("detail");
+
+                    b.Property<decimal>("ExpectedAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("expected_amount");
+
+                    b.Property<string>("ExternalRefundRef")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("external_refund_ref");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("OwnerAction")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("owner_action");
+
+                    b.Property<decimal?>("PaidAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("paid_amount");
+
+                    b.Property<Guid>("PayerUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payer_user_id");
+
+                    b.Property<Guid>("PaymentAttemptId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payment_attempt_id");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("ProviderOrderRef")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("provider_order_ref");
+
+                    b.Property<string>("ProviderPaymentRef")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("provider_payment_ref");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("purpose");
+
+                    b.Property<string>("ReasonCode")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("reason_code");
+
+                    b.Property<Guid>("ReferenceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reference_id");
+
+                    b.Property<string>("ReferenceNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("reference_number");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_reconciliations");
+
+                    b.HasIndex("CaseNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_reconciliations_case_number");
+
+                    b.HasIndex("PaymentAttemptId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_reconciliations_payment_attempt_id");
+
+                    b.HasIndex("Status", "CreatedAt")
+                        .HasDatabaseName("ix_reconciliations_status_created_at");
+
+                    b.ToTable("reconciliations", "payments");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Payments.Domain.PaymentStatusChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AttemptId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("attempt_id");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("from_status");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("source");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("to_status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_payment_status_changes");
+
+                    b.HasIndex("AttemptId", "OccurredAt")
+                        .HasDatabaseName("ix_payment_status_changes_attempt_id_occurred_at");
+
+                    b.ToTable("payment_status_changes", "payments");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Payments.Domain.ProviderEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("event_type");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.Property<string>("ProcessingResult")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("processing_result");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("ProviderEventId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("provider_event_id");
+
+                    b.Property<string>("ProviderOrderRef")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("provider_order_ref");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("received_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_provider_events");
+
+                    b.HasIndex("ProcessedAt")
+                        .HasDatabaseName("ix_provider_events_processed_at")
+                        .HasFilter("processed_at IS NULL");
+
+                    b.HasIndex("Provider", "ProviderEventId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_provider_events_provider_provider_event_id");
+
+                    b.ToTable("provider_events", "payments");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Payments.Simulator.SimulatorTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<Guid>("MerchantAttemptId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("merchant_attempt_id");
+
+                    b.Property<decimal?>("PaidAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("paid_amount");
+
+                    b.Property<string>("ProviderOrderRef")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("provider_order_ref");
+
+                    b.Property<string>("ProviderPaymentRef")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("provider_payment_ref");
+
+                    b.Property<string>("ReturnPath")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("return_path");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_simulator_transactions");
+
+                    b.HasIndex("MerchantAttemptId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_simulator_transactions_merchant_attempt_id");
+
+                    b.HasIndex("ProviderOrderRef")
+                        .IsUnique()
+                        .HasDatabaseName("ix_simulator_transactions_provider_order_ref");
+
+                    b.ToTable("simulator_transactions", "payments");
                 });
 
             modelBuilder.Entity("Manoksha.Modules.Pricing.Domain.ProductResellerDiscount", b =>
@@ -3371,6 +3947,86 @@ namespace Manoksha.Migrations.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Manoksha.Modules.Wallet.Domain.OnlineDeposit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("LedgerEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("ledger_entry_id");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("number");
+
+                    b.Property<Guid?>("PaymentAttemptId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payment_attempt_id");
+
+                    b.Property<string>("ProviderPaymentRef")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("provider_payment_ref");
+
+                    b.Property<Guid>("RequestedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requested_by");
+
+                    b.Property<Guid>("ResellerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reseller_id");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_online_deposits");
+
+                    b.HasIndex("LedgerEntryId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_online_deposits_ledger_entry_id")
+                        .HasFilter("ledger_entry_id IS NOT NULL");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_online_deposits_number");
+
+                    b.HasIndex("ResellerId", "CreatedAt")
+                        .HasDatabaseName("ix_online_deposits_reseller_id_created_at");
+
+                    b.ToTable("online_deposits", "wallet", t =>
+                        {
+                            t.HasCheckConstraint("ck_online_deposit_amount_positive", "amount > 0");
+                        });
+                });
+
             modelBuilder.Entity("Manoksha.Modules.Wallet.Domain.ResellerWallet", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3497,6 +4153,10 @@ namespace Manoksha.Migrations.Migrations
                         .HasColumnType("character varying(10)")
                         .HasColumnName("direction");
 
+                    b.Property<Guid?>("OnlineDepositId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("online_deposit_id");
+
                     b.Property<Guid?>("OrderId")
                         .HasColumnType("uuid")
                         .HasColumnName("order_id");
@@ -3543,6 +4203,11 @@ namespace Manoksha.Migrations.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_ledger_entries_deposit_request_id")
                         .HasFilter("deposit_request_id IS NOT NULL");
+
+                    b.HasIndex("OnlineDepositId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_ledger_entries_online_deposit_id")
+                        .HasFilter("online_deposit_id IS NOT NULL");
 
                     b.HasIndex("OrderId")
                         .IsUnique()
@@ -4131,6 +4796,53 @@ namespace Manoksha.Migrations.Migrations
 
                     b.Navigation("Details")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.Reservation", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Orders.Domain.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reservations_orders_order_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.ReservationLine", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Orders.Domain.OrderLine", null)
+                        .WithMany()
+                        .HasForeignKey("OrderLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reservation_lines_order_lines_order_line_id");
+
+                    b.HasOne("Manoksha.Modules.Orders.Domain.Reservation", null)
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reservation_lines_reservations_reservation_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Payments.Domain.PaymentReconciliation", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Payments.Domain.PaymentAttempt", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentAttemptId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reconciliations_payment_attempts_payment_attempt_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Payments.Domain.PaymentStatusChange", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Payments.Domain.PaymentAttempt", null)
+                        .WithMany()
+                        .HasForeignKey("AttemptId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_payment_status_changes_payment_attempts_attempt_id");
                 });
 
             modelBuilder.Entity("Manoksha.Modules.Purchasing.Domain.GoodsReceipt", b =>

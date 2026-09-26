@@ -37,6 +37,10 @@ internal static class SettingDefinitions
             "Largest inventory adjustment (value at cost, INR) a branch approver may approve. Above it only the Owner may approve. 0 = Owner approves all (ADR-001 §14).",
             SettingValueKind.Money, "0.00",
             v => v.ValueKind == JsonValueKind.Number && v.TryGetDecimal(out var d) && d >= 0 && Money.HasValidScale(d) ? null : "Must be a non-negative amount with at most 2 decimals."),
+        new(SettingKeys.OnlineDepositMinutes,
+            "Minutes a reseller has to complete an online UPI wallet deposit; later payments are still credited once confirmed (SPEC §17.1).",
+            SettingValueKind.Integer, "15",
+            v => v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var m) && m is >= 5 and <= 60 ? null : "Must be a whole number of minutes between 5 and 60."),
     ];
 
     public static SettingDefinition? Find(string key) => All.FirstOrDefault(d => d.Key == key);

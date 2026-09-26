@@ -564,6 +564,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CustomerCheckout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CustomerOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CustomerOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/orders/{id}/payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CustomerOrderPayment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/delivery-defaults": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CustomerDeliveryDefaults"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/employees": {
         parameters: {
             query?: never;
@@ -1428,6 +1508,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/payment-simulator/{providerOrderRef}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SimulatorGetPayment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payment-simulator/{providerOrderRef}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SimulatorApprovePayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payment-simulator/{providerOrderRef}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SimulatorDeclinePayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListPaymentAttempts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payment-reconciliations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListPaymentReconciliations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payment-reconciliations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPaymentReconciliation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/pricing/skus": {
         parameters: {
             query?: never;
@@ -1716,6 +1892,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reseller/wallet/deposits/online": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerOnlineDeposits"];
+        put?: never;
+        post: operations["StartOnlineDeposit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/wallet/deposits/online/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerOnlineDeposit"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reseller/wallet/deposits/{id}/proof": {
         parameters: {
             query?: never;
@@ -1966,6 +2174,70 @@ export interface paths {
         get?: never;
         put: operations["UpdateSetting"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StorefrontCategories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StorefrontProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/products/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StorefrontProduct"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/cart-quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StorefrontCartQuote"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2409,6 +2681,20 @@ export interface components {
             /** Format: date-time */
             createdAt?: string;
         };
+        CartQuoteLineDto: {
+            /** Format: uuid */
+            skuId?: string;
+            sellable?: boolean;
+            productName?: string | null;
+            variantName?: string | null;
+            /** Format: double */
+            price?: number | null;
+            inStock?: boolean;
+            message?: string | null;
+        };
+        CartQuoteRequest: {
+            skuIds?: string[] | null;
+        };
         CategoryDto: {
             /** Format: uuid */
             id?: string;
@@ -2637,6 +2923,16 @@ export interface components {
             skuCode?: string | null;
             generateBarcode?: boolean;
             reason?: string | null;
+        };
+        CustomerCheckoutRequest: {
+            lines?: components["schemas"]["CheckoutLineRequest"][] | null;
+            delivery?: components["schemas"]["DeliveryDto"];
+        };
+        CustomerCheckoutResult: {
+            outcome?: string | null;
+            order?: components["schemas"]["OrderDto"];
+            payment?: components["schemas"]["OnlinePaymentDto"];
+            inquiry?: components["schemas"]["InquiryDto"];
         };
         CustomerRegistrationRequest: {
             registrationToken?: string | null;
@@ -2963,6 +3259,41 @@ export interface components {
             assignedBranchId?: string | null;
             assignedBranchName?: string | null;
         };
+        OnlineDepositDto: {
+            /** Format: uuid */
+            id?: string;
+            number?: string | null;
+            /** Format: double */
+            amount?: number;
+            status?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            completedAt?: string | null;
+            providerPaymentRef?: string | null;
+            payment?: components["schemas"]["OnlineDepositPaymentDto"];
+        };
+        OnlineDepositPaymentDto: {
+            /** Format: uuid */
+            attemptId?: string;
+            status?: string | null;
+            redirectUrl?: string | null;
+            /** Format: date-time */
+            expiresAt?: string;
+        };
+        OnlinePaymentDto: {
+            /** Format: uuid */
+            attemptId?: string;
+            status?: string | null;
+            /** Format: double */
+            amount?: number;
+            redirectUrl?: string | null;
+            /** Format: date-time */
+            expiresAt?: string;
+            /** Format: date-time */
+            completedAt?: string | null;
+            message?: string | null;
+        };
         OrderDto: {
             /** Format: uuid */
             id?: string;
@@ -3015,6 +3346,13 @@ export interface components {
             /** Format: int32 */
             commercialTermVersion?: number | null;
         };
+        OrderPaymentStatusDto: {
+            /** Format: uuid */
+            orderId?: string;
+            orderNumber?: string | null;
+            orderStatus?: string | null;
+            payment?: components["schemas"]["OnlinePaymentDto"];
+        };
         OrderStatusChangeDto: {
             fromStatus?: string | null;
             toStatus?: string | null;
@@ -3036,6 +3374,68 @@ export interface components {
             mobile?: string | null;
             context?: string | null;
             code?: string | null;
+        };
+        PaymentAttemptDto: {
+            /** Format: uuid */
+            id?: string;
+            purpose?: string | null;
+            /** Format: uuid */
+            referenceId?: string;
+            referenceNumber?: string | null;
+            /** Format: uuid */
+            payerUserId?: string;
+            provider?: string | null;
+            /** Format: double */
+            amount?: number;
+            status?: string | null;
+            providerOrderRef?: string | null;
+            providerPaymentRef?: string | null;
+            /** Format: date-time */
+            initiatedAt?: string;
+            /** Format: date-time */
+            expiresAt?: string;
+            /** Format: date-time */
+            completedAt?: string | null;
+            failureReason?: string | null;
+            history?: components["schemas"]["PaymentStatusChangeDto"][] | null;
+        };
+        PaymentReconciliationDto: {
+            /** Format: uuid */
+            id?: string;
+            caseNumber?: string | null;
+            /** Format: uuid */
+            paymentAttemptId?: string;
+            provider?: string | null;
+            providerOrderRef?: string | null;
+            providerPaymentRef?: string | null;
+            /** Format: double */
+            expectedAmount?: number;
+            /** Format: double */
+            paidAmount?: number | null;
+            /** Format: uuid */
+            payerUserId?: string;
+            purpose?: string | null;
+            /** Format: uuid */
+            referenceId?: string;
+            referenceNumber?: string | null;
+            reasonCode?: string | null;
+            detail?: string | null;
+            status?: string | null;
+            ownerAction?: string | null;
+            externalRefundRef?: string | null;
+            notes?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        PaymentStatusChangeDto: {
+            fromStatus?: string | null;
+            toStatus?: string | null;
+            source?: string | null;
+            note?: string | null;
+            /** Format: date-time */
+            occurredAt?: string;
         };
         PermissionDto: {
             code?: string | null;
@@ -3199,6 +3599,14 @@ export interface components {
             variantCount?: number;
             /** Format: date-time */
             createdAt?: string;
+        };
+        PublicCategoryDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            parentId?: string | null;
+            name?: string | null;
+            slug?: string | null;
         };
         PurchaseOrderDto: {
             /** Format: uuid */
@@ -3527,6 +3935,28 @@ export interface components {
             permissions?: string[] | null;
             reason?: string | null;
         };
+        SimulatorApproveRequest: {
+            /** Format: double */
+            paidAmount?: number | null;
+            sendWebhook?: boolean;
+        };
+        SimulatorDeclineRequest: {
+            sendWebhook?: boolean;
+        };
+        SimulatorPaymentDto: {
+            providerOrderRef?: string | null;
+            /** Format: double */
+            amount?: number;
+            description?: string | null;
+            status?: string | null;
+            /** Format: date-time */
+            expiresAt?: string;
+            windowEnded?: boolean;
+            /** Format: double */
+            paidAmount?: number | null;
+            providerPaymentRef?: string | null;
+            returnPath?: string | null;
+        };
         SkuInfo: {
             /** Format: uuid */
             skuId?: string;
@@ -3561,6 +3991,10 @@ export interface components {
             /** Format: double */
             productResellerDiscountPct?: number | null;
         };
+        StartOnlineDepositRequest: {
+            /** Format: double */
+            amount?: number;
+        };
         StatusChangeDto: {
             fromStatus?: string | null;
             toStatus?: string | null;
@@ -3587,6 +4021,43 @@ export interface components {
             available?: number;
             /** Format: int32 */
             onHand?: number;
+        };
+        StorefrontItemDto: {
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            /** Format: uuid */
+            productId?: string;
+            productName?: string | null;
+            variantName?: string | null;
+            categoryName?: string | null;
+            /** Format: double */
+            price?: number;
+            inStock?: boolean;
+        };
+        StorefrontPage: {
+            items?: components["schemas"]["StorefrontItemDto"][] | null;
+            /** Format: int32 */
+            total?: number;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            pageSize?: number;
+        };
+        StorefrontProductDto: {
+            /** Format: uuid */
+            productId?: string;
+            productName?: string | null;
+            variants?: components["schemas"]["StorefrontVariantDto"][] | null;
+        };
+        StorefrontVariantDto: {
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            variantName?: string | null;
+            /** Format: double */
+            price?: number;
+            inStock?: boolean;
         };
         SupplierDto: {
             /** Format: uuid */
@@ -4790,6 +5261,114 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SkuInfo"][];
+                };
+            };
+        };
+    };
+    CustomerCheckout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerCheckoutRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerCheckoutResult"];
+                };
+            };
+        };
+    };
+    CustomerOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"][];
+                };
+            };
+        };
+    };
+    CustomerOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    CustomerOrderPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderPaymentStatusDto"];
+                };
+            };
+        };
+    };
+    CustomerDeliveryDefaults: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryDto"];
                 };
             };
         };
@@ -6233,6 +6812,148 @@ export interface operations {
             };
         };
     };
+    SimulatorGetPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerOrderRef: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulatorPaymentDto"];
+                };
+            };
+        };
+    };
+    SimulatorApprovePayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerOrderRef: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulatorApproveRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulatorPaymentDto"];
+                };
+            };
+        };
+    };
+    SimulatorDeclinePayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerOrderRef: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulatorDeclineRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulatorPaymentDto"];
+                };
+            };
+        };
+    };
+    ListPaymentAttempts: {
+        parameters: {
+            query?: {
+                status?: string;
+                purpose?: string;
+                referenceId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentAttemptDto"][];
+                };
+            };
+        };
+    };
+    ListPaymentReconciliations: {
+        parameters: {
+            query?: {
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentReconciliationDto"][];
+                };
+            };
+        };
+    };
+    GetPaymentReconciliation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentReconciliationDto"];
+                };
+            };
+        };
+    };
     ListSkuPrices: {
         parameters: {
             query?: {
@@ -6816,6 +7537,72 @@ export interface operations {
             };
         };
     };
+    ResellerOnlineDeposits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnlineDepositDto"][];
+                };
+            };
+        };
+    };
+    StartOnlineDeposit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartOnlineDepositRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnlineDepositDto"];
+                };
+            };
+        };
+    };
+    ResellerOnlineDeposit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnlineDepositDto"];
+                };
+            };
+        };
+    };
     ResellerDepositProof: {
         parameters: {
             query?: never;
@@ -7249,6 +8036,97 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    StorefrontCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicCategoryDto"][];
+                };
+            };
+        };
+    };
+    StorefrontProducts: {
+        parameters: {
+            query?: {
+                q?: string;
+                categoryId?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorefrontPage"];
+                };
+            };
+        };
+    };
+    StorefrontProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorefrontProductDto"];
+                };
+            };
+        };
+    };
+    StorefrontCartQuote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CartQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartQuoteLineDto"][];
+                };
             };
         };
     };

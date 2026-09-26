@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Manoksha.Modules.Payments</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Manoksha.Persistence\Manoksha.Persistence.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Manoksha.UnitTests" />
+    <InternalsVisibleTo Include="Manoksha.IntegrationTests" />
+  </ItemGroup>
+</Project>

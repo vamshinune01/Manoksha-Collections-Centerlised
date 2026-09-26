@@ -65,6 +65,7 @@ export interface OrderLine {
 export interface Order {
   id: string;
   number: string;
+  channel?: string;
   status: string;
   fulfillmentBranchName: string;
   delivery: Delivery;
@@ -117,6 +118,119 @@ export interface Term {
   notes: string | null;
   effectiveFrom: string;
   isCurrent: boolean;
+}
+
+// ---- Storefront & online orders (Phase 6) ----
+
+export interface CustomerMe {
+  userId: string;
+  accountType: string;
+  displayName: string;
+  email: string | null;
+  mobile: string | null;
+}
+
+export interface StoreItem {
+  skuId: string;
+  skuCode: string;
+  productId: string;
+  productName: string;
+  variantName: string;
+  categoryName: string;
+  price: number;
+  inStock: boolean;
+}
+
+export interface StorePage {
+  items: StoreItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface StoreCategory {
+  id: string;
+  parentId: string | null;
+  name: string;
+  slug: string;
+}
+
+export interface StoreProduct {
+  productId: string;
+  productName: string;
+  variants: { skuId: string; skuCode: string; variantName: string; price: number; inStock: boolean }[];
+}
+
+export interface CartQuoteLine {
+  skuId: string;
+  sellable: boolean;
+  productName: string | null;
+  variantName: string | null;
+  price: number | null;
+  inStock: boolean;
+  message: string | null;
+}
+
+export interface OnlinePayment {
+  attemptId: string;
+  status: string;
+  amount: number;
+  redirectUrl: string | null;
+  expiresAt: string;
+  completedAt: string | null;
+  message: string;
+}
+
+export interface Inquiry {
+  reference: string;
+  message: string;
+  whatsAppUrl: string;
+}
+
+export interface CustomerCheckoutResult {
+  outcome: "PAYMENT_PENDING" | "PAYMENT_NOT_COMPLETED" | "ORDER_PLACED" | "UNFULFILLABLE";
+  order: Order | null;
+  payment: OnlinePayment | null;
+  inquiry: Inquiry | null;
+}
+
+export interface OrderPaymentStatus {
+  orderId: string;
+  orderNumber: string;
+  orderStatus: string;
+  payment: OnlinePayment | null;
+}
+
+export interface OnlineDeposit {
+  id: string;
+  number: string;
+  amount: number;
+  status: "Pending" | "Credited" | "Failed" | "Expired";
+  createdAt: string;
+  completedAt: string | null;
+  providerPaymentRef: string | null;
+  payment: { attemptId: string; status: string; redirectUrl: string | null; expiresAt: string } | null;
+}
+
+/** Customer-facing wording for order statuses (SPEC §27.1); customers never get a cancel action (SPEC §21). */
+export const ORDER_STATUS_LABEL: Record<string, string> = {
+  PaymentPending: "Awaiting payment",
+  PaymentFailed: "Payment not completed",
+  PaymentExpired: "Payment window ended",
+  Confirmed: "Confirmed",
+  Processing: "Processing",
+  Packed: "Packed",
+  Shipped: "Shipped",
+  Delivered: "Delivered",
+  FulfillmentException: "Being resolved",
+  Cancelled: "Cancelled",
+};
+
+export function orderStatusTone(status: string): "green" | "amber" | "red" | "slate" | "brand" {
+  if (["Confirmed", "Processing", "Packed", "Shipped", "Delivered"].includes(status)) return "green";
+  if (status === "PaymentPending") return "amber";
+  if (["PaymentFailed", "PaymentExpired", "Cancelled"].includes(status)) return "red";
+  return "slate";
 }
 
 export const inr = (v: number | null | undefined) =>

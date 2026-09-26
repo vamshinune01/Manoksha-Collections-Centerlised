@@ -27,6 +27,8 @@ public sealed class OrdersModelConfiguration : IModuleModelConfiguration
             b.HasIndex(x => x.Number).IsUnique();
             b.HasIndex(x => new { x.ResellerId, x.CreatedAt });
             b.HasIndex(x => new { x.FulfillmentBranchId, x.Status });
+            b.HasIndex(x => new { x.CustomerUserId, x.CreatedAt });
+            b.HasIndex(x => x.PaymentAttemptId).IsUnique().HasFilter("payment_attempt_id IS NOT NULL");
             b.OwnsOne(x => x.Delivery, d => MapDelivery(d, "delivery_"));
             b.Navigation(x => x.Delivery).IsRequired();
         });
@@ -55,6 +57,29 @@ public sealed class OrdersModelConfiguration : IModuleModelConfiguration
             b.Property(x => x.Note).HasMaxLength(2000);
             b.HasIndex(x => new { x.OrderId, x.OccurredAt });
             b.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Reservation>(b =>
+        {
+            b.ToTable("reservations", SchemaName);
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+            b.Property(x => x.CloseReason).HasMaxLength(500);
+            b.Property(x => x.RowVersion).IsRowVersion();
+            b.HasIndex(x => x.OrderId);
+            // One live hold per order; the sweeper scans active holds by expiry.
+            b.HasIndex(x => x.OrderId).IsUnique().HasFilter("status = 'Active'").HasDatabaseName("ux_reservations_one_active_per_order");
+            b.HasIndex(x => x.ExpiresAt).HasFilter("status = 'Active'").HasDatabaseName("ix_reservations_active_expiry");
+            b.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ReservationLine>(b =>
+        {
+            b.ToTable("reservation_lines", SchemaName, t => t.HasCheckConstraint("ck_reservation_lines_quantity", "quantity > 0"));
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => x.ReservationId);
+            b.HasOne<Reservation>().WithMany().HasForeignKey(x => x.ReservationId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne<OrderLine>().WithMany().HasForeignKey(x => x.OrderLineId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ResellerCustomer>(b =>

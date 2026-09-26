@@ -6,6 +6,7 @@ using Manoksha.Modules.Employees;
 using Manoksha.Modules.Identity;
 using Manoksha.Modules.Inventory;
 using Manoksha.Modules.Orders;
+using Manoksha.Modules.Payments;
 using Manoksha.Modules.Pricing;
 using Manoksha.Modules.Resellers;
 using Manoksha.Modules.Wallet;
@@ -30,6 +31,7 @@ public static class ModuleCatalog
         new WalletModule(),
         new ResellersModule(),
         new PricingModule(),
+        new PaymentsModule(),
         new OrdersModule(),
     ];
 }

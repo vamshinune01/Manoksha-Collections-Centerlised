@@ -24,6 +24,23 @@ internal static class OrderEndpoints
         reseller.MapPut("/customers/{id:guid}", (Guid id, SaveResellerCustomerRequest r, ResellerCustomerService s, CancellationToken ct) => s.UpdateAsync(id, r, ct))
             .WithName("UpdateResellerCustomer");
 
+        // Public storefront: anonymous browsing (ADR-001 §10). Prices shown here are display-only.
+        var store = endpoints.MapGroup("/api/v1/catalog").WithTags("Storefront").AllowAnonymous();
+        store.MapGet("/products", (string? q, Guid? categoryId, int? page, int? pageSize, StorefrontService s, CancellationToken ct) =>
+            s.ListAsync(q, categoryId, page, pageSize, ct)).WithName("StorefrontProducts");
+        store.MapGet("/products/{productId:guid}", (Guid productId, StorefrontService s, CancellationToken ct) => s.ProductAsync(productId, ct)).WithName("StorefrontProduct");
+        store.MapPost("/cart-quote", (CartQuoteRequest r, StorefrontService s, CancellationToken ct) => s.CartQuoteAsync(r, ct)).WithName("StorefrontCartQuote");
+
+        // Signed-in customers: checkout requires login (ADR-001 §10); no cancel endpoint exists (SPEC §21).
+        var customer = endpoints.MapGroup("/api/v1/customer").WithTags("Customer").RequireAudience(Audiences.Customer);
+        customer.MapPost("/checkout", (CustomerCheckoutRequest r, HttpRequest http, CustomerCheckoutService s, CancellationToken ct) =>
+            s.CheckoutAsync(r, http.GetRequiredIdempotencyKey(), ct)).WithName("CustomerCheckout");
+        customer.MapGet("/orders", (OrderQueryService s, CancellationToken ct) => s.ListForCustomerAsync(ct)).WithName("CustomerOrders");
+        customer.MapGet("/orders/{id:guid}", (Guid id, OrderQueryService s, CancellationToken ct) => s.GetForCustomerAsync(id, ct)).WithName("CustomerOrder");
+        customer.MapGet("/orders/{id:guid}/payment", (Guid id, OnlineOrderService s, CancellationToken ct) => s.PaymentStatusAsync(id, ct)).WithName("CustomerOrderPayment");
+        customer.MapGet("/delivery-defaults", async (OrderQueryService s, CancellationToken ct) => Results.Ok(await s.LastDeliveryAsync(ct)))
+            .Produces<DeliveryDto>().WithName("CustomerDeliveryDefaults");
+
         var admin = endpoints.MapGroup("/api/v1/admin").WithTags("Orders").RequireAudience(Audiences.Admin);
         admin.MapGet("/orders", (string? channel, string? status, Guid? branchId, Guid? resellerId, OrderQueryService s, CancellationToken ct) =>
             s.ListAsync(channel, status, branchId, resellerId, ct)).RequirePermission(Permissions.Orders.View).WithName("ListOrders");

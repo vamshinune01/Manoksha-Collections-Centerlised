@@ -23,5 +23,6 @@
     <ProjectReference Include="..\..\Modules\Manoksha.Modules.Resellers\Manoksha.Modules.Resellers.csproj" />
     <ProjectReference Include="..\..\Modules\Manoksha.Modules.Pricing\Manoksha.Modules.Pricing.csproj" />
     <ProjectReference Include="..\..\Modules\Manoksha.Modules.Orders\Manoksha.Modules.Orders.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Payments\Manoksha.Modules.Payments.csproj" />
   </ItemGroup>
 </Project>

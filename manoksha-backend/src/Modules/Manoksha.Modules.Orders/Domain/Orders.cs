@@ -36,9 +36,10 @@ internal sealed class Order : Entity
     }
 
     public Order(Guid id, string number, OrderChannel channel, Guid? resellerId, Guid? resellerCustomerId, Guid fulfillmentBranchId, DeliveryDetails delivery,
-        decimal merchandiseTotal, decimal shippingFee, Guid placedBy, DateTimeOffset now)
+        decimal merchandiseTotal, decimal shippingFee, Guid placedBy, DateTimeOffset now, Guid? customerUserId = null)
         : base(id)
     {
+        CustomerUserId = customerUserId;
         Number = number;
         Channel = channel;
         ResellerId = resellerId;
@@ -62,6 +63,12 @@ internal sealed class Order : Entity
     public Guid? ResellerId { get; private set; }
 
     public Guid? ResellerCustomerId { get; private set; }
+
+    /// <summary>The signed-in customer who placed an ONLINE order (SPEC §24: they alone see it).</summary>
+    public Guid? CustomerUserId { get; private set; }
+
+    /// <summary>The payment attempt that paid an ONLINE order.</summary>
+    public Guid? PaymentAttemptId { get; private set; }
 
     public Guid FulfillmentBranchId { get; private set; }
 
@@ -95,6 +102,58 @@ internal sealed class Order : Entity
         Status = OrderStatus.Confirmed;
         ConfirmedAt = now;
     }
+
+    /// <summary>Online: the complete basket is reserved at one branch and payment can start (SPEC §19.1).</summary>
+    public void AwaitPayment()
+    {
+        Ensure(OrderStatus.CheckoutAttempt);
+        Status = OrderStatus.PaymentPending;
+    }
+
+    /// <summary>Valid payment inside the reservation window (SPEC §14.1).</summary>
+    public OrderStatus ConfirmOnlinePaid(Guid paymentAttemptId, DateTimeOffset now)
+    {
+        var from = Ensure(OrderStatus.PaymentPending);
+        PaymentAttemptId = paymentAttemptId;
+        Status = OrderStatus.Confirmed;
+        ConfirmedAt = now;
+        return from;
+    }
+
+    /// <summary>
+    /// Late success recovered by re-acquiring the complete basket (SPEC §14.2). The branch may differ from the original reservation;
+    /// the price snapshot never changes (ADR-001 §12).
+    /// </summary>
+    public OrderStatus RecoverLatePayment(Guid paymentAttemptId, Guid branchId, DateTimeOffset now)
+    {
+        var from = Ensure(OrderStatus.PaymentPending, OrderStatus.PaymentExpired, OrderStatus.PaymentFailed);
+        PaymentAttemptId = paymentAttemptId;
+        FulfillmentBranchId = branchId;
+        Status = OrderStatus.Confirmed;
+        ConfirmedAt = now;
+        return from;
+    }
+
+    public void MarkPaymentFailed()
+    {
+        Ensure(OrderStatus.PaymentPending);
+        Status = OrderStatus.PaymentFailed;
+    }
+
+    public void MarkPaymentExpired()
+    {
+        Ensure(OrderStatus.PaymentPending);
+        Status = OrderStatus.PaymentExpired;
+    }
+
+    private OrderStatus Ensure(params OrderStatus[] allowed)
+    {
+        if (!allowed.Contains(Status))
+        {
+            throw new BusinessRuleException("ORDER_STATUS_INVALID", $"The order is {Status}; this step is not possible.", 409);
+        }
+        return Status;
+    }
 }
 
 /// <summary>
@@ -109,7 +168,7 @@ internal sealed class OrderLine : Entity
 
     public OrderLine(Guid orderId, Guid skuId, string skuCode, string productName, string variantName, int quantity, Guid? retailPriceId, decimal retailUnitPrice,
         string discountSource, decimal discountPct, decimal finalUnitPrice, Guid? commercialTermId, int? commercialTermVersion, Guid? productDiscountId,
-        decimal costAmount, Guid[] itemIds)
+        decimal? costAmount, Guid[] itemIds)
     {
         OrderId = orderId;
         SkuId = skuId;
@@ -163,8 +222,11 @@ internal sealed class OrderLine : Entity
 
     public Guid? ProductDiscountId { get; private set; }
 
-    /// <summary>FIFO cost of goods for gross-profit reporting (SPEC §31).</summary>
-    public decimal CostAmount { get; private set; }
+    /// <summary>
+    /// FIFO cost of goods for gross-profit reporting (SPEC §31), known when stock is sold. Null for ONLINE lines, whose cost is
+    /// recorded on the consumed reservation line at payment confirmation.
+    /// </summary>
+    public decimal? CostAmount { get; private set; }
 
     public Guid[] ItemIds { get; private set; } = [];
 }
@@ -275,4 +337,97 @@ internal sealed class FulfillmentInquiry : Entity
     public string Status { get; private set; } = default!;
 
     public DateTimeOffset CreatedAt { get; private set; }
+}
+
+internal enum ReservationStatus
+{
+    Active = 1,
+    Consumed = 2,
+    Expired = 3,
+    Released = 4,
+}
+
+/// <summary>
+/// Timed hold of an ONLINE order's complete basket at one branch (SPEC §13, §27.3). The expiry is copied from the setting at
+/// creation, so a later setting change never affects it. Validity is time-based: a payment confirms it only before
+/// <see cref="ExpiresAt"/>; the sweeper merely performs the physical release.
+/// </summary>
+internal sealed class Reservation : Entity
+{
+    private Reservation()
+    {
+    }
+
+    public Reservation(Guid orderId, Guid branchId, DateTimeOffset expiresAt, DateTimeOffset now, ReservationStatus status = ReservationStatus.Active)
+    {
+        OrderId = orderId;
+        BranchId = branchId;
+        ExpiresAt = expiresAt;
+        CreatedAt = now;
+        Status = status;
+        if (status != ReservationStatus.Active)
+        {
+            ClosedAt = now;
+        }
+    }
+
+    public Guid OrderId { get; private set; }
+
+    public Guid BranchId { get; private set; }
+
+    public ReservationStatus Status { get; private set; }
+
+    public DateTimeOffset ExpiresAt { get; private set; }
+
+    public DateTimeOffset CreatedAt { get; private set; }
+
+    public DateTimeOffset? ClosedAt { get; private set; }
+
+    public string? CloseReason { get; private set; }
+
+    public uint RowVersion { get; private set; }
+
+    public void Close(ReservationStatus to, string reason, DateTimeOffset now)
+    {
+        if (Status != ReservationStatus.Active || to == ReservationStatus.Active)
+        {
+            throw new BusinessRuleException("RESERVATION_NOT_ACTIVE", $"The reservation is already {Status}.", 409);
+        }
+        Status = to;
+        CloseReason = reason;
+        ClosedAt = now;
+    }
+}
+
+internal sealed class ReservationLine : Entity
+{
+    private ReservationLine()
+    {
+    }
+
+    public ReservationLine(Guid reservationId, Guid orderLineId, Guid skuId, int quantity, Guid[] itemIds, decimal? costAmount = null)
+    {
+        ReservationId = reservationId;
+        OrderLineId = orderLineId;
+        SkuId = skuId;
+        Quantity = quantity;
+        ItemIds = itemIds;
+        CostAmount = costAmount;
+    }
+
+    public Guid ReservationId { get; private set; }
+
+    public Guid OrderLineId { get; private set; }
+
+    public Guid SkuId { get; private set; }
+
+    public int Quantity { get; private set; }
+
+    /// <summary>The exact pieces held (serialized SKUs), so release and sale are exact (design §14).</summary>
+    public Guid[] ItemIds { get; private set; } = [];
+
+    /// <summary>FIFO cost consumed when the reservation was sold.</summary>
+    public decimal? CostAmount { get; private set; }
+
+    public void RecordCost(decimal cost) => CostAmount = cost;
 }

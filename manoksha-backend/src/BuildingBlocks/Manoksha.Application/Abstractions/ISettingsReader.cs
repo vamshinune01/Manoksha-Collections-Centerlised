@@ -22,4 +22,7 @@ public static class SettingKeys
     /// (ADR-001 §14). Default 0 = every adjustment needs the Owner.
     /// </summary>
     public const string AdjustmentManagerMaxValue = "inventory.adjustment.manager_max_value";
+
+    /// <summary>Minutes a reseller has to complete an online (provider-confirmed) wallet deposit payment (SPEC §17.1).</summary>
+    public const string OnlineDepositMinutes = "payments.online_deposit_minutes";
 }

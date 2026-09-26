@@ -42,6 +42,7 @@ public sealed class WalletModelConfiguration : IModuleModelConfiguration
             b.HasIndex(x => x.DepositRequestId).IsUnique().HasFilter("deposit_request_id IS NOT NULL");
             b.HasIndex(x => x.OrderId).IsUnique().HasFilter("type = 'Debit' AND order_id IS NOT NULL").HasDatabaseName("ux_ledger_one_debit_per_order");
             b.HasIndex(x => x.ReversesEntryId).IsUnique().HasFilter("reverses_entry_id IS NOT NULL");
+            b.HasIndex(x => x.OnlineDepositId).IsUnique().HasFilter("online_deposit_id IS NOT NULL");
             b.HasOne<ResellerWallet>().WithMany().HasForeignKey(x => x.WalletId).OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -62,6 +63,19 @@ public sealed class WalletModelConfiguration : IModuleModelConfiguration
             // A payment reference can back only one pending/credited deposit.
             b.HasIndex(x => x.Reference).IsUnique().HasFilter("status <> 'Rejected'").HasDatabaseName("ux_deposit_reference_active");
             b.HasOne<WalletFile>().WithMany().HasForeignKey(x => x.ProofFileId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<OnlineDeposit>(b =>
+        {
+            b.ToTable("online_deposits", SchemaName, t => t.HasCheckConstraint("ck_online_deposit_amount_positive", "amount > 0"));
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Number).HasMaxLength(20);
+            b.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+            b.Property(x => x.ProviderPaymentRef).HasMaxLength(100);
+            b.Property(x => x.RowVersion).IsRowVersion();
+            b.HasIndex(x => x.Number).IsUnique();
+            b.HasIndex(x => new { x.ResellerId, x.CreatedAt });
+            b.HasIndex(x => x.LedgerEntryId).IsUnique().HasFilter("ledger_entry_id IS NOT NULL");
         });
 
         modelBuilder.Entity<WalletFile>(b =>

@@ -53,3 +53,35 @@ public sealed record CheckoutResult(string Outcome, OrderDto? Order, decimal? Wa
 
 public sealed record FulfillmentInquiryDto(Guid Id, string Reference, string Channel, Guid? ResellerId, string? ContactName, string? ContactMobile,
     string Cart, string Evaluations, string FailureReason, string Status, DateTimeOffset CreatedAt);
+
+// ---- Online (customer) checkout ----
+
+public sealed record CustomerCheckoutRequest(IReadOnlyList<CheckoutLineRequest> Lines, DeliveryDto Delivery);
+
+/// <param name="Status">SPEC §27.2 payment status (PENDING, SUCCESS, FAILED, EXPIRED, ORDER_RECOVERED, PAYMENT_RECONCILIATION_REQUIRED …).</param>
+/// <param name="RedirectUrl">Where the payer completes the UPI payment while the status is PENDING.</param>
+public sealed record OnlinePaymentDto(Guid AttemptId, string Status, decimal Amount, string? RedirectUrl, DateTimeOffset ExpiresAt, DateTimeOffset? CompletedAt, string Message);
+
+/// <param name="Outcome">PAYMENT_PENDING (go to <c>Payment.RedirectUrl</c>), PAYMENT_NOT_COMPLETED, ORDER_PLACED or UNFULFILLABLE (see <c>Inquiry</c>).</param>
+public sealed record CustomerCheckoutResult(string Outcome, OrderDto? Order, OnlinePaymentDto? Payment, InquiryDto? Inquiry);
+
+/// <summary>What the idempotent part of checkout produced (stored with the Idempotency-Key and replayed for repeats).</summary>
+public sealed record CheckoutStage(Guid? OrderId, Guid? PaymentAttemptId, InquiryDto? Inquiry);
+
+public sealed record OrderPaymentStatusDto(Guid OrderId, string OrderNumber, string OrderStatus, OnlinePaymentDto? Payment);
+
+// ---- Public storefront (anonymous browsing, SPEC §19.1) ----
+
+/// <param name="InStock">Hint only: some branch has AVAILABLE units now. Checkout decides per branch for the complete basket.</param>
+public sealed record StorefrontItemDto(Guid SkuId, string SkuCode, Guid ProductId, string ProductName, string VariantName, string CategoryName, decimal Price, bool InStock);
+
+public sealed record StorefrontPage(IReadOnlyList<StorefrontItemDto> Items, int Total, int Page, int PageSize);
+
+public sealed record StorefrontVariantDto(Guid SkuId, string SkuCode, string VariantName, decimal Price, bool InStock);
+
+public sealed record StorefrontProductDto(Guid ProductId, string ProductName, IReadOnlyList<StorefrontVariantDto> Variants);
+
+public sealed record CartQuoteRequest(IReadOnlyList<Guid> SkuIds);
+
+/// <summary>Current display price for a cart line (non-authoritative; checkout re-prices and snapshots).</summary>
+public sealed record CartQuoteLineDto(Guid SkuId, bool Sellable, string? ProductName, string? VariantName, decimal? Price, bool InStock, string? Message);

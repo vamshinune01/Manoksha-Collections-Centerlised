@@ -26,6 +26,15 @@ public class HostCompositionTests
 
         act.Should().NotThrow();
     }
+
+    [Fact]
+    public void Payment_simulator_is_refused_in_production()
+    {
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { EnvironmentName = "Production" });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?> { ["Integrations:Payments:Provider"] = "Simulator" });
+        var act = () => new Manoksha.Modules.Payments.PaymentsModule().AddServices(builder.Services, builder.Configuration, builder.Environment);
+        act.Should().Throw<InvalidOperationException>().WithMessage("*development-only*");
+    }
 }
 
 /// <summary>Every scoped service must resolve without recursion (factory registrations hide DI cycles from ValidateOnBuild).</summary>

@@ -35,20 +35,17 @@ internal sealed class ResellerCheckoutService(
     IResellerDirectory resellers,
     IPriceCalculator prices,
     ICatalogLookup catalog,
-    IFulfillmentPriorityProvider priority,
-    IStockAllocator allocator,
+    FulfillmentRouter router,
+    InquiryService inquiries,
     IWallets wallets,
     ISettingsReader settings,
     ResellerCustomerService customers,
     OrderQueryService orders,
-    WhatsApp whatsApp,
     IAuditWriter audit,
     IOutbox outbox,
     ICurrentUser currentUser,
     IClock clock)
 {
-    private const int MaxLines = 50;
-
     public Task<CheckoutResult> CheckoutAsync(ResellerCheckoutRequest request, string idempotencyKey, CancellationToken ct) =>
         idempotency.ExecuteAsync("reseller.checkout", idempotencyKey, request, innerCt => CheckoutCoreAsync(request, innerCt), ct);
 
@@ -59,7 +56,7 @@ internal sealed class ResellerCheckoutService(
         {
             throw new ForbiddenException("RESELLER_CANNOT_ORDER", $"New orders are not available while your account is {reseller.Status}.");
         }
-        var lines = ValidateLines(request.Lines);
+        var lines = CheckoutRules.ValidateLines(request.Lines);
 
         // Delivery details are always required (ADR-001 §21): a saved customer of THIS reseller, or entered now.
         DeliveryDetails delivery;
@@ -98,36 +95,16 @@ internal sealed class ResellerCheckoutService(
         }
 
         var orderId = Uuid7.NewGuid();
-        var seq = await db.Database.SqlQuery<long>($"SELECT nextval('orders.order_number_seq') AS \"Value\"").SingleAsync(ct);
-        var orderNumber = $"MC-ORD-{seq:D6}";
+        var orderNumber = await CheckoutRules.NextOrderNumberAsync(db, ct);
 
         // Owner priority: first ACTIVE branch that can fulfil the complete basket wins (SPEC §11).
-        var (_, entries) = await priority.GetCurrentAsync(ct);
         var basket = lines.Select(l => new BasketLine(l.SkuId, l.Quantity)).ToList();
-        var evaluations = new List<object>();
-        BasketAllocation? allocation = null;
-        Guid branchId = default;
-        foreach (var entry in entries)
+        var (resolution, evaluations) = await router.ResolveAsync(basket, StockHold.Sell, orderId, orderNumber, ct);
+        if (resolution is null)
         {
-            if (!entry.IsActive)
-            {
-                evaluations.Add(new { entry.Priority, entry.BranchCode, result = "SKIPPED_INACTIVE" });
-                continue;
-            }
-            var attempt = await allocator.TrySellBasketAsync(entry.BranchId, basket, "Order", orderId, orderNumber, ct);
-            evaluations.Add(new { entry.Priority, entry.BranchCode, result = attempt.Success ? "FULFILLED" : "INSUFFICIENT_STOCK", shortfalls = attempt.Shortfalls });
-            if (attempt.Success)
-            {
-                allocation = attempt;
-                branchId = entry.BranchId;
-                break;
-            }
+            return new CheckoutResult("UNFULFILLABLE", null, null, await inquiries.CreateAsync(OrderChannel.Reseller, reseller.ResellerId, delivery, lines, evaluations, ct));
         }
-
-        if (allocation is null)
-        {
-            return await CreateInquiryAsync(reseller, delivery, lines, evaluations, ct);
-        }
+        var (branchId, allocation) = resolution;
 
         // Wallet debit + order creation, atomic with the stock commit above (SPEC §16, §32).
         var order = new Order(orderId, orderNumber, OrderChannel.Reseller, reseller.ResellerId, customerId, branchId, delivery, merchandise, shipping, currentUser.UserId, clock.UtcNow);
@@ -161,33 +138,5 @@ internal sealed class ResellerCheckoutService(
         await db.SaveChangesAsync(ct);
 
         return new CheckoutResult("CONFIRMED", await orders.GetAsync(order.Id, ct), debit.BalanceAfter, null);
-    }
-
-    private async Task<CheckoutResult> CreateInquiryAsync(ResellerInfo reseller, DeliveryDetails delivery, IReadOnlyList<CheckoutLineRequest> lines, List<object> evaluations, CancellationToken ct)
-    {
-        var seq = await db.Database.SqlQuery<long>($"SELECT nextval('orders.inquiry_number_seq') AS \"Value\"").SingleAsync(ct);
-        var reference = $"MC-FUL-{seq:D8}";
-        var inquiry = new FulfillmentInquiry(reference, OrderChannel.Reseller, reseller.ResellerId, currentUser.UserId, delivery.Name, delivery.Mobile,
-            JsonSerializer.Serialize(lines, JsonDefaults.Options), JsonSerializer.Serialize(evaluations, JsonDefaults.Options), "NO_BRANCH_CAN_FULFIL_COMPLETE_BASKET", clock.UtcNow);
-        db.Add(inquiry);
-        await audit.RecordAsync(new AuditRecord("orders.fulfillment_inquiry.created", "FulfillmentInquiry", inquiry.Id.ToString(),
-            After: new { reference, resellerId = reseller.ResellerId, lines, evaluations }), ct);
-        outbox.Enqueue(new FulfillmentInquiryCreated(inquiry.Id, reference));
-        await db.SaveChangesAsync(ct);
-        return new CheckoutResult("UNFULFILLABLE", null, null, await whatsApp.InquiryAsync(reference, ct));
-    }
-
-    private static List<CheckoutLineRequest> ValidateLines(IReadOnlyList<CheckoutLineRequest>? lines)
-    {
-        var list = (lines ?? []).ToList();
-        if (list.Count is 0 or > MaxLines || list.Select(l => l.SkuId).Distinct().Count() != list.Count)
-        {
-            throw new BusinessRuleException("CART_INVALID", $"The cart must have 1–{MaxLines} different items.", 400);
-        }
-        if (list.Exists(l => l.Quantity is < 1 or > 1000))
-        {
-            throw new BusinessRuleException("QUANTITY_INVALID", "Each quantity must be between 1 and 1000.", 400);
-        }
-        return list;
     }
 }

@@ -37,6 +37,34 @@ internal sealed class OrderQueryService(
         return (await ToDtosAsync([id], includeCost: false, ct))[0];
     }
 
+    // ---- Customer: own ONLINE orders only (SPEC §24). Another customer's order id is simply "not found". ----
+
+    public async Task<IReadOnlyList<OrderDto>> ListForCustomerAsync(CancellationToken ct)
+    {
+        var me = currentUser.UserId;
+        var ids = await db.Set<Order>().AsNoTracking().Where(o => o.CustomerUserId == me && o.Status != OrderStatus.CheckoutAttempt)
+            .OrderByDescending(o => o.CreatedAt).Take(200).Select(o => o.Id).ToListAsync(ct);
+        return await ToDtosAsync(ids, includeCost: false, ct);
+    }
+
+    public async Task<OrderDto> GetForCustomerAsync(Guid id, CancellationToken ct)
+    {
+        var me = currentUser.UserId;
+        if (!await db.Set<Order>().AnyAsync(o => o.Id == id && o.CustomerUserId == me, ct))
+        {
+            throw NotFound();
+        }
+        return (await ToDtosAsync([id], includeCost: false, ct))[0];
+    }
+
+    /// <summary>Delivery details of the customer's latest online order, to prefill checkout.</summary>
+    public async Task<DeliveryDto?> LastDeliveryAsync(CancellationToken ct)
+    {
+        var me = currentUser.UserId;
+        var last = await db.Set<Order>().AsNoTracking().Where(o => o.CustomerUserId == me).OrderByDescending(o => o.CreatedAt).FirstOrDefaultAsync(ct);
+        return last is null ? null : ResellerCustomerService.ToDto(last.Delivery);
+    }
+
     // ---- Internal users: scoped by fulfillment branch ----
 
     public async Task<IReadOnlyList<OrderDto>> ListAsync(string? channel, string? status, Guid? branchId, Guid? resellerId, CancellationToken ct)
@@ -84,6 +112,16 @@ internal sealed class OrderQueryService(
         var orders = await db.Set<Order>().AsNoTracking().Where(o => ids.Contains(o.Id)).ToDictionaryAsync(o => o.Id, ct);
         var lines = await db.Set<OrderLine>().AsNoTracking().Where(l => ids.Contains(l.OrderId)).ToListAsync(ct);
         var history = await db.Set<OrderStatusChange>().AsNoTracking().Where(h => ids.Contains(h.OrderId)).OrderBy(h => h.OccurredAt).ToListAsync(ct);
+        // ONLINE orders record FIFO cost on the reservation line that was sold.
+        var soldCosts = new List<(Guid OrderId, decimal? CostAmount)>();
+        if (includeCost)
+        {
+            soldCosts = (await (from rl in db.Set<ReservationLine>()
+                                join r in db.Set<Reservation>() on rl.ReservationId equals r.Id
+                                where ids.Contains(r.OrderId) && r.Status == ReservationStatus.Consumed
+                                select new { r.OrderId, rl.CostAmount }).AsNoTracking().ToListAsync(ct))
+                .Select(x => (x.OrderId, x.CostAmount)).ToList();
+        }
         var names = (await branches.ListAsync(ct)).ToDictionary(b => b.Id, b => b.Name);
         var result = new List<OrderDto>();
         foreach (var id in ids)
@@ -96,7 +134,7 @@ internal sealed class OrderQueryService(
                     l.DiscountAmountPerUnit, l.FinalUnitPrice, l.LineTotal, l.CommercialTermVersion)).ToList(),
                 history.Where(h => h.OrderId == id).Select(h => new OrderStatusChangeDto(h.FromStatus?.ToString(), h.ToStatus.ToString(), h.Note, h.OccurredAt)).ToList(),
                 await whatsApp.OrderHelpUrlAsync(o.Number, ct),
-                includeCost ? own.Sum(l => l.CostAmount) : null));
+                includeCost ? own.Sum(l => l.CostAmount ?? 0m) + soldCosts.Where(c => c.OrderId == id).Sum(c => c.CostAmount ?? 0m) : null));
         }
         return result;
     }

@@ -81,6 +81,7 @@ export const NAV: NavItem[] = [
   { href: "/resellers", label: "Resellers", permission: P.resellersView },
   { href: "/wallet-deposits", label: "Wallet deposits", permission: P.walletView },
   { href: "/orders", label: "Orders", permission: P.ordersView },
+  { href: "/payments", label: "Online payments", permission: P.exceptionsView },
   { href: "/purchasing", label: "Purchasing", permission: [P.purchasingView, P.goodsReceipt] },
   { href: "/inventory", label: "Inventory", permission: [P.inventoryView, P.inventoryCount] },
   { href: "/users", label: "Users", permission: P.usersView },

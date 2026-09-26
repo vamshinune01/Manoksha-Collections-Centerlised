@@ -41,6 +41,12 @@ internal static class WalletEndpoints
             return await s.LedgerAsync(me.ResellerId, beforeSeq, limit, ct);
         }).WithName("ResellerWallet");
         self.MapGet("/deposits", (DepositService s, CancellationToken ct) => s.ListMineAsync(ct)).WithName("ResellerDeposits");
+        // Provider-confirmed online deposit (SPEC §17.1): credited only after the payment provider confirms.
+        self.MapPost("/deposits/online", (StartOnlineDepositRequest r, HttpRequest http, OnlineDepositService s, CancellationToken ct) =>
+            s.StartAsync(r, http.GetRequiredIdempotencyKey(), ct)).WithName("StartOnlineDeposit");
+        self.MapGet("/deposits/online", (OnlineDepositService s, CancellationToken ct) => s.ListMineAsync(ct)).WithName("ResellerOnlineDeposits");
+        self.MapGet("/deposits/online/{id:guid}", (Guid id, OnlineDepositService s, CancellationToken ct) => s.GetMineAsync(id, sync: true, ct))
+            .WithName("ResellerOnlineDeposit");
         self.MapPost("/deposits", ([FromForm] decimal amount, [FromForm] string method, [FromForm] string reference, [FromForm] string? note, IFormFile? proof,
                 DepositService s, CancellationToken ct) => s.SubmitAsync(amount, method, reference, note, proof, ct))
             .DisableAntiforgery() // token-authenticated API; CSRF is handled by the BFF's same-origin + custom-header checks

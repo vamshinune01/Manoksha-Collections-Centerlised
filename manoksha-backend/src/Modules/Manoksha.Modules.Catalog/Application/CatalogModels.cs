@@ -2,6 +2,8 @@ namespace Manoksha.Modules.Catalog.Application;
 
 public sealed record CategoryDto(Guid Id, Guid? ParentId, string Name, string Slug, int SortOrder, bool IsActive);
 
+public sealed record PublicCategoryDto(Guid Id, Guid? ParentId, string Name, string Slug);
+
 public sealed record SaveCategoryRequest(Guid? ParentId, string Name, int SortOrder, bool IsActive, string Reason);
 
 public sealed record AttributeOptionDto(Guid Id, string Value, int SortOrder, bool IsActive);

@@ -11,6 +11,11 @@ internal static class CatalogEndpoints
 {
     public static void Map(IEndpointRouteBuilder endpoints)
     {
+        // Public storefront (SPEC §19.1): browsing is anonymous; only active categories are listed.
+        endpoints.MapGet("/api/v1/catalog/categories", async (CatalogSetupService s, CancellationToken ct) =>
+                (await s.ListCategoriesAsync(ct)).Where(c => c.IsActive).Select(c => new PublicCategoryDto(c.Id, c.ParentId, c.Name, c.Slug)).ToList())
+            .AllowAnonymous().WithTags("Storefront").WithName("StorefrontCategories");
+
         var admin = endpoints.MapGroup("/api/v1/admin/catalog").WithTags("Catalog").RequireAudience(Audiences.Admin);
         var view = Permissions.Catalog.View;
         var manage = Permissions.Catalog.Manage;

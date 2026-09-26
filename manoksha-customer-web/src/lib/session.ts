@@ -1,6 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { RS_ACCESS, RS_REFRESH, serverConfig } from "./config";
+import { CS_ACCESS, CS_REFRESH, RS_ACCESS, RS_REFRESH, serverConfig } from "./config";
 
 export interface TokenPair {
   accessToken: string;
@@ -17,19 +17,32 @@ interface CookieWriter {
 const secondsUntil = (iso: string) => Math.max(1, Math.floor((new Date(iso).getTime() - Date.now()) / 1000));
 
 /** httpOnly cookies only — tokens are never readable by page scripts. */
-export function writeResellerSession(jar: CookieWriter, tokens: TokenPair) {
+function writeSession(jar: CookieWriter, tokens: TokenPair, access: string, refresh: string) {
   const base = { httpOnly: true, secure: serverConfig.secureCookies, sameSite: "lax", path: "/" };
-  jar.set(RS_ACCESS, tokens.accessToken, { ...base, maxAge: Math.max(1, secondsUntil(tokens.accessTokenExpiresAt) - 30) });
-  jar.set(RS_REFRESH, tokens.refreshToken, { ...base, maxAge: secondsUntil(tokens.refreshTokenExpiresAt) });
+  jar.set(access, tokens.accessToken, { ...base, maxAge: Math.max(1, secondsUntil(tokens.accessTokenExpiresAt) - 30) });
+  jar.set(refresh, tokens.refreshToken, { ...base, maxAge: secondsUntil(tokens.refreshTokenExpiresAt) });
 }
+
+export const writeResellerSession = (jar: CookieWriter, tokens: TokenPair) => writeSession(jar, tokens, RS_ACCESS, RS_REFRESH);
+
+export const writeCustomerSession = (jar: CookieWriter, tokens: TokenPair) => writeSession(jar, tokens, CS_ACCESS, CS_REFRESH);
 
 export function clearResellerSession(jar: CookieWriter) {
   jar.delete(RS_ACCESS);
   jar.delete(RS_REFRESH);
 }
 
+export function clearCustomerSession(jar: CookieWriter) {
+  jar.delete(CS_ACCESS);
+  jar.delete(CS_REFRESH);
+}
+
 export async function resellerToken() {
   return (await cookies()).get(RS_ACCESS)?.value;
+}
+
+export async function customerToken() {
+  return (await cookies()).get(CS_ACCESS)?.value;
 }
 
 export function isSameOrigin(request: Request) {

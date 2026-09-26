@@ -1,4 +1,5 @@
 using Manoksha.Application.Modules;
+using Manoksha.Modules.Payments.Contracts;
 using Manoksha.Modules.Resellers.Contracts;
 using Manoksha.Modules.Wallet.Application;
 using Manoksha.Modules.Wallet.Contracts;
@@ -25,6 +26,8 @@ public sealed class WalletModule : IModule
         services.AddScoped<IResellerBalanceView>(sp => sp.GetRequiredService<WalletService>());
         services.AddScoped<DepositService>();
         services.AddScoped<WalletIntegrityService>();
+        services.AddScoped<OnlineDepositService>();
+        services.AddScoped<IPaymentPurposeHandler, WalletDepositPaymentHandler>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => WalletEndpoints.Map(endpoints);

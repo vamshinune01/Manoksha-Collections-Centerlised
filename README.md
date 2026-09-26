@@ -49,7 +49,12 @@ npm run customer:dev
 The dev seed creates branches Karimnagar (P1), Hyderabad (P2), Mulugu (P3) and users (password = `MANOKSHA_DEV_SEED_PASSWORD`):
 `owner@manoksha.local`, `manager.karimnagar@manoksha.local`, `sales.karimnagar@manoksha.local`, `inventory.karimnagar@manoksha.local`
 (the three Karimnagar users also have employee profiles). Development OTP codes are printed in the API log
-(`[FAKE SMS]`). Development-only adapters (fake SMS, logging email, local file storage) are refused in Production.
+(`[FAKE SMS]`). Development-only adapters (fake SMS, logging email, local file storage, UPI payment simulator) are refused in Production.
+
+**Online payments in development.** Until the Owner selects a UPI gateway, `Integrations:Payments:Provider=Simulator` is used:
+checkout redirects to a simulated UPI app at `http://localhost:3002/pay/simulator/…` where you can pay, decline, "lose" the
+webhook or pay a different amount. Run the **Worker** too — it releases expired 5-minute reservations (every 15 s) and polls the
+provider for missed webhooks and late successes (every 30 s).
 
 A real environment's first Owner is created with:
 
@@ -76,5 +81,6 @@ npm run api-client:generate                                             # …the
 | 3 | Suppliers, purchase orders (amend/close), goods receipt, hybrid stock (pieces + quantities), FIFO cost layers per SKU per branch, transfers, blind counts, adjustments with value-based approval, discrepancies | **Done** |
 | 4 | Retail price history, product reseller discounts, reseller pricing calculator, reseller onboarding (PENDING → OTP → ACTIVE), status rules, versioned commercial terms, ₹0 wallet | **Done** |
 | 5 | Append-only wallet ledger, proof-based deposits with idempotent Owner approval, Owner adjustments, reseller checkout (branch priority, no split, atomic stock + wallet + order, idempotent), fulfilment inquiries, reseller end-customers, reseller web area | **Done** |
-| 6 | Customer storefront, 5-minute reservation, UPI payment, late-payment recovery, online wallet deposits | Next |
-| 7–10 | See design §22 | Planned |
+| 6 | Customer storefront (anonymous browsing, OTP sign-in/registration, cart, checkout), complete-basket branch routing with 5-minute reservation, UPI payment pipeline (gateway adapter + simulator, signed webhook inbox, poller), late-success recovery or reconciliation case, provider-confirmed reseller wallet deposits, Owner payments view | **Done** (simulator; real gateway adapter pending Owner choice) |
+| 7 | Fulfillment: branch queue, packed/shipped/delivered, fulfillment exceptions, reroute, admin cancellation | Next |
+| 8–10 | See design §22 | Planned |

@@ -4,6 +4,7 @@ using Manoksha.Modules.Catalog.Persistence;
 using Manoksha.Modules.Employees.Persistence;
 using Manoksha.Modules.Inventory.Persistence;
 using Manoksha.Modules.Orders.Persistence;
+using Manoksha.Modules.Payments.Persistence;
 using Manoksha.Modules.Pricing.Persistence;
 using Manoksha.Modules.Purchasing.Persistence;
 using Manoksha.Modules.Resellers.Persistence;
@@ -39,6 +40,7 @@ internal sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<M
             new WalletModelConfiguration(),
             new ResellersModelConfiguration(),
             new PricingModelConfiguration(),
+            new PaymentsModelConfiguration(),
             new OrdersModelConfiguration(),
         ]);
     }

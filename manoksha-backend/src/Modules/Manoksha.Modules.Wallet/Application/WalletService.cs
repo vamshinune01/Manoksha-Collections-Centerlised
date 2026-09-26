@@ -112,7 +112,7 @@ internal sealed class WalletService(
 
     /// <summary>Locks the wallet row, applies the change and appends the ledger entry.</summary>
     internal async Task<WalletLedgerEntry> PostAsync(Guid resellerId, LedgerEntryType type, LedgerDirection direction, decimal amount,
-        Guid? orderId, string? orderNumber, Guid? depositId, Guid? reversesId, string? reason, CancellationToken ct)
+        Guid? orderId, string? orderNumber, Guid? depositId, Guid? reversesId, string? reason, CancellationToken ct, Guid? onlineDepositId = null)
     {
         var wallet = await db.Set<ResellerWallet>()
             .FromSqlInterpolated($"SELECT *, xmin FROM wallet.wallets WHERE reseller_id = {resellerId} FOR UPDATE")
@@ -120,7 +120,7 @@ internal sealed class WalletService(
         var now = clock.UtcNow;
         var (before, after) = wallet.Apply(direction, amount, now);
         var entry = new WalletLedgerEntry(wallet.Id, resellerId, type, direction, amount, before, after, orderId, orderNumber, depositId, reversesId, reason,
-            currentUser.UserIdOrNull, now);
+            currentUser.UserIdOrNull, now, onlineDepositId);
         db.Add(entry);
         await db.SaveChangesAsync(ct);
         return entry;

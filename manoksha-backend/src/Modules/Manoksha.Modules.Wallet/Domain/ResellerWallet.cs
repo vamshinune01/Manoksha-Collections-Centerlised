@@ -74,8 +74,9 @@ internal sealed class WalletLedgerEntry : Entity
     }
 
     public WalletLedgerEntry(Guid walletId, Guid resellerId, LedgerEntryType type, LedgerDirection direction, decimal amount, decimal balanceBefore, decimal balanceAfter,
-        Guid? orderId, string? orderNumber, Guid? depositRequestId, Guid? reversesEntryId, string? reason, Guid? createdBy, DateTimeOffset now)
+        Guid? orderId, string? orderNumber, Guid? depositRequestId, Guid? reversesEntryId, string? reason, Guid? createdBy, DateTimeOffset now, Guid? onlineDepositId = null)
     {
+        OnlineDepositId = onlineDepositId;
         WalletId = walletId;
         ResellerId = resellerId;
         Type = type;
@@ -115,6 +116,9 @@ internal sealed class WalletLedgerEntry : Entity
     public Guid? DepositRequestId { get; private set; }
 
     public Guid? ReversesEntryId { get; private set; }
+
+    /// <summary>Provider-confirmed online deposit this credit came from (SPEC §17.1) — at most one credit each.</summary>
+    public Guid? OnlineDepositId { get; private set; }
 
     public string? Reason { get; private set; }
 
@@ -241,4 +245,78 @@ internal sealed class WalletFile : Entity
     public Guid UploadedBy { get; private set; }
 
     public DateTimeOffset UploadedAt { get; private set; }
+}
+
+internal enum OnlineDepositStatus
+{
+    Pending = 1,
+    Credited = 2,
+    Failed = 3,
+    Expired = 4,
+}
+
+/// <summary>
+/// Provider-confirmed online wallet deposit (SPEC §17.1): the wallet is credited only after the payment provider's authoritative
+/// success, once. A success that arrives after a failure/expiry is still money received, so it is credited then.
+/// </summary>
+internal sealed class OnlineDeposit : Entity
+{
+    private OnlineDeposit()
+    {
+    }
+
+    public OnlineDeposit(string number, Guid resellerId, decimal amount, Guid requestedBy, DateTimeOffset now)
+    {
+        Number = number;
+        ResellerId = resellerId;
+        Amount = amount;
+        RequestedBy = requestedBy;
+        CreatedAt = now;
+        Status = OnlineDepositStatus.Pending;
+    }
+
+    public string Number { get; private set; } = default!;
+
+    public Guid ResellerId { get; private set; }
+
+    public decimal Amount { get; private set; }
+
+    public OnlineDepositStatus Status { get; private set; }
+
+    public Guid? PaymentAttemptId { get; private set; }
+
+    public Guid? LedgerEntryId { get; private set; }
+
+    public string? ProviderPaymentRef { get; private set; }
+
+    public Guid RequestedBy { get; private set; }
+
+    public DateTimeOffset CreatedAt { get; private set; }
+
+    public DateTimeOffset? CompletedAt { get; private set; }
+
+    public uint RowVersion { get; private set; }
+
+    public void AttachPayment(Guid attemptId) => PaymentAttemptId = attemptId;
+
+    public void Credit(Guid ledgerEntryId, string? providerPaymentRef, DateTimeOffset now)
+    {
+        if (Status == OnlineDepositStatus.Credited)
+        {
+            throw new BusinessRuleException("DEPOSIT_ALREADY_CREDITED", "This deposit was already credited.", 409);
+        }
+        Status = OnlineDepositStatus.Credited;
+        LedgerEntryId = ledgerEntryId;
+        ProviderPaymentRef = providerPaymentRef;
+        CompletedAt = now;
+    }
+
+    public void Close(OnlineDepositStatus to, DateTimeOffset now)
+    {
+        if (Status == OnlineDepositStatus.Pending)
+        {
+            Status = to;
+            CompletedAt = now;
+        }
+    }
 }
