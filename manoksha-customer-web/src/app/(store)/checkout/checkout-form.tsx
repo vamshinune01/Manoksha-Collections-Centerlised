@@ -12,7 +12,7 @@ import { Alert, Button, Card, Field, Input, PageHeader } from "@/components/ui";
  * Online checkout (SPEC §19.1). The backend prices the order, finds one branch that can fulfil the complete basket, reserves it for
  * the payment window and starts the UPI payment. The Idempotency-Key makes repeated clicks one order (SPEC §32).
  */
-export function CheckoutForm({ defaults }: { defaults: Delivery }) {
+export function CheckoutForm({ defaults, shippingFee }: { defaults: Delivery; shippingFee: number | null }) {
   const lines = useStoreCart();
   const [delivery, setDelivery] = useState<Delivery>(defaults);
   const [quotes, setQuotes] = useState<Record<string, CartQuoteLine>>({});
@@ -125,7 +125,9 @@ export function CheckoutForm({ defaults }: { defaults: Delivery }) {
             ))}
           </ul>
           <div className="flex justify-between border-t border-slate-100 pt-2 text-sm"><span>Items</span><span>{inr(items)}</span></div>
-          <p className="text-xs text-slate-500">Shipping is added once per order; the exact total to pay is shown on the payment page.</p>
+          <div className="flex justify-between text-sm"><span>Shipping (per order)</span><span>{inr(shippingFee)}</span></div>
+          <div className="flex justify-between border-t border-slate-100 pt-2 font-semibold"><span>Total to pay</span><span>{shippingFee == null ? "—" : inr(items + shippingFee)}</span></div>
+          <p className="text-xs text-slate-500">Prices are confirmed when you place the order; that amount is what you pay.</p>
         </aside>
       </div>
     </div>

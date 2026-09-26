@@ -3,6 +3,7 @@ using System;
 using Manoksha.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Manoksha.Migrations.Migrations
 {
     [DbContext(typeof(ManokshaDbContext))]
-    partial class ManokshaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260926184423_Phase6ReconciliationHistory")]
+    partial class Phase6ReconciliationHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

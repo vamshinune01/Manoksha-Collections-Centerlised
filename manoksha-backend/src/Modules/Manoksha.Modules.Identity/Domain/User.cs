@@ -162,6 +162,18 @@ internal sealed class User : Entity
         RotateSecurityStamp();
     }
 
+    /// <summary>A customer edits their own name and email (the mobile is the sign-in identity and is not editable here).</summary>
+    public void UpdateCustomerProfile(string displayName, string email)
+    {
+        if (AccountType != AccountType.Customer)
+        {
+            throw new BusinessRuleException("PROFILE_NOT_EDITABLE", "Only customer profiles can be edited here.", 409);
+        }
+        DisplayName = displayName.Trim();
+        Email = email.Trim();
+        EmailNormalized = EmailAddress.Normalize(email);
+    }
+
     public void RotateSecurityStamp() => SecurityStamp = NewStamp();
 
     private static string NewStamp() => Guid.NewGuid().ToString("N");

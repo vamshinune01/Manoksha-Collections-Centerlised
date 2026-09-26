@@ -25,7 +25,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
             {me ? (
               <>
                 <Link href="/orders" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">My orders</Link>
-                <span className="hidden px-2 text-sm text-slate-500 md:inline">Hi, {me.displayName.split(" ")[0]}</span>
+                <Link href="/account" className="hidden rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 md:inline">Hi, {me.displayName.split(" ")[0]}</Link>
                 <SignOut />
               </>
             ) : (

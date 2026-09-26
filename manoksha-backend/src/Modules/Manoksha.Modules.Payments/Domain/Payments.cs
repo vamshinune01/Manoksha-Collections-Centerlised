@@ -266,4 +266,102 @@ internal sealed class PaymentReconciliation : Entity
     public DateTimeOffset UpdatedAt { get; private set; }
 
     public uint RowVersion { get; private set; }
+
+    /// <summary>
+    /// Owner actions (SPEC §36). Refunds happen outside the application; the case records the markers and the external reference.
+    /// Open → RefundInitiated → RefundCompleted → Resolved; Open/RefundInitiated may also be Resolved (e.g. goods supplied another
+    /// way), always with a note. A note can be added at any time.
+    /// </summary>
+    public ReconciliationStatus Apply(ReconciliationAction action, string note, string? externalRefundRef, DateTimeOffset now)
+    {
+        var from = Status;
+        switch (action)
+        {
+            case ReconciliationAction.Note:
+                break;
+            case ReconciliationAction.RefundInitiated:
+                Ensure(ReconciliationStatus.Open);
+                Status = ReconciliationStatus.RefundInitiated;
+                break;
+            case ReconciliationAction.RefundCompleted:
+                Ensure(ReconciliationStatus.Open, ReconciliationStatus.RefundInitiated);
+                if (string.IsNullOrWhiteSpace(externalRefundRef))
+                {
+                    throw new BusinessRuleException("REFUND_REFERENCE_REQUIRED", "Enter the external refund reference.", 400);
+                }
+                Status = ReconciliationStatus.RefundCompleted;
+                break;
+            case ReconciliationAction.Resolved:
+                Ensure(ReconciliationStatus.Open, ReconciliationStatus.RefundInitiated, ReconciliationStatus.RefundCompleted);
+                Status = ReconciliationStatus.Resolved;
+                break;
+        }
+        if (!string.IsNullOrWhiteSpace(externalRefundRef))
+        {
+            ExternalRefundRef = externalRefundRef.Trim();
+        }
+        if (action == ReconciliationAction.Note)
+        {
+            Notes = note;
+        }
+        else
+        {
+            OwnerAction = note;
+        }
+        UpdatedAt = now;
+        return from;
+    }
+
+    private void Ensure(params ReconciliationStatus[] allowed)
+    {
+        if (!allowed.Contains(Status))
+        {
+            throw new BusinessRuleException("RECONCILIATION_STATUS_INVALID", $"This case is {Status}; that step is not possible.", 409);
+        }
+    }
+}
+
+internal enum ReconciliationAction
+{
+    Note = 1,
+    RefundInitiated = 2,
+    RefundCompleted = 3,
+    Resolved = 4,
+}
+
+/// <summary>Append-only history of every reconciliation change (SPEC §36 "audit history of all reconciliation changes").</summary>
+internal sealed class ReconciliationHistory : Entity
+{
+    private ReconciliationHistory()
+    {
+    }
+
+    public ReconciliationHistory(Guid reconciliationId, ReconciliationAction action, ReconciliationStatus from, ReconciliationStatus to, string note, string? externalRefundRef,
+        Guid actorUserId, DateTimeOffset now)
+    {
+        ReconciliationId = reconciliationId;
+        Action = action;
+        FromStatus = from;
+        ToStatus = to;
+        Note = note;
+        ExternalRefundRef = externalRefundRef;
+        ActorUserId = actorUserId;
+        OccurredAt = now;
+    }
+
+    public Guid ReconciliationId { get; private set; }
+
+    public ReconciliationAction Action { get; private set; }
+
+    public ReconciliationStatus FromStatus { get; private set; }
+
+    public ReconciliationStatus ToStatus { get; private set; }
+
+    public string Note { get; private set; } = default!;
+
+    public string? ExternalRefundRef { get; private set; }
+
+    public Guid ActorUserId { get; private set; }
+
+    public DateTimeOffset OccurredAt { get; private set; }
 }

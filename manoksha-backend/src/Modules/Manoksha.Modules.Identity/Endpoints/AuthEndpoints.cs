@@ -71,5 +71,9 @@ internal static class AuthEndpoints
 
         auth.MapGet("/me", (MeService service, CancellationToken ct) => service.GetAsync(ct))
             .RequireAuthorization().WithName("Me");
+
+        var customer = endpoints.MapGroup("/api/v1/customer").WithTags("Customer").RequireAudience(Audiences.Customer);
+        customer.MapGet("/profile", (CustomerProfileService s, CancellationToken ct) => s.GetAsync(ct)).WithName("CustomerProfile");
+        customer.MapPut("/profile", (UpdateCustomerProfileRequest r, CustomerProfileService s, CancellationToken ct) => s.UpdateAsync(r, ct)).WithName("UpdateCustomerProfile");
     }
 }

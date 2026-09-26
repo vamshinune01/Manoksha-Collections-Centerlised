@@ -130,6 +130,17 @@ export interface CustomerMe {
   mobile: string | null;
 }
 
+export interface CustomerProfile {
+  fullName: string;
+  email: string | null;
+  mobile: string | null;
+  memberSince: string;
+}
+
+export interface OrderCharges {
+  shippingFeePerOrder: number;
+}
+
 export interface StoreItem {
   skuId: string;
   skuCode: string;

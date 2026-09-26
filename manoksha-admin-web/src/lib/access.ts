@@ -61,6 +61,7 @@ export const P = {
   depositApprove: "wallet.deposit.approve",
   ordersView: "orders.view",
   exceptionsView: "exceptions.view",
+  reconciliationManage: "reconciliation.manage",
 } as const;
 
 export interface NavItem {

@@ -33,6 +33,8 @@ public sealed class PaymentsModule : IModule
         services.AddScoped<PaymentWebhookService>();
         services.AddScoped<PaymentPoller>();
         services.AddScoped<PaymentQueryService>();
+        services.AddScoped<ReconciliationService>();
+        services.AddScoped<IOutboxEventHandler, ReconciliationAlertHandler>();
 
         var provider = configuration["Integrations:Payments:Provider"] ?? "Simulator";
         switch (provider)

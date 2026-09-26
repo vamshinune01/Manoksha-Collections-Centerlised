@@ -8,8 +8,6 @@ import { type CartLine, readCart, writeCart } from "@/lib/cart";
 import { ApiError, rs } from "@/lib/client-api";
 import { type CheckoutResult, type Quote, type SavedCustomer, inr } from "@/lib/types";
 
-const SHIPPING = 100; // display only — the backend applies the authoritative fee
-
 function subscribe(cb: () => void) {
   window.addEventListener("manoksha-cart", cb);
   return () => window.removeEventListener("manoksha-cart", cb);
@@ -34,6 +32,11 @@ export function CartCheckout({ canOrder, walletBalance, customers }: { canOrder:
   const [result, setResult] = useState<CheckoutResult>();
   // One key per checkout attempt: double clicks and retries create one order and one wallet debit.
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
+  // Display only — the backend applies the authoritative shipping fee at checkout.
+  const [shipping, setShipping] = useState<number | null>(null);
+  useEffect(() => {
+    fetch("/api/store/order-charges").then((r) => r.json()).then((c: { shippingFeePerOrder: number }) => setShipping(c.shippingFeePerOrder)).catch(() => undefined);
+  }, []);
 
   const skuKey = cart.map((l) => l.skuId).join(",");
   useEffect(() => {
@@ -44,7 +47,7 @@ export function CartCheckout({ canOrder, walletBalance, customers }: { canOrder:
   }, [skuKey]);
 
   const merchandise = cart.reduce((sum, l) => sum + (quotes[l.skuId]?.finalUnitPrice ?? 0) * l.quantity, 0);
-  const total = merchandise + (cart.length ? SHIPPING : 0);
+  const total = merchandise + (cart.length ? (shipping ?? 0) : 0);
 
   if (result?.outcome === "CONFIRMED" && result.order) {
     return (
@@ -86,7 +89,7 @@ export function CartCheckout({ canOrder, walletBalance, customers }: { canOrder:
         </ul>
         <dl className="mt-4 space-y-1 text-right text-sm">
           <div>Items: {inr(merchandise)}</div>
-          <div>Shipping (per order): {inr(SHIPPING)}</div>
+          <div>Shipping (per order): {inr(shipping)}</div>
           <div className="text-base font-semibold">Total to be debited: {inr(total)}</div>
           <div className={walletBalance < total ? "text-red-600" : "text-slate-500"}>Wallet balance: {inr(walletBalance)}</div>
         </dl>

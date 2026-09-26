@@ -85,3 +85,6 @@ public sealed record CartQuoteRequest(IReadOnlyList<Guid> SkuIds);
 
 /// <summary>Current display price for a cart line (non-authoritative; checkout re-prices and snapshots).</summary>
 public sealed record CartQuoteLineDto(Guid SkuId, bool Sellable, string? ProductName, string? VariantName, decimal? Price, bool InStock, string? Message);
+
+/// <summary>Per-order charges to display before payment (SPEC §18). The backend applies the authoritative values at checkout.</summary>
+public sealed record OrderChargesDto(decimal ShippingFeePerOrder);

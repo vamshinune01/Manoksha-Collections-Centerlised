@@ -150,8 +150,12 @@ Phase 5 completion items (engineering, 25 Sep 2026):
 - **Late success (SPEC §14.2):** any success after the window, or after a FAILED/EXPIRED status, is rechecked: stale holds are
   released, then Owner priority is re-run for the snapshotted basket at the original prices. The order may be recovered at a
   different branch than originally reserved. If no branch can fulfil it → `PAYMENT_RECONCILIATION_REQUIRED` + reconciliation case
-  (`MC-REC-…`), audited, CRITICAL event for the Owner. Owner actions / refund markers on the case arrive with the Exception Center
-  (Phase 9).
+  (`MC-REC-…`), audited, CRITICAL event for the Owner.
+- **Owner alert (until notification channels arrive in Phase 9):** a red banner on every admin page while any reconciliation case is
+  open, plus a CRITICAL log entry from the Worker (usable for log-based alerting in GCP).
+- **Reconciliation actions (SPEC §36), Owner-only:** note, Refund Initiated, Refund Completed (external refund reference required),
+  Resolved; append-only history + audit. No money is moved by the application.
+- **Customer profile:** customers edit their name and email; the mobile number (sign-in identity) is read-only.
 - **Paid amount ≠ amount due** → never confirmed; the hold is released and a reconciliation case (`AMOUNT_MISMATCH`) is opened.
 - **Missed webhooks:** the Worker polls live attempts every 30 s and failed/expired ones every 5 min for 24 h after initiation.
 - **A failed payment is not retried on the same order**: stock is released immediately (SPEC §13); the customer checks out again.

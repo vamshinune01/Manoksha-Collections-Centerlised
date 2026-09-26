@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Manoksha.Application.Abstractions;
 using Manoksha.Application.Modules;
+using Manoksha.Application.Security;
 using Manoksha.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -334,6 +335,62 @@ public class OnlineCheckoutTests(ManokshaApiFactory factory)
         var rec = (await owner.GetAsync("/api/v1/admin/payment-reconciliations").OkJsonAsync()).AsArray().Single(c => c!["referenceId"]!.GetValue<Guid>() == orderId)!;
         rec["reasonCode"]!.GetValue<string>().Should().Be("AMOUNT_MISMATCH");
         rec["paidAmount"]!.GetValue<decimal>().Should().Be(1m);
+    }
+
+    [Fact]
+    public async Task Owner_records_reconciliation_actions_with_refund_markers_and_history()
+    {
+        var sku = await StockedSkuAsync(640m, (Knr, 1));
+        var customer = await factory.CustomerClientAsync();
+        var (orderId, providerRef, _) = await customer.ReservedCheckoutAsync((sku, 1));
+        (await factory.SimulatorApproveAsync(providerRef, paidAmount: 700m)).EnsureSuccessStatusCode();
+        var owner = await factory.OwnerClientAsync();
+        var rec = (await owner.GetAsync("/api/v1/admin/payment-reconciliations").OkJsonAsync()).AsArray().Single(c => c!["referenceId"]!.GetValue<Guid>() == orderId)!;
+        var id = rec["id"]!.GetValue<Guid>();
+
+        // The Owner is alerted (CRITICAL event; shown on every admin page until the case is handled).
+        (await factory.ScalarAsync<long>($"SELECT count(*) FROM platform.outbox_messages WHERE type = 'payments.reconciliation_required' AND payload::text LIKE '%{rec["caseNumber"]}%'"))
+            .Should().Be(1);
+
+        var url = $"/api/v1/admin/payment-reconciliations/{id}/actions";
+        var manager = await factory.UserClientAsync(SystemRoles.BranchManager, Knr);
+        (await manager.PostAsJsonAsync(url, new { action = "NOTE", note = "Called the customer" })).StatusCode.Should().Be(HttpStatusCode.Forbidden, "reconciliation is Owner-only");
+
+        (await (await owner.PostAsJsonAsync(url, new { action = "REFUND_COMPLETED", note = "Refunded", externalRefundRef = (string?)null })).ErrorCodeAsync())
+            .Should().Be("REFUND_REFERENCE_REQUIRED");
+        (await (await owner.PostAsJsonAsync(url, new { action = "REFUND_INITIATED", note = "" })).ErrorCodeAsync()).Should().Be("REASON_REQUIRED");
+        await owner.PostAsJsonAsync(url, new { action = "NOTE", note = "Customer paid ₹700 instead of ₹740; called them" }).OkJsonAsync();
+        (await owner.PostAsJsonAsync(url, new { action = "REFUND_INITIATED", note = "Refunding ₹700 by bank transfer" }).OkJsonAsync())["status"]!.GetValue<string>()
+            .Should().Be("RefundInitiated");
+        var done = await owner.PostAsJsonAsync(url, new { action = "REFUND_COMPLETED", note = "Refund sent", externalRefundRef = "NEFT12345" }).OkJsonAsync();
+        done["status"]!.GetValue<string>().Should().Be("RefundCompleted");
+        done["externalRefundRef"]!.GetValue<string>().Should().Be("NEFT12345");
+        (await owner.PostAsJsonAsync(url, new { action = "RESOLVED", note = "Closed" }).OkJsonAsync())["status"]!.GetValue<string>().Should().Be("Resolved");
+        (await (await owner.PostAsJsonAsync(url, new { action = "REFUND_INITIATED", note = "again" })).ErrorCodeAsync()).Should().Be("RECONCILIATION_STATUS_INVALID");
+
+        var history = await owner.GetAsync($"/api/v1/admin/payment-reconciliations/{id}/history").OkJsonAsync();
+        history.AsArray().Select(h => h!["action"]!.GetValue<string>()).Should().Equal("NOTE", "REFUND_INITIATED", "REFUND_COMPLETED", "RESOLVED");
+        (await factory.ScalarAsync<long>($"SELECT count(*) FROM audit.audit_log WHERE entity_id = '{id}' AND action LIKE 'payments.reconciliation.%'")).Should().Be(5, "opened + 4 actions");
+        await using var c = new Npgsql.NpgsqlConnection(factory.ConnectionString);
+        await c.OpenAsync();
+        await using var tamper = new Npgsql.NpgsqlCommand($"UPDATE payments.reconciliation_history SET note = 'x' WHERE reconciliation_id = '{id}'", c);
+        (await FluentActions.Awaiting(() => tamper.ExecuteNonQueryAsync()).Should().ThrowAsync<Npgsql.PostgresException>()).Which.MessageText.Should().Contain("append_only_violation");
+    }
+
+    [Fact]
+    public async Task Customer_manages_own_profile_and_sees_order_charges()
+    {
+        var customer = await factory.CustomerClientAsync();
+        var profile = await customer.GetAsync("/api/v1/customer/profile").OkJsonAsync();
+        profile["mobile"]!.GetValue<string>().Should().StartWith("+91");
+        (await (await customer.PutAsJsonAsync("/api/v1/customer/profile", new { fullName = "Ravi Kumar", email = "not-an-email" })).ErrorCodeAsync()).Should().Be("EMAIL_INVALID");
+        var updated = await customer.PutAsJsonAsync("/api/v1/customer/profile", new { fullName = "Ravi Kumar", email = "ravi@example.com" }).OkJsonAsync();
+        updated["fullName"]!.GetValue<string>().Should().Be("Ravi Kumar");
+        (await customer.GetAsync("/api/v1/auth/me").OkJsonAsync())["displayName"]!.GetValue<string>().Should().Be("Ravi Kumar");
+
+        var reseller = await factory.NewActiveResellerAsync();
+        (await reseller.GetAsync("/api/v1/customer/profile")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await factory.CreateClient().GetAsync("/api/v1/catalog/order-charges").OkJsonAsync())["shippingFeePerOrder"]!.GetValue<decimal>().Should().Be(100m);
     }
 
     [Fact]

@@ -88,6 +88,19 @@ public sealed class PaymentsModelConfiguration : IModuleModelConfiguration
             b.HasOne<PaymentAttempt>().WithMany().HasForeignKey(x => x.PaymentAttemptId).OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<ReconciliationHistory>(b =>
+        {
+            b.ToTable("reconciliation_history", SchemaName);
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Action).HasConversion<string>().HasMaxLength(30);
+            b.Property(x => x.FromStatus).HasConversion<string>().HasMaxLength(30);
+            b.Property(x => x.ToStatus).HasConversion<string>().HasMaxLength(30);
+            b.Property(x => x.Note).HasMaxLength(2000);
+            b.Property(x => x.ExternalRefundRef).HasMaxLength(100);
+            b.HasIndex(x => new { x.ReconciliationId, x.OccurredAt });
+            b.HasOne<PaymentReconciliation>().WithMany().HasForeignKey(x => x.ReconciliationId).OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<SimulatorTransaction>(b =>
         {
             b.ToTable("simulator_transactions", SchemaName);

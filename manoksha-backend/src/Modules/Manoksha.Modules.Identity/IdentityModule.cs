@@ -40,6 +40,7 @@ public sealed class IdentityModule : IModule
         services.AddScoped<UserAdministrationService>();
         services.AddScoped<RoleAdministrationService>();
         services.AddScoped<MeService>();
+        services.AddScoped<CustomerProfileService>();
         services.AddScoped<IStartupSeeder, IdentitySeeder>();
         services.AddScoped<IInternalUserAccounts, InternalUserAccounts>();
         services.AddScoped<IResellerAccounts, ResellerAccounts>();

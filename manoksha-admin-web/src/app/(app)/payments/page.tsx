@@ -6,7 +6,7 @@ import { PAYMENT_TONE, type PaymentAttempt, type PaymentReconciliation } from "@
 
 /**
  * Online UPI payments and the minimum reconciliation safeguard (SPEC §14.2, §36): money received that could not be applied is
- * never silently kept — each case is listed here for the Owner. Owner actions and refund markers arrive with the Exception Center.
+ * never silently kept — each case is listed here, and the Owner records actions and refund markers on the case page.
  */
 export default async function PaymentsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const me = (await getMe())!;
@@ -30,7 +30,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
           <Table head={["Case", "Reason", "For", "Expected", "Paid", "Provider ref", "Status", "Opened"]}>
             {cases.data.map((c) => (
               <tr key={c.id}>
-                <td className="px-4 py-2 font-mono text-xs">{c.caseNumber}</td>
+                <td className="px-4 py-2 font-mono text-xs"><Link className="text-brand-700 hover:underline" href={`/payments/${c.id}`}>{c.caseNumber}</Link></td>
                 <td className="px-4 py-2 text-xs">{c.reasonCode}{c.detail && <div className="text-slate-500">{c.detail}</div>}</td>
                 <td className="px-4 py-2 text-xs">
                   {c.purpose === "ORDER" ? <Link className="text-brand-700 hover:underline" href={`/orders/${c.referenceId}`}>{c.referenceNumber}</Link> : c.referenceNumber}

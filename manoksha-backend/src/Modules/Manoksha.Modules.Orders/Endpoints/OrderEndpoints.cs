@@ -1,3 +1,4 @@
+using Manoksha.Application.Abstractions;
 using Manoksha.Application.Http;
 using Manoksha.Application.Security;
 using Manoksha.Modules.Orders.Application;
@@ -29,6 +30,8 @@ internal static class OrderEndpoints
         store.MapGet("/products", (string? q, Guid? categoryId, int? page, int? pageSize, StorefrontService s, CancellationToken ct) =>
             s.ListAsync(q, categoryId, page, pageSize, ct)).WithName("StorefrontProducts");
         store.MapGet("/products/{productId:guid}", (Guid productId, StorefrontService s, CancellationToken ct) => s.ProductAsync(productId, ct)).WithName("StorefrontProduct");
+        store.MapGet("/order-charges", async (ISettingsReader settings, CancellationToken ct) =>
+            new OrderChargesDto(await settings.GetAsync<decimal>(SettingKeys.ShippingFeePerOrder, ct))).WithName("StorefrontOrderCharges");
         store.MapPost("/cart-quote", (CartQuoteRequest r, StorefrontService s, CancellationToken ct) => s.CartQuoteAsync(r, ct)).WithName("StorefrontCartQuote");
 
         // Signed-in customers: checkout requires login (ADR-001 §10); no cancel endpoint exists (SPEC §21).

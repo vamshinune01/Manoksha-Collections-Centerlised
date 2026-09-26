@@ -43,6 +43,11 @@ internal static class PaymentEndpoints
             .RequirePermission(Permissions.Exceptions.View).WithName("ListPaymentReconciliations");
         admin.MapGet("/payment-reconciliations/{id:guid}", (Guid id, PaymentQueryService s, CancellationToken ct) => s.GetReconciliationAsync(id, ct))
             .RequirePermission(Permissions.Exceptions.View).WithName("GetPaymentReconciliation");
+        admin.MapGet("/payment-reconciliations/{id:guid}/history", (Guid id, ReconciliationService s, CancellationToken ct) => s.HistoryAsync(id, ct))
+            .RequirePermission(Permissions.Exceptions.View).WithName("GetPaymentReconciliationHistory");
+        // Owner-only (SPEC §36): markers and notes; refunds themselves happen outside the application.
+        admin.MapPost("/payment-reconciliations/{id:guid}/actions", (Guid id, ReconciliationActionRequest r, ReconciliationService s, CancellationToken ct) =>
+            s.ActAsync(id, r, ct)).RequirePermission(Permissions.Exceptions.ReconciliationManage).WithName("ActOnPaymentReconciliation");
 
         if (simulatorEnabled)
         {

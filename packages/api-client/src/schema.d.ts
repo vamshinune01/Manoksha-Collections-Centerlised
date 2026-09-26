@@ -564,6 +564,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CustomerProfile"];
+        put: operations["UpdateCustomerProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/customer/checkout": {
         parameters: {
             query?: never;
@@ -1604,6 +1620,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/payment-reconciliations/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPaymentReconciliationHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payment-reconciliations/{id}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ActOnPaymentReconciliation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/pricing/skus": {
         parameters: {
             query?: never;
@@ -2220,6 +2268,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["StorefrontProduct"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/order-charges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StorefrontOrderCharges"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2934,6 +2998,13 @@ export interface components {
             payment?: components["schemas"]["OnlinePaymentDto"];
             inquiry?: components["schemas"]["InquiryDto"];
         };
+        CustomerProfileDto: {
+            fullName?: string | null;
+            email?: string | null;
+            mobile?: string | null;
+            /** Format: date-time */
+            memberSince?: string;
+        };
         CustomerRegistrationRequest: {
             registrationToken?: string | null;
             fullName?: string | null;
@@ -3293,6 +3364,10 @@ export interface components {
             /** Format: date-time */
             completedAt?: string | null;
             message?: string | null;
+        };
+        OrderChargesDto: {
+            /** Format: double */
+            shippingFeePerOrder?: number;
         };
         OrderDto: {
             /** Format: uuid */
@@ -3664,6 +3739,22 @@ export interface components {
             /** Format: uuid */
             skuId?: string;
             status?: string | null;
+        };
+        ReconciliationActionRequest: {
+            action?: string | null;
+            note?: string | null;
+            externalRefundRef?: string | null;
+        };
+        ReconciliationHistoryDto: {
+            action?: string | null;
+            fromStatus?: string | null;
+            toStatus?: string | null;
+            note?: string | null;
+            externalRefundRef?: string | null;
+            /** Format: uuid */
+            actorUserId?: string;
+            /** Format: date-time */
+            occurredAt?: string;
         };
         RecordCountsRequest: {
             lines?: components["schemas"]["CountLineRequest"][] | null;
@@ -4153,6 +4244,10 @@ export interface components {
             name?: string | null;
             address?: components["schemas"]["BranchAddressDto"];
             reason?: string | null;
+        };
+        UpdateCustomerProfileRequest: {
+            fullName?: string | null;
+            email?: string | null;
         };
         UpdateEmployeeRequest: {
             fullName?: string | null;
@@ -5261,6 +5356,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SkuInfo"][];
+                };
+            };
+        };
+    };
+    CustomerProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerProfileDto"];
+                };
+            };
+        };
+    };
+    UpdateCustomerProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCustomerProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerProfileDto"];
                 };
             };
         };
@@ -6954,6 +7093,54 @@ export interface operations {
             };
         };
     };
+    GetPaymentReconciliationHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationHistoryDto"][];
+                };
+            };
+        };
+    };
+    ActOnPaymentReconciliation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconciliationActionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentReconciliationDto"];
+                };
+            };
+        };
+    };
     ListSkuPrices: {
         parameters: {
             query?: {
@@ -8102,6 +8289,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StorefrontProductDto"];
+                };
+            };
+        };
+    };
+    StorefrontOrderCharges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderChargesDto"];
                 };
             };
         };
