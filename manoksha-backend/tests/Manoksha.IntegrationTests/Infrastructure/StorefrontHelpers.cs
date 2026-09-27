@@ -79,7 +79,7 @@ public static class StorefrontHelpers
         await c.OpenAsync();
         await using var cmd = new NpgsqlCommand(sql, c);
         var value = await cmd.ExecuteScalarAsync();
-        return value is null or DBNull ? default : (T)Convert.ChangeType(value, Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+        return value is null or DBNull ? default : value is T typed ? typed : (T)Convert.ChangeType(value, Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T), System.Globalization.CultureInfo.InvariantCulture);
     }
 
     public static async Task<List<string>> ColumnAsync(this ManokshaApiFactory factory, string sql)

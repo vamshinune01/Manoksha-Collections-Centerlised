@@ -38,6 +38,28 @@ public interface IStockAllocator
         CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Sold stock coming back from a cancelled or rerouted order (ADR-001 §8, Phase 7 decision: automatic return). For quantity SKUs
+/// give counts; for serialized SKUs give the pieces. Units that are neither damaged nor missing return to AVAILABLE; damaged units
+/// go to DAMAGED; missing units are written off as LOST and open an inventory discrepancy for investigation (SPEC §22).
+/// </summary>
+public sealed record SoldStockReturn(Guid SkuId, int Quantity, IReadOnlyList<Guid> ItemIds, int DamagedQty, IReadOnlyList<Guid> DamagedItemIds, int MissingQty,
+    IReadOnlyList<Guid> MissingItemIds);
+
+public sealed record StockReturnResult(IReadOnlyList<string> DiscrepancyNumbers, IReadOnlyList<ReturnedLine> Lines);
+
+public sealed record ReturnedLine(Guid SkuId, int ToAvailable, int ToDamaged, int Missing, decimal CostRestored);
+
+/// <summary>Order stock after confirmation (Phase 7 fulfillment).</summary>
+public interface IOrderStock
+{
+    Task<StockReturnResult> ReturnSoldStockAsync(Guid branchId, IReadOnlyList<SoldStockReturn> lines, string referenceType, Guid referenceId, string referenceNumber,
+        string reason, CancellationToken cancellationToken = default);
+
+    /// <summary>AVAILABLE units per SKU at one branch (reroute options; the reroute itself re-checks under lock).</summary>
+    Task<IReadOnlyDictionary<Guid, int>> AvailableAtBranchAsync(Guid branchId, IReadOnlyCollection<Guid> skuIds, CancellationToken cancellationToken = default);
+}
+
 /// <summary>Storefront stock hint: AVAILABLE units per SKU across all branches (not a promise — checkout decides per branch).</summary>
 public interface IStockAvailability
 {

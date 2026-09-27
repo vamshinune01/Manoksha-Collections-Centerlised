@@ -49,6 +49,27 @@ internal static class OrderEndpoints
             s.ListAsync(channel, status, branchId, resellerId, ct)).RequirePermission(Permissions.Orders.View).WithName("ListOrders");
         admin.MapGet("/orders/{id:guid}", (Guid id, OrderQueryService s, CancellationToken ct) => s.GetAsync(id, ct))
             .RequirePermission(Permissions.Orders.View).WithName("GetOrder");
+        // ---- Fulfillment (Phase 7). Permission checks are per order branch inside the service. ----
+        admin.MapGet("/fulfillment/queue", (Guid? branchId, OrderQueryService s, CancellationToken ct) => s.QueueAsync(branchId, ct))
+            .RequirePermission(Permissions.Orders.View).WithName("FulfillmentQueue");
+        admin.MapPost("/orders/{id:guid}/processing", (Guid id, FulfillmentStepRequest r, FulfillmentService s, CancellationToken ct) => s.StartProcessingAsync(id, r, ct))
+            .WithName("StartProcessingOrder");
+        admin.MapPost("/orders/{id:guid}/packed", (Guid id, FulfillmentStepRequest r, FulfillmentService s, CancellationToken ct) => s.MarkPackedAsync(id, r, ct))
+            .WithName("MarkOrderPacked");
+        admin.MapPost("/orders/{id:guid}/shipped", (Guid id, ShipOrderRequest r, FulfillmentService s, CancellationToken ct) => s.MarkShippedAsync(id, r, ct))
+            .WithName("MarkOrderShipped");
+        admin.MapPost("/orders/{id:guid}/delivered", (Guid id, DeliverOrderRequest r, FulfillmentService s, CancellationToken ct) => s.MarkDeliveredAsync(id, r, ct))
+            .WithName("MarkOrderDelivered");
+        admin.MapPost("/orders/{id:guid}/fulfillment-exceptions", (Guid id, RaiseFulfillmentExceptionRequest r, FulfillmentService s, CancellationToken ct) =>
+            s.RaiseExceptionAsync(id, r, ct)).WithName("RaiseFulfillmentException");
+        admin.MapPost("/orders/{id:guid}/fulfillment-exceptions/resolve", (Guid id, ResolveExceptionRequest r, FulfillmentService s, CancellationToken ct) =>
+            s.ResolveInPlaceAsync(id, r, ct)).WithName("ResolveFulfillmentException");
+        admin.MapGet("/orders/{id:guid}/reroute-options", (Guid id, FulfillmentService s, CancellationToken ct) => s.RerouteOptionsAsync(id, ct)).WithName("RerouteOptions");
+        admin.MapPost("/orders/{id:guid}/reroute", (Guid id, RerouteRequest r, FulfillmentService s, CancellationToken ct) => s.RerouteAsync(id, r, ct)).WithName("RerouteOrder");
+        admin.MapPost("/orders/{id:guid}/cancel", (Guid id, CancelOrderRequest r, FulfillmentService s, CancellationToken ct) => s.CancelAsync(id, r, ct)).WithName("CancelOrder");
+        admin.MapGet("/fulfillment-exceptions", (string? status, FulfillmentService s, CancellationToken ct) => s.ListExceptionsAsync(status, ct))
+            .RequirePermission(Permissions.Exceptions.View).WithName("ListFulfillmentExceptions");
+
         admin.MapGet("/resellers/{resellerId:guid}/customers", (Guid resellerId, string? q, ResellerCustomerService s, CancellationToken ct) =>
             s.ListForResellerAsync(resellerId, q, ct)).RequirePermission(Permissions.Resellers.View).WithName("ListResellerCustomersForOwner");
         admin.MapGet("/fulfillment-inquiries", async (ManokshaDbContext db, CancellationToken ct) =>

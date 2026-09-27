@@ -4,6 +4,7 @@ import { customerFetch } from "@/lib/backend";
 import { inr, ORDER_STATUS_LABEL, type Order } from "@/lib/types";
 import { Card, formatDateTime } from "@/components/ui";
 import { PaymentStatus } from "./payment-status";
+import { OrderTracking } from "@/components/order-tracking";
 
 export const metadata = { title: "Order" };
 
@@ -26,7 +27,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         </a>
       </div>
 
-      <PaymentStatus orderId={o.id} initialStatus={o.status} />
+      {o.status !== "Cancelled" && <PaymentStatus orderId={o.id} initialStatus={o.status} />}
+      <OrderTracking order={o} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card title="Items" className="lg:col-span-2">

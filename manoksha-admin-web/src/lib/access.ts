@@ -60,6 +60,10 @@ export const P = {
   walletAdjust: "wallet.adjust",
   depositApprove: "wallet.deposit.approve",
   ordersView: "orders.view",
+  ordersFulfill: "orders.fulfill",
+  ordersExceptionRaise: "orders.fulfillment_exception.raise",
+  ordersReroute: "orders.reroute",
+  ordersCancel: "orders.cancel",
   exceptionsView: "exceptions.view",
   reconciliationManage: "reconciliation.manage",
 } as const;
@@ -81,6 +85,7 @@ export const NAV: NavItem[] = [
   { href: "/pricing", label: "Pricing", permission: P.pricingView },
   { href: "/resellers", label: "Resellers", permission: P.resellersView },
   { href: "/wallet-deposits", label: "Wallet deposits", permission: P.walletView },
+  { href: "/fulfillment", label: "Fulfillment", permission: P.ordersView },
   { href: "/orders", label: "Orders", permission: P.ordersView },
   { href: "/payments", label: "Online payments", permission: P.exceptionsView },
   { href: "/purchasing", label: "Purchasing", permission: [P.purchasingView, P.goodsReceipt] },

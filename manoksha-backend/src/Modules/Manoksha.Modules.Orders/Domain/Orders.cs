@@ -134,6 +134,40 @@ internal sealed class Order : Entity
         return from;
     }
 
+    // ---- Fulfillment (SPEC §19, §22, §27.1) ----
+
+    public OrderStatus StartProcessing() => Move(OrderStatus.Processing, OrderStatus.Confirmed);
+
+    public OrderStatus MarkPacked() => Move(OrderStatus.Packed, OrderStatus.Processing);
+
+    public OrderStatus MarkShipped() => Move(OrderStatus.Shipped, OrderStatus.Packed);
+
+    public OrderStatus MarkDelivered() => Move(OrderStatus.Delivered, OrderStatus.Shipped);
+
+    /// <summary>The assigned branch cannot physically fulfil the confirmed order (SPEC §22).</summary>
+    public OrderStatus RaiseFulfillmentException() => Move(OrderStatus.FulfillmentException, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Packed);
+
+    /// <summary>Resolved at the same branch (e.g. the piece was found).</summary>
+    public OrderStatus ResumeAfterException() => Move(OrderStatus.Processing, OrderStatus.FulfillmentException);
+
+    /// <summary>The whole order moves to a branch that can fulfil it completely (never split).</summary>
+    public OrderStatus Reroute(Guid toBranchId)
+    {
+        var from = Move(OrderStatus.Processing, OrderStatus.FulfillmentException);
+        FulfillmentBranchId = toBranchId;
+        return from;
+    }
+
+    /// <summary>Administrative cancellation (ADR-001 §8, Phase 7 decision: until Packed; never after Shipped).</summary>
+    public OrderStatus Cancel() => Move(OrderStatus.Cancelled, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Packed, OrderStatus.FulfillmentException);
+
+    private OrderStatus Move(OrderStatus to, params OrderStatus[] from)
+    {
+        var previous = Ensure(from);
+        Status = to;
+        return previous;
+    }
+
     public void MarkPaymentFailed()
     {
         Ensure(OrderStatus.PaymentPending);
@@ -345,6 +379,9 @@ internal enum ReservationStatus
     Consumed = 2,
     Expired = 3,
     Released = 4,
+
+    /// <summary>A sold allocation that came back to stock (order cancelled or rerouted).</summary>
+    Returned = 5,
 }
 
 /// <summary>
@@ -386,6 +423,17 @@ internal sealed class Reservation : Entity
     public string? CloseReason { get; private set; }
 
     public uint RowVersion { get; private set; }
+
+    public void MarkReturned(string reason, DateTimeOffset now)
+    {
+        if (Status != ReservationStatus.Consumed)
+        {
+            throw new BusinessRuleException("ALLOCATION_NOT_SOLD", $"The allocation is {Status}.", 409);
+        }
+        Status = ReservationStatus.Returned;
+        CloseReason = reason;
+        ClosedAt = now;
+    }
 
     public void Close(ReservationStatus to, string reason, DateTimeOffset now)
     {
@@ -430,4 +478,185 @@ internal sealed class ReservationLine : Entity
     public decimal? CostAmount { get; private set; }
 
     public void RecordCost(decimal cost) => CostAmount = cost;
+}
+
+/// <summary>Courier hand-over (Phase 7 decision: courier required, tracking number optional). One shipment per order in V1.</summary>
+internal sealed class Shipment : Entity
+{
+    private Shipment()
+    {
+    }
+
+    public Shipment(Guid orderId, Guid branchId, string courier, string? courierName, string? trackingNumber, Guid shippedBy, DateTimeOffset now)
+    {
+        OrderId = orderId;
+        BranchId = branchId;
+        Courier = courier;
+        CourierName = courierName;
+        TrackingNumber = trackingNumber;
+        ShippedBy = shippedBy;
+        ShippedAt = now;
+    }
+
+    public Guid OrderId { get; private set; }
+
+    public Guid BranchId { get; private set; }
+
+    /// <summary>XPRESSBEES, DELHIVERY or OTHER (with <see cref="CourierName"/>). Courier APIs are integrated later.</summary>
+    public string Courier { get; private set; } = default!;
+
+    public string? CourierName { get; private set; }
+
+    public string? TrackingNumber { get; private set; }
+
+    public Guid ShippedBy { get; private set; }
+
+    public DateTimeOffset ShippedAt { get; private set; }
+
+    public DateOnly? DeliveredOn { get; private set; }
+
+    public Guid? DeliveredRecordedBy { get; private set; }
+
+    public DateTimeOffset? DeliveredRecordedAt { get; private set; }
+
+    public string? DeliveryNote { get; private set; }
+
+    public uint RowVersion { get; private set; }
+
+    public void RecordDelivered(DateOnly on, string? note, Guid by, DateTimeOffset now)
+    {
+        DeliveredOn = on;
+        DeliveryNote = note;
+        DeliveredRecordedBy = by;
+        DeliveredRecordedAt = now;
+    }
+}
+
+internal enum FulfillmentExceptionStatus
+{
+    Open = 1,
+    Rerouted = 2,
+    ResolvedInPlace = 3,
+    Cancelled = 4,
+}
+
+/// <summary>SPEC §22: the assigned branch cannot locate or fulfil an item of a confirmed order.</summary>
+internal sealed class FulfillmentException : Entity
+{
+    public static readonly string[] Reasons = ["ITEM_NOT_FOUND", "DAMAGED", "INVENTORY_MISMATCH", "OTHER"];
+
+    private FulfillmentException()
+    {
+    }
+
+    public FulfillmentException(Guid orderId, Guid branchId, string reason, string notes, Guid raisedBy, DateTimeOffset now)
+    {
+        OrderId = orderId;
+        BranchId = branchId;
+        Reason = reason;
+        Notes = notes;
+        RaisedBy = raisedBy;
+        RaisedAt = now;
+        Status = FulfillmentExceptionStatus.Open;
+    }
+
+    public Guid OrderId { get; private set; }
+
+    public Guid BranchId { get; private set; }
+
+    public string Reason { get; private set; } = default!;
+
+    public string Notes { get; private set; } = default!;
+
+    public FulfillmentExceptionStatus Status { get; private set; }
+
+    public Guid RaisedBy { get; private set; }
+
+    public DateTimeOffset RaisedAt { get; private set; }
+
+    public Guid? ResolvedBy { get; private set; }
+
+    public DateTimeOffset? ResolvedAt { get; private set; }
+
+    public string? Resolution { get; private set; }
+
+    public uint RowVersion { get; private set; }
+
+    public void Close(FulfillmentExceptionStatus to, string resolution, Guid by, DateTimeOffset now)
+    {
+        if (Status != FulfillmentExceptionStatus.Open)
+        {
+            throw new BusinessRuleException("EXCEPTION_NOT_OPEN", "This fulfillment exception is already closed.", 409);
+        }
+        Status = to;
+        Resolution = resolution;
+        ResolvedBy = by;
+        ResolvedAt = now;
+    }
+}
+
+/// <summary>What staff found for one order line: units missing or damaged (pieces for serialized SKUs).</summary>
+internal sealed class FulfillmentExceptionLine : Entity
+{
+    private FulfillmentExceptionLine()
+    {
+    }
+
+    public FulfillmentExceptionLine(Guid exceptionId, Guid skuId, int missingQty, int damagedQty, Guid[] missingItemIds, Guid[] damagedItemIds)
+    {
+        ExceptionId = exceptionId;
+        SkuId = skuId;
+        MissingQty = missingQty;
+        DamagedQty = damagedQty;
+        MissingItemIds = missingItemIds;
+        DamagedItemIds = damagedItemIds;
+    }
+
+    public Guid ExceptionId { get; private set; }
+
+    public Guid SkuId { get; private set; }
+
+    public int MissingQty { get; private set; }
+
+    public int DamagedQty { get; private set; }
+
+    public Guid[] MissingItemIds { get; private set; } = [];
+
+    public Guid[] DamagedItemIds { get; private set; } = [];
+}
+
+/// <summary>Whole-order reroute record (SPEC §22): original branch, new branch, reason, actor, time and inventory effects.</summary>
+internal sealed class OrderReroute : Entity
+{
+    private OrderReroute()
+    {
+    }
+
+    public OrderReroute(Guid orderId, Guid fromBranchId, Guid toBranchId, string reason, Guid? exceptionId, string effectsJson, Guid actorUserId, DateTimeOffset now)
+    {
+        OrderId = orderId;
+        FromBranchId = fromBranchId;
+        ToBranchId = toBranchId;
+        Reason = reason;
+        ExceptionId = exceptionId;
+        EffectsJson = effectsJson;
+        ActorUserId = actorUserId;
+        OccurredAt = now;
+    }
+
+    public Guid OrderId { get; private set; }
+
+    public Guid FromBranchId { get; private set; }
+
+    public Guid ToBranchId { get; private set; }
+
+    public string Reason { get; private set; } = default!;
+
+    public Guid? ExceptionId { get; private set; }
+
+    public string EffectsJson { get; private set; } = default!;
+
+    public Guid ActorUserId { get; private set; }
+
+    public DateTimeOffset OccurredAt { get; private set; }
 }

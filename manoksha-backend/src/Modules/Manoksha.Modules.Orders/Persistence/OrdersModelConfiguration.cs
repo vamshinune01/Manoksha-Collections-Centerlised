@@ -82,6 +82,51 @@ public sealed class OrdersModelConfiguration : IModuleModelConfiguration
             b.HasOne<OrderLine>().WithMany().HasForeignKey(x => x.OrderLineId).OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<Shipment>(b =>
+        {
+            b.ToTable("shipments", SchemaName);
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Courier).HasMaxLength(30);
+            b.Property(x => x.CourierName).HasMaxLength(100);
+            b.Property(x => x.TrackingNumber).HasMaxLength(100);
+            b.Property(x => x.DeliveryNote).HasMaxLength(1000);
+            b.Property(x => x.RowVersion).IsRowVersion();
+            b.HasIndex(x => x.OrderId).IsUnique();
+            b.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<FulfillmentException>(b =>
+        {
+            b.ToTable("fulfillment_exceptions", SchemaName);
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Reason).HasMaxLength(30);
+            b.Property(x => x.Notes).HasMaxLength(2000);
+            b.Property(x => x.Resolution).HasMaxLength(2000);
+            b.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+            b.Property(x => x.RowVersion).IsRowVersion();
+            b.HasIndex(x => new { x.Status, x.RaisedAt });
+            b.HasIndex(x => x.OrderId).IsUnique().HasFilter("status = 'Open'").HasDatabaseName("ux_fulfillment_exceptions_one_open_per_order");
+            b.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<FulfillmentExceptionLine>(b =>
+        {
+            b.ToTable("fulfillment_exception_lines", SchemaName, t => t.HasCheckConstraint("ck_fulfillment_exception_lines_qty", "missing_qty >= 0 AND damaged_qty >= 0"));
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => x.ExceptionId);
+            b.HasOne<FulfillmentException>().WithMany().HasForeignKey(x => x.ExceptionId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<OrderReroute>(b =>
+        {
+            b.ToTable("order_reroutes", SchemaName);
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Reason).HasMaxLength(2000);
+            b.Property(x => x.EffectsJson).HasColumnName("inventory_effects").HasColumnType("jsonb").Unbounded();
+            b.HasIndex(x => x.OrderId);
+            b.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<ResellerCustomer>(b =>
         {
             b.ToTable("reseller_customers", SchemaName);

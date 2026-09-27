@@ -76,6 +76,15 @@ export interface Order {
   lines: OrderLine[];
   history: { toStatus: string; note: string | null; occurredAt: string }[];
   helpWhatsAppUrl: string;
+  shipment?: Shipment | null;
+}
+
+export interface Shipment {
+  courier: string;
+  courierLabel: string;
+  trackingNumber: string | null;
+  shippedAt: string;
+  deliveredOn: string | null;
 }
 
 export interface CheckoutResult {

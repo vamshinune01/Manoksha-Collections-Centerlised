@@ -67,11 +67,14 @@ internal sealed class DiscrepancyService(
                 throw new BusinessRuleException("DISCREPANCY_ALREADY_RESOLVED", "This discrepancy is already resolved.");
             }
 
-            if (d.SourceType == "COUNT")
+            if (d.SourceType is "COUNT" or "ORDER")
             {
+                // ORDER: pieces missing after an order was confirmed are already written off as LOST; the discrepancy is closed once
+                // investigated. Stock found later comes back through a "found" inventory adjustment (Owner-approved cost).
                 if (action != Dismissed)
                 {
-                    throw new BusinessRuleException("DISCREPANCY_ACTION_INVALID", "Count differences are fixed with an inventory adjustment, or dismissed with a reason.", 400);
+                    throw new BusinessRuleException("DISCREPANCY_ACTION_INVALID",
+                        "Close this discrepancy with a reason once investigated; stock found later is added back with an inventory adjustment.", 400);
                 }
                 d.Resolve(Dismissed, r.Notes, currentUser.UserId, clock.UtcNow);
             }

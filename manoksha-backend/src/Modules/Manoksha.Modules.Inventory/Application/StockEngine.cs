@@ -192,6 +192,10 @@ internal sealed class StockEngine(ManokshaDbContext db, ICurrentUser currentUser
         await db.Set<CostLayer>().Where(l => l.SkuId == skuId && l.BranchId == branchId).OrderByDescending(l => l.Seq).Select(l => (decimal?)l.UnitCost).FirstOrDefaultAsync(ct)
         ?? await db.Set<CostLayer>().Where(l => l.SkuId == skuId).OrderByDescending(l => l.Seq).Select(l => (decimal?)l.UnitCost).FirstOrDefaultAsync(ct);
 
+    /// <summary>History-only movement for units that are no longer in any stock bucket (e.g. sold units found missing → LOST).</summary>
+    public void RecordMovement(Guid skuId, Guid? itemId, int quantity, Guid? fromBranch, Guid? toBranch, InventoryStatus? from, InventoryStatus? to, MovementContext ctx) =>
+        Record(skuId, itemId, quantity, fromBranch, toBranch, from, to, ctx);
+
     private void Record(Guid skuId, Guid? itemId, int quantity, Guid? fromBranch, Guid? toBranch, InventoryStatus? from, InventoryStatus? to, MovementContext ctx) =>
         db.Add(new InventoryMovement(skuId, itemId, quantity, fromBranch, toBranch, from, to, ctx.MovementType, ctx.ReferenceType, ctx.ReferenceId, ctx.ReferenceNumber,
             currentUser.UserIdOrNull, ctx.Reason, clock.UtcNow));

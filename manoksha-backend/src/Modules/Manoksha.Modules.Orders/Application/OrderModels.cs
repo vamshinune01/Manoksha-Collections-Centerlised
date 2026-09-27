@@ -45,7 +45,9 @@ public sealed record OrderDto(
     IReadOnlyList<OrderLineDto> Lines,
     IReadOnlyList<OrderStatusChangeDto> History,
     string HelpWhatsAppUrl,
-    decimal? CostOfGoods);
+    decimal? CostOfGoods,
+    ShipmentDto? Shipment = null,
+    FulfillmentExceptionDto? OpenException = null);
 
 public sealed record InquiryDto(string Reference, string Message, string WhatsAppUrl);
 
@@ -88,3 +90,39 @@ public sealed record CartQuoteLineDto(Guid SkuId, bool Sellable, string? Product
 
 /// <summary>Per-order charges to display before payment (SPEC §18). The backend applies the authoritative values at checkout.</summary>
 public sealed record OrderChargesDto(decimal ShippingFeePerOrder);
+
+// ---- Fulfillment (Phase 7) ----
+
+/// <param name="Courier">XPRESSBEES, DELHIVERY or OTHER (then <paramref name="CourierName"/> is required). Tracking number optional.</param>
+public sealed record ShipOrderRequest(string Courier, string? CourierName, string? TrackingNumber, string? Note);
+
+/// <param name="DeliveredOn">Delivery date (IST); defaults to today.</param>
+public sealed record DeliverOrderRequest(DateOnly? DeliveredOn, string? Note);
+
+public sealed record FulfillmentStepRequest(string? Note);
+
+/// <summary>Units of one order line that are missing or damaged. Serialized pieces are identified by scanning their barcodes.</summary>
+public sealed record StockIssueLineRequest(Guid SkuId, int MissingQty, int DamagedQty, IReadOnlyList<string>? MissingBarcodes, IReadOnlyList<string>? DamagedBarcodes);
+
+/// <param name="Reason">ITEM_NOT_FOUND, DAMAGED, INVENTORY_MISMATCH or OTHER (SPEC §22).</param>
+public sealed record RaiseFulfillmentExceptionRequest(string Reason, string Notes, IReadOnlyList<StockIssueLineRequest>? Lines);
+
+public sealed record RerouteRequest(Guid TargetBranchId, string Reason);
+
+public sealed record ResolveExceptionRequest(string Note);
+
+/// <param name="Lines">Units that are damaged or missing; everything else returns to stock (Phase 7 decision). Defaults to the open exception's lines.</param>
+public sealed record CancelOrderRequest(string Reason, IReadOnlyList<StockIssueLineRequest>? Lines);
+
+public sealed record ShortfallDto(Guid SkuId, int Requested, int Available);
+
+public sealed record RerouteOptionDto(Guid BranchId, string BranchName, int Priority, bool IsActive, bool CanFulfil, IReadOnlyList<ShortfallDto> Shortfalls);
+
+public sealed record StockIssueLineDto(Guid SkuId, string SkuCode, string Item, int MissingQty, int DamagedQty);
+
+public sealed record FulfillmentExceptionDto(Guid Id, Guid OrderId, string OrderNumber, string Channel, Guid BranchId, string BranchName, string Reason, string Notes,
+    string Status, DateTimeOffset RaisedAt, DateTimeOffset? ResolvedAt, string? Resolution, IReadOnlyList<StockIssueLineDto> Lines);
+
+public sealed record ShipmentDto(string Courier, string CourierLabel, string? TrackingNumber, DateTimeOffset ShippedAt, DateOnly? DeliveredOn);
+
+public sealed record CancelOrderResult(OrderDto Order, decimal? WalletRefunded, string? ReconciliationCase, IReadOnlyList<string> Discrepancies);

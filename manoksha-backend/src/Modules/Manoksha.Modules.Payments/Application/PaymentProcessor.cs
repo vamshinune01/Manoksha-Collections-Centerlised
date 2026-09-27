@@ -163,7 +163,7 @@ internal sealed class PaymentProcessor(
         return attempt.Status == PaymentStatus.Success ? "SUCCESS" : "RECOVERED";
     }
 
-    private async Task OpenReconciliationAsync(PaymentAttempt attempt, decimal? paidAmount, string reasonCode, string? detail, CancellationToken ct)
+    internal async Task<string> OpenReconciliationAsync(PaymentAttempt attempt, decimal? paidAmount, string reasonCode, string? detail, CancellationToken ct)
     {
         var seq = await db.Database.SqlQuery<long>($"SELECT nextval('payments.reconciliation_seq') AS \"Value\"").SingleAsync(ct);
         var rec = new PaymentReconciliation($"MC-REC-{seq:D6}", attempt, paidAmount, reasonCode, detail, clock.UtcNow);
@@ -171,6 +171,7 @@ internal sealed class PaymentProcessor(
         await audit.RecordAsync(new AuditRecord("payments.reconciliation.opened", "PaymentReconciliation", rec.Id.ToString(),
             After: new { rec.CaseNumber, reasonCode, detail, attempt.Purpose, attempt.ReferenceNumber, attempt.Amount, paidAmount, attempt.ProviderOrderRef, attempt.ProviderPaymentRef }), ct);
         outbox.Enqueue(new PaymentReconciliationRequired(rec.Id, rec.CaseNumber, reasonCode, attempt.Amount, paidAmount, attempt.ReferenceNumber));
+        return rec.CaseNumber;
     }
 
     private void Move(PaymentAttempt attempt, PaymentStatus to, string source, string? reason)

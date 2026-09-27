@@ -3698,6 +3698,433 @@
         }
       }
     },
+    "/api/v1/admin/fulfillment/queue": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "FulfillmentQueue",
+        "parameters": [
+          {
+            "name": "branchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{id}/processing": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "StartProcessingOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FulfillmentStepRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{id}/packed": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "MarkOrderPacked",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FulfillmentStepRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{id}/shipped": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "MarkOrderShipped",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{id}/delivered": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "MarkOrderDelivered",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeliverOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{id}/fulfillment-exceptions": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "RaiseFulfillmentException",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RaiseFulfillmentExceptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{id}/fulfillment-exceptions/resolve": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "ResolveFulfillmentException",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveExceptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{id}/reroute-options": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "RerouteOptions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RerouteOptionDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{id}/reroute": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "RerouteOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RerouteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "CancelOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelOrderResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/fulfillment-exceptions": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "ListFulfillmentExceptions",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FulfillmentExceptionDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/resellers/{resellerId}/customers": {
       "get": {
         "tags": [
@@ -6964,6 +7391,48 @@
         },
         "additionalProperties": false
       },
+      "CancelOrderRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockIssueLineRequest"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CancelOrderResult": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/OrderDto"
+          },
+          "walletRefunded": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "reconciliationCase": {
+            "type": "string",
+            "nullable": true
+          },
+          "discrepancies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CartQuoteLineDto": {
         "type": "object",
         "properties": {
@@ -7837,6 +8306,21 @@
         },
         "additionalProperties": false
       },
+      "DeliverOrderRequest": {
+        "type": "object",
+        "properties": {
+          "deliveredOn": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "DeliveryDto": {
         "type": "object",
         "properties": {
@@ -8090,6 +8574,68 @@
         },
         "additionalProperties": false
       },
+      "FulfillmentExceptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "channel": {
+            "type": "string",
+            "nullable": true
+          },
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "raisedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resolution": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockIssueLineDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "FulfillmentInquiryDto": {
         "type": "object",
         "properties": {
@@ -8162,6 +8708,16 @@
           },
           "isActive": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FulfillmentStepRequest": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -8979,6 +9535,12 @@
             "type": "number",
             "format": "double",
             "nullable": true
+          },
+          "shipment": {
+            "$ref": "#/components/schemas/ShipmentDto"
+          },
+          "openException": {
+            "$ref": "#/components/schemas/FulfillmentExceptionDto"
           }
         },
         "additionalProperties": false
@@ -9903,6 +10465,27 @@
         },
         "additionalProperties": false
       },
+      "RaiseFulfillmentExceptionRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockIssueLineRequest"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ReasonRequest": {
         "type": "object",
         "properties": {
@@ -10067,6 +10650,51 @@
       "RejectDepositRequest": {
         "type": "object",
         "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RerouteOptionDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "priority": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "canFulfil": {
+            "type": "boolean"
+          },
+          "shortfalls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShortfallDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RerouteRequest": {
+        "type": "object",
+        "properties": {
+          "targetBranchId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "reason": {
             "type": "string",
             "nullable": true
@@ -10478,6 +11106,16 @@
         },
         "additionalProperties": false
       },
+      "ResolveExceptionRequest": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "RetailPriceHistoryDto": {
         "type": "object",
         "properties": {
@@ -10837,6 +11475,73 @@
         },
         "additionalProperties": false
       },
+      "ShipOrderRequest": {
+        "type": "object",
+        "properties": {
+          "courier": {
+            "type": "string",
+            "nullable": true
+          },
+          "courierName": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentDto": {
+        "type": "object",
+        "properties": {
+          "courier": {
+            "type": "string",
+            "nullable": true
+          },
+          "courierLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deliveredOn": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShortfallDto": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requested": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "available": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "SimulatorApproveRequest": {
         "type": "object",
         "properties": {
@@ -11033,6 +11738,64 @@
           "occurredAt": {
             "type": "string",
             "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StockIssueLineDto": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "skuCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "item": {
+            "type": "string",
+            "nullable": true
+          },
+          "missingQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "damagedQty": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StockIssueLineRequest": {
+        "type": "object",
+        "properties": {
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "missingQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "damagedQty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "missingBarcodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "damagedBarcodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false

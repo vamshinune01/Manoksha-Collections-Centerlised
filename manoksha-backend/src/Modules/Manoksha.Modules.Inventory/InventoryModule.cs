@@ -24,6 +24,7 @@ public sealed class InventoryModule : IModule
         services.AddScoped<StockAllocator>();
         services.AddScoped<IStockAllocator>(sp => sp.GetRequiredService<StockAllocator>());
         services.AddScoped<IStockAvailability>(sp => sp.GetRequiredService<StockAllocator>());
+        services.AddScoped<IOrderStock, OrderStockService>();
         services.AddScoped<TransferService>();
         services.AddScoped<DiscrepancyService>();
         services.AddScoped<CountService>();

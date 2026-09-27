@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Alert, Badge, Card, PageHeader, Table, formatDateTime } from "@/components/ui";
-import { P, can, inr } from "@/lib/access";
+import { P, can, canAt, inr } from "@/lib/access";
 import { backendFetch, getMe } from "@/lib/backend";
 import { PAYMENT_TONE, orderStatusTone, type Order, type PaymentAttempt } from "@/lib/types";
+import { FulfillmentPanel } from "./fulfillment-panel";
 
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -37,6 +38,27 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           </dl>
         </Card>
         <div className="space-y-6">
+          <Card title="Fulfillment">
+            <FulfillmentPanel orderId={o.id} status={o.status} lines={o.lines} rights={{
+              fulfill: canAt(me, P.ordersFulfill, o.fulfillmentBranchId),
+              raise: canAt(me, P.ordersExceptionRaise, o.fulfillmentBranchId),
+              reroute: canAt(me, P.ordersReroute, o.fulfillmentBranchId),
+              cancel: canAt(me, P.ordersCancel, o.fulfillmentBranchId),
+            }} />
+            {o.openException && (
+              <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm">
+                <p className="font-medium text-amber-900">{o.openException.reason.replaceAll("_", " ")} · {o.openException.branchName}</p>
+                <p className="text-amber-900">{o.openException.notes}</p>
+                <ul className="mt-1 text-xs text-amber-800">{o.openException.lines.map((l) => <li key={l.skuId}>{l.item}: {l.missingQty} missing, {l.damagedQty} damaged</li>)}</ul>
+              </div>
+            )}
+            {o.shipment && (
+              <p className="mt-3 text-sm text-slate-700">
+                Shipped via <strong>{o.shipment.courierLabel}</strong>{o.shipment.trackingNumber ? ` · ${o.shipment.trackingNumber}` : ""} · {formatDateTime(o.shipment.shippedAt)}
+                {o.shipment.deliveredOn && <> · delivered {o.shipment.deliveredOn}</>}
+              </p>
+            )}
+          </Card>
           <Card title="Deliver to">
             <p className="text-sm">{o.delivery.name} · {o.delivery.mobile}<br />{o.delivery.addressLine}, {o.delivery.city}, {o.delivery.state} {o.delivery.pin}</p>
           </Card>

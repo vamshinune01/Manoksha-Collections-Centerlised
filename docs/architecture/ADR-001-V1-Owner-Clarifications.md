@@ -167,3 +167,26 @@ Phase 5 completion items (engineering, 25 Sep 2026):
   credited because the money was received. Not available while the reseller is FROZEN/SUSPENDED/CLOSED (ADR-001 §17).
 - Product images/descriptions are not yet shown on the storefront (catalog image management was not part of Phases 2–6); cards
   show the product name, variant and price.
+
+## Phase 7 Owner decisions (27 Sep 2026)
+23. **Shipping details:** when an order is marked SHIPPED the **courier is required** (Xpressbees, Delhivery or Other with a name);
+    the **tracking number is optional**.
+24. **Cancellation window:** the Owner (or a manager granted `orders.cancel`) may cancel while the order is Confirmed, Processing,
+    **Packed** or in Fulfillment Exception. Once Shipped it cannot be cancelled (returns remain postponed in V1).
+25. **Stock on cancel/reroute: automatic return** — all units go back to AVAILABLE except units staff mark as damaged (→ DAMAGED)
+    or missing (→ written off as LOST with an inventory discrepancy for investigation).
+26. **Delivery:** Xpressbees and Delhivery will be integrated later. Until then staff mark an order DELIVERED (date + optional note);
+    the courier integration will use the same step.
+
+Engineering decisions for Phase 7 (confirm or correct):
+- The branch queue shows only confirmed orders (never unpaid online orders), oldest first.
+- Order steps need `orders.fulfill` for the order's branch; reporting a problem needs `orders.fulfillment_exception.raise`;
+  reroute and "resolved at this branch" need `orders.reroute`; cancel needs `orders.cancel` (Owner by default for the last two).
+- A reroute requires an open fulfillment exception and a target branch that can fulfil the **complete** order; the target's stock
+  is sold at reroute time and the original branch's stock returns per decision 25. Prices, payment and wallet are unchanged.
+  If no branch can fulfil, the exception stays open (amber banner on every admin page) until it is resolved in place or cancelled.
+- Returned units get their original FIFO cost layers back (same unit cost and layer date); missing units stay consumed (a loss)
+  and their ORDER discrepancy is closed with a reason once investigated — stock found later comes back via a "found" adjustment.
+- Cancelling a reseller order credits the wallet with a linked REVERSAL entry; cancelling a paid online order opens a payment
+  reconciliation case (`ORDER_CANCELLED_AFTER_PAYMENT`) and is never marked refunded without an external refund reference.
+- Customers and resellers see order progress, courier and tracking number, but never internal notes.

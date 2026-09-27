@@ -5,7 +5,7 @@ import { LogoutButton } from "./logout-button";
 import { NavLink } from "./nav-link";
 
 /** Navigation is filtered by the user's permissions for convenience only — the backend authorizes every call. */
-export function Shell({ me, openReconciliations = 0, children }: { me: Me; openReconciliations?: number; children: ReactNode }) {
+export function Shell({ me, openReconciliations = 0, openExceptions = 0, children }: { me: Me; openReconciliations?: number; openExceptions?: number; children: ReactNode }) {
   const items = NAV.filter((item) => canAny(me, item.permission));
   const primaryRole = me.isOwner ? "Owner" : me.roles.map((r) => (r.branchId ? `${r.name} · ${shortId(r.branchId)}` : r.name)).join(", ") || "No role assigned";
 
@@ -21,7 +21,7 @@ export function Shell({ me, openReconciliations = 0, children }: { me: Me; openR
             <NavLink key={item.href} href={item.href} label={item.label} />
           ))}
         </nav>
-        <div className="border-t border-slate-100 p-4 text-xs text-slate-500">V1 · Phase 6</div>
+        <div className="border-t border-slate-100 p-4 text-xs text-slate-500">V1 · Phase 7</div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 py-3">
@@ -46,6 +46,14 @@ export function Shell({ me, openReconciliations = 0, children }: { me: Me; openR
               <strong>Critical:</strong> {openReconciliations} payment{openReconciliations === 1 ? " was" : "s were"} received but could not be applied to an order or deposit.
             </span>
             <Link href="/payments" className="font-medium underline">Review reconciliation</Link>
+          </div>
+        )}
+        {openExceptions > 0 && (
+          <div role="status" className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-6 py-2.5 text-sm text-amber-900">
+            <span>
+              {openExceptions} confirmed order{openExceptions === 1 ? " has" : "s have"} a fulfillment exception (item missing, damaged or mismatched).
+            </span>
+            <Link href="/orders/exceptions" className="font-medium underline">Resolve</Link>
           </div>
         )}
         <main className="flex-1 px-6 py-6">{children}</main>

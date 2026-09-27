@@ -54,6 +54,13 @@ public interface IPayments
     Task<PaymentAttemptInfo> SyncAsync(Guid attemptId, CancellationToken cancellationToken = default);
 
     Task<PaymentAttemptInfo?> FindLatestAsync(string purpose, Guid referenceId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Inside the caller's transaction: when money was received for this reference (SUCCESS / ORDER_RECOVERED), opens a
+    /// PAYMENT_RECONCILIATION_REQUIRED case — e.g. an administratively cancelled paid order (ADR-001 §8). Never marks a refund.
+    /// </summary>
+    /// <returns>The case number, or null when no payment was received.</returns>
+    Task<string?> OpenReconciliationAsync(string purpose, Guid referenceId, string reasonCode, string detail, CancellationToken cancellationToken = default);
 }
 
 public enum PaymentOutcome

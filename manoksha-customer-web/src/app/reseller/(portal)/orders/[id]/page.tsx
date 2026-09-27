@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Alert, Card, Table, formatDateTime } from "@/components/ui";
 import { resellerFetch } from "@/lib/backend";
-import { type Order, inr } from "@/lib/types";
+import { ORDER_STATUS_LABEL, type Order, inr } from "@/lib/types";
+import { OrderTracking } from "@/components/order-tracking";
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,11 +15,12 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
         <div>
           <Link href="/reseller/orders" className="text-sm text-brand-700">← Orders</Link>
           <h1 className="mt-1 font-mono text-xl font-semibold">{o.number}</h1>
-          <p className="text-sm text-slate-500">{o.status} · placed {formatDateTime(o.createdAt)}</p>
+          <p className="text-sm text-slate-500">{ORDER_STATUS_LABEL[o.status] ?? o.status} · placed {formatDateTime(o.createdAt)}</p>
         </div>
         {/* No self-service cancellation: order problems go through WhatsApp support (SPEC §21). */}
         <a href={o.helpWhatsAppUrl} target="_blank" rel="noreferrer" className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white">Need help with this order?</a>
       </div>
+      <OrderTracking order={o} />
       <Card title="Items">
         <Table head={["Item", "Qty", "Your price", "Line total"]}>
           {o.lines.map((l) => (

@@ -82,5 +82,6 @@ npm run api-client:generate                                             # …the
 | 4 | Retail price history, product reseller discounts, reseller pricing calculator, reseller onboarding (PENDING → OTP → ACTIVE), status rules, versioned commercial terms, ₹0 wallet | **Done** |
 | 5 | Append-only wallet ledger, proof-based deposits with idempotent Owner approval, Owner adjustments, reseller checkout (branch priority, no split, atomic stock + wallet + order, idempotent), fulfilment inquiries, reseller end-customers, reseller web area | **Done** |
 | 6 | Customer storefront (anonymous browsing, OTP sign-in/registration, cart, checkout), complete-basket branch routing with 5-minute reservation, UPI payment pipeline (gateway adapter + simulator, signed webhook inbox, poller), late-success recovery or reconciliation case with Owner actions/refund markers and a critical alert banner, provider-confirmed reseller wallet deposits, customer profile, Owner payments view | **Done** (simulator; real gateway adapter pending Owner choice) |
-| 7 | Fulfillment: branch queue, packed/shipped/delivered, fulfillment exceptions, reroute, admin cancellation | Next |
-| 8–10 | See design §22 | Planned |
+| 7 | Fulfillment: branch queue, processing/packed/shipped (courier + optional tracking)/delivered, fulfillment exceptions, whole-order reroute with stock return and discrepancies, administrative cancellation (wallet reversal / payment reconciliation), customer & reseller order tracking | **Done** (courier APIs later) |
+| 8 | Flutter POS | Next |
+| 9–10 | See design §22 | Planned |

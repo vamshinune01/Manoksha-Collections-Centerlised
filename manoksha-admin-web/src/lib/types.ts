@@ -580,6 +580,41 @@ export interface Order {
   history: { fromStatus: string | null; toStatus: string; note: string | null; occurredAt: string }[];
   helpWhatsAppUrl: string;
   costOfGoods: number | null;
+  shipment: Shipment | null;
+  openException: FulfillmentExceptionInfo | null;
+}
+
+export interface Shipment {
+  courier: string;
+  courierLabel: string;
+  trackingNumber: string | null;
+  shippedAt: string;
+  deliveredOn: string | null;
+}
+
+export interface FulfillmentExceptionInfo {
+  id: string;
+  orderId: string;
+  orderNumber: string;
+  channel: string;
+  branchId: string;
+  branchName: string;
+  reason: string;
+  notes: string;
+  status: string;
+  raisedAt: string;
+  resolvedAt: string | null;
+  resolution: string | null;
+  lines: { skuId: string; skuCode: string; item: string; missingQty: number; damagedQty: number }[];
+}
+
+export interface RerouteOption {
+  branchId: string;
+  branchName: string;
+  priority: number;
+  isActive: boolean;
+  canFulfil: boolean;
+  shortfalls: { skuId: string; requested: number; available: number }[];
 }
 
 export interface FulfillmentInquiry {

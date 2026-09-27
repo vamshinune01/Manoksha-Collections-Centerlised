@@ -69,6 +69,22 @@ internal sealed class PaymentService(
         return attempt is null ? null : ToInfo(attempt);
     }
 
+    public async Task<string?> OpenReconciliationAsync(string purpose, Guid referenceId, string reasonCode, string detail, CancellationToken cancellationToken = default)
+    {
+        var paid = await db.Set<PaymentAttempt>().AsNoTracking()
+            .Where(a => a.Purpose == purpose && a.ReferenceId == referenceId && (a.Status == PaymentStatus.Success || a.Status == PaymentStatus.OrderRecovered))
+            .OrderByDescending(a => a.CompletedAt).FirstOrDefaultAsync(cancellationToken);
+        if (paid is null)
+        {
+            return null;
+        }
+        if (await db.Set<PaymentReconciliation>().AnyAsync(r => r.PaymentAttemptId == paid.Id, cancellationToken))
+        {
+            throw new ConflictException("RECONCILIATION_EXISTS", "A reconciliation case already exists for this payment.");
+        }
+        return await processor.OpenReconciliationAsync(paid, paid.Amount, reasonCode, detail, cancellationToken);
+    }
+
     /// <summary>Asks the provider (outside any lock), then applies the answer under the attempt lock.</summary>
     internal async Task<PaymentAttempt> SyncCoreAsync(Guid attemptId, string source, CancellationToken ct)
     {

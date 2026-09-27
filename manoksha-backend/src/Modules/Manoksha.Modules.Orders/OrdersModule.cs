@@ -30,6 +30,7 @@ public sealed class OrdersModule : IModule
         services.AddScoped<OrderPaymentHandler>();
         services.AddScoped<IPaymentPurposeHandler>(sp => sp.GetRequiredService<OrderPaymentHandler>());
         services.AddScoped<ReservationSweeper>();
+        services.AddScoped<FulfillmentService>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => OrderEndpoints.Map(endpoints);

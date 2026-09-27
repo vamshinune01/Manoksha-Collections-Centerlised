@@ -1476,6 +1476,182 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/fulfillment/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FulfillmentQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/processing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StartProcessingOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/packed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MarkOrderPacked"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/shipped": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MarkOrderShipped"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/delivered": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MarkOrderDelivered"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/fulfillment-exceptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RaiseFulfillmentException"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/fulfillment-exceptions/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ResolveFulfillmentException"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/reroute-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RerouteOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/reroute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RerouteOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CancelOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/fulfillment-exceptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListFulfillmentExceptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/resellers/{resellerId}/customers": {
         parameters: {
             query?: never;
@@ -2745,6 +2921,17 @@ export interface components {
             /** Format: date-time */
             createdAt?: string;
         };
+        CancelOrderRequest: {
+            reason?: string | null;
+            lines?: components["schemas"]["StockIssueLineRequest"][] | null;
+        };
+        CancelOrderResult: {
+            order?: components["schemas"]["OrderDto"];
+            /** Format: double */
+            walletRefunded?: number | null;
+            reconciliationCase?: string | null;
+            discrepancies?: string[] | null;
+        };
         CartQuoteLineDto: {
             /** Format: uuid */
             skuId?: string;
@@ -3013,6 +3200,11 @@ export interface components {
         DecisionRequest: {
             note?: string | null;
         };
+        DeliverOrderRequest: {
+            /** Format: date */
+            deliveredOn?: string | null;
+            note?: string | null;
+        };
         DeliveryDto: {
             name?: string | null;
             mobile?: string | null;
@@ -3098,6 +3290,26 @@ export interface components {
             challengeToken?: string | null;
             newPassword?: string | null;
         };
+        FulfillmentExceptionDto: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            orderId?: string;
+            orderNumber?: string | null;
+            channel?: string | null;
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            reason?: string | null;
+            notes?: string | null;
+            status?: string | null;
+            /** Format: date-time */
+            raisedAt?: string;
+            /** Format: date-time */
+            resolvedAt?: string | null;
+            resolution?: string | null;
+            lines?: components["schemas"]["StockIssueLineDto"][] | null;
+        };
         FulfillmentInquiryDto: {
             /** Format: uuid */
             id?: string;
@@ -3122,6 +3334,9 @@ export interface components {
             branchCode?: string | null;
             branchName?: string | null;
             isActive?: boolean;
+        };
+        FulfillmentStepRequest: {
+            note?: string | null;
         };
         GenerateBarcodeRequest: {
             reason?: string | null;
@@ -3396,6 +3611,8 @@ export interface components {
             helpWhatsAppUrl?: string | null;
             /** Format: double */
             costOfGoods?: number | null;
+            shipment?: components["schemas"]["ShipmentDto"];
+            openException?: components["schemas"]["FulfillmentExceptionDto"];
         };
         OrderLineDto: {
             /** Format: uuid */
@@ -3712,6 +3929,11 @@ export interface components {
         QuoteRequest: {
             skuIds?: string[] | null;
         };
+        RaiseFulfillmentExceptionRequest: {
+            reason?: string | null;
+            notes?: string | null;
+            lines?: components["schemas"]["StockIssueLineRequest"][] | null;
+        };
         ReasonRequest: {
             reason?: string | null;
         };
@@ -3767,6 +3989,21 @@ export interface components {
             reason?: string | null;
         };
         RejectDepositRequest: {
+            reason?: string | null;
+        };
+        RerouteOptionDto: {
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: int32 */
+            priority?: number;
+            isActive?: boolean;
+            canFulfil?: boolean;
+            shortfalls?: components["schemas"]["ShortfallDto"][] | null;
+        };
+        RerouteRequest: {
+            /** Format: uuid */
+            targetBranchId?: string;
             reason?: string | null;
         };
         ResellerCatalogItemDto: {
@@ -3909,6 +4146,9 @@ export interface components {
             itemIds?: string[] | null;
             notes?: string | null;
         };
+        ResolveExceptionRequest: {
+            note?: string | null;
+        };
         RetailPriceHistoryDto: {
             /** Format: uuid */
             id?: string;
@@ -4026,6 +4266,29 @@ export interface components {
             permissions?: string[] | null;
             reason?: string | null;
         };
+        ShipOrderRequest: {
+            courier?: string | null;
+            courierName?: string | null;
+            trackingNumber?: string | null;
+            note?: string | null;
+        };
+        ShipmentDto: {
+            courier?: string | null;
+            courierLabel?: string | null;
+            trackingNumber?: string | null;
+            /** Format: date-time */
+            shippedAt?: string;
+            /** Format: date */
+            deliveredOn?: string | null;
+        };
+        ShortfallDto: {
+            /** Format: uuid */
+            skuId?: string;
+            /** Format: int32 */
+            requested?: number;
+            /** Format: int32 */
+            available?: number;
+        };
         SimulatorApproveRequest: {
             /** Format: double */
             paidAmount?: number | null;
@@ -4094,6 +4357,26 @@ export interface components {
             actorUserId?: string | null;
             /** Format: date-time */
             occurredAt?: string;
+        };
+        StockIssueLineDto: {
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            item?: string | null;
+            /** Format: int32 */
+            missingQty?: number;
+            /** Format: int32 */
+            damagedQty?: number;
+        };
+        StockIssueLineRequest: {
+            /** Format: uuid */
+            skuId?: string;
+            /** Format: int32 */
+            missingQty?: number;
+            /** Format: int32 */
+            damagedQty?: number;
+            missingBarcodes?: string[] | null;
+            damagedBarcodes?: string[] | null;
         };
         StockRowDto: {
             /** Format: uuid */
@@ -6881,6 +7164,280 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    FulfillmentQueue: {
+        parameters: {
+            query?: {
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"][];
+                };
+            };
+        };
+    };
+    StartProcessingOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FulfillmentStepRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    MarkOrderPacked: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FulfillmentStepRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    MarkOrderShipped: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    MarkOrderDelivered: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliverOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    RaiseFulfillmentException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RaiseFulfillmentExceptionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    ResolveFulfillmentException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveExceptionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    RerouteOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RerouteOptionDto"][];
+                };
+            };
+        };
+    };
+    RerouteOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RerouteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+        };
+    };
+    CancelOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancelOrderResult"];
+                };
+            };
+        };
+    };
+    ListFulfillmentExceptions: {
+        parameters: {
+            query?: {
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FulfillmentExceptionDto"][];
                 };
             };
         };
