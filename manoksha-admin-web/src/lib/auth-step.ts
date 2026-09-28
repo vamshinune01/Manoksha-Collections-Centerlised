@@ -37,5 +37,12 @@ export async function forwardAuthStep(backendPath: string, body: unknown): Promi
 export function isSameOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return false;
-  return origin === new URL(request.url).origin;
+  // Compare with the host the browser addressed. Behind Cloud Run / a load balancer the server's own request URL is an
+  // internal address (e.g. 0.0.0.0:8080), so it cannot be used; the Host header carries the public host.
+  const host = request.headers.get("host");
+  try {
+    return !!host && new URL(origin).host === host;
+  } catch {
+    return false;
+  }
 }

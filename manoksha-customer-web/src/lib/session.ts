@@ -47,5 +47,13 @@ export async function customerToken() {
 
 export function isSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
-  return !!origin && origin === new URL(request.url).origin;
+  if (!origin) return false;
+  // Compare with the host the browser addressed. Behind Cloud Run / a load balancer the server's own request URL is an
+  // internal address (e.g. 0.0.0.0:8080), so it cannot be used; the Host header carries the public host.
+  const host = request.headers.get("host");
+  try {
+    return !!host && new URL(origin).host === host;
+  } catch {
+    return false;
+  }
 }
