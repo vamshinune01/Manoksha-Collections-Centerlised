@@ -1,9 +1,13 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Manoksha.Persistence;
 using Manoksha.Persistence.Platform;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
-namespace Manoksha.Worker.Jobs;
+namespace Manoksha.Hosting.Jobs;
 
 /// <summary>
 /// Removes expired technical records (OTP challenges, idempotency keys, expired refresh tokens, old processed

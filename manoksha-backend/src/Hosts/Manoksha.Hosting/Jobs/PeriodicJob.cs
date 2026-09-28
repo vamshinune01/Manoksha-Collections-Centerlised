@@ -1,7 +1,11 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Manoksha.Persistence;
 using Manoksha.Persistence.Platform;
 
-namespace Manoksha.Worker.Jobs;
+namespace Manoksha.Hosting.Jobs;
 
 /// <summary>
 /// Runs a module job on a fixed cadence, as a singleton across worker instances (session advisory lock). The job itself runs

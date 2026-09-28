@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Manoksha.Api.Infrastructure;
 using Manoksha.Hosting;
+using Manoksha.Hosting.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,11 @@ builder.Services.AddManokshaCore(builder.Configuration, builder.Environment);
 builder.Services.AddManokshaApiModules(builder.Configuration);
 builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddManokshaApi(builder.Configuration);
+if (builder.Configuration.GetValue<bool>("Jobs:InProcess") && (args.Length == 0 || args[0].StartsWith('-')))
+{
+    // Low-cost deployments without a separate Worker service (see BackgroundJobs).
+    builder.Services.AddManokshaBackgroundJobs();
+}
 
 var app = builder.Build();
 

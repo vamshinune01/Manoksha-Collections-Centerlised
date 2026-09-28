@@ -1,8 +1,12 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Manoksha.Modules.Wallet;
 using Manoksha.Persistence;
 using Manoksha.Persistence.Platform;
 
-namespace Manoksha.Worker.Jobs;
+namespace Manoksha.Hosting.Jobs;
 
 /// <summary>Nightly (configurable) wallet ledger integrity check. Singleton across worker instances via an advisory lock.</summary>
 internal sealed class WalletIntegrityJob(IServiceScopeFactory scopeFactory, IConfiguration configuration, ILogger<WalletIntegrityJob> logger) : BackgroundService

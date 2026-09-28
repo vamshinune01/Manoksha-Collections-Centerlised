@@ -1,10 +1,14 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Manoksha.Application.Abstractions;
 using Manoksha.Persistence;
 using Manoksha.Persistence.Outbox;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
-namespace Manoksha.Worker.Jobs;
+namespace Manoksha.Hosting.Jobs;
 
 /// <summary>
 /// Dispatches committed outbox events to their handlers. Rows are claimed with FOR UPDATE SKIP LOCKED, so several

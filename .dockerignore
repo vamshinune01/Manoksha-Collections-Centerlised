@@ -1,0 +1,10 @@
+**/node_modules
+**/.next
+.git
+.local-storage
+manoksha-backend
+manoksha-mobile-pos
+infra
+docs
+**/*.md
+**/.env*
