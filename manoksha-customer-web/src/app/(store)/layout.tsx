@@ -29,7 +29,10 @@ export default async function StoreLayout({ children }: { children: React.ReactN
                 <SignOut />
               </>
             ) : (
-              <Link href="/login" className="rounded-md px-3 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50">Sign in</Link>
+              <>
+                <Link href="/login" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Sign in</Link>
+                <Link href="/login?signup=1" className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700">Create account</Link>
+              </>
             )}
           </nav>
         </div>

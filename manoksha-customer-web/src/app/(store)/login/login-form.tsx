@@ -7,7 +7,7 @@ import { Alert, Button, Field, Input } from "@/components/ui";
 type Step = "mobile" | "otp" | "register";
 
 /** Customer sign-in with mobile + OTP; first-time customers add name and email (SPEC §5.2). */
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, signup = false }: { next: string; signup?: boolean }) {
   const [step, setStep] = useState<Step>("mobile");
   const [mobile, setMobile] = useState("");
   const [code, setCode] = useState("");
@@ -35,8 +35,10 @@ export function LoginForm({ next }: { next: string }) {
   return (
     <div className="mx-auto max-w-sm space-y-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <div>
-        <h1 className="text-lg font-semibold text-slate-900">Sign in to order</h1>
-        <p className="mt-1 text-sm text-slate-600">We will send a one-time code to your mobile number.</p>
+        <h1 className="text-lg font-semibold text-slate-900">{signup ? "Create your account" : "Sign in to order"}</h1>
+        <p className="mt-1 text-sm text-slate-600">
+          We will send a one-time code to your mobile number. {signup ? "Then add your name and email — that's it." : "New here? The same steps create your account."}
+        </p>
       </div>
       {error && <Alert>{error}</Alert>}
       {info && !error && <Alert tone="info">{info}</Alert>}

@@ -2,9 +2,9 @@ import { LoginForm } from "./login-form";
 
 export const metadata = { title: "Sign in" };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const { next } = await searchParams;
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; signup?: string }> }) {
+  const { next, signup } = await searchParams;
   // Only same-site relative paths are honoured as a return target.
   const target = next && next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/reseller") ? next : "/";
-  return <LoginForm next={target} />;
+  return <LoginForm next={target} signup={signup === "1"} />;
 }
