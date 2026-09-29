@@ -18,6 +18,15 @@ public sealed class GcsStorageOptions
 
     /// <summary>Optional base URL for public media (e.g. a CDN later); defaults to https://storage.googleapis.com/{PublicBucket}.</summary>
     public string? PublicBaseUrl { get; set; }
+
+    /// <summary>
+    /// Local development only: act as this service account using the developer's own Google login (Application Default
+    /// Credentials) — needed to sign upload URLs without key files. Leave empty on Cloud Run (the runtime identity signs).
+    /// </summary>
+    public string? ImpersonateServiceAccount { get; set; }
+
+    /// <summary>Project billed for API quota when using a developer login (e.g. the project that owns the buckets).</summary>
+    public string? QuotaProject { get; set; }
 }
 
 /// <summary>Google Cloud Storage. On Cloud Run, signed URLs are signed through IAM (no key files).</summary>
@@ -35,6 +44,17 @@ public sealed class GcsFileStorage : IFileStorage
             throw new InvalidOperationException("Integrations:Storage:Gcs:PrivateBucket and PublicBucket must be configured.");
         }
         var credential = GoogleCredential.GetApplicationDefault();
+        if (!string.IsNullOrWhiteSpace(_options.QuotaProject))
+        {
+            credential = credential.CreateWithQuotaProject(_options.QuotaProject);
+        }
+        if (!string.IsNullOrWhiteSpace(_options.ImpersonateServiceAccount))
+        {
+            credential = credential.Impersonate(new ImpersonatedCredential.Initializer(_options.ImpersonateServiceAccount)
+            {
+                Scopes = ["https://www.googleapis.com/auth/cloud-platform"],
+            });
+        }
         _client = StorageClient.Create(credential);
         _signer = UrlSigner.FromCredential(credential);
     }

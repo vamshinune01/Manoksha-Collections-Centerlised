@@ -24,21 +24,22 @@ All business rules and authorization live in the backend. Frontends only display
 
 ## Local development
 
-Prerequisites: .NET SDK 8, Node 20.9+, Docker.
+Prerequisites: .NET SDK 8, Node 20.9+, ffmpeg (video optimization), Google Cloud CLI signed in (`gcloud auth application-default login`).
+
+Local development uses the **same cloud services as staging** — nothing runs locally except the apps:
+- **Database:** Supabase PostgreSQL (shared with staging). The connection string lives only in .NET user-secrets on your machine.
+- **Photos/videos/files:** Google Cloud Storage buckets `manokshacenterlised-private` / `manokshacenterlised-media`; the local API
+  acts as the `manoksha-run` service account through your own Google login (no key files).
 
 ```bash
-# 1. Database (Postgres 16 on localhost:5433). Mailpit is optional: add "mailpit" to also start it.
-docker compose -f infra/docker-compose.local.yml up -d postgres
+# 1. Once: store the Supabase (Session pooler) connection string for the API and the Worker — prompts for the password
+read -rs "PW?Supabase DB password: " && echo && CS="Host=aws-0-ap-south-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.pixtvycazmggmgmaepoe;Password=$PW;SSL Mode=Require;Maximum Pool Size=10" && for p in Api Worker; do dotnet user-secrets set "ConnectionStrings:Manoksha" "$CS" --project "manoksha-backend/src/Hosts/Manoksha.$p"; done; unset PW CS
 
-# 2. Migrate + create local dev users (choose your own local password)
-export MANOKSHA_DEV_SEED_PASSWORD='choose-a-local-passw0rd'
-dotnet run --project manoksha-backend/src/Hosts/Manoksha.Api -- seed-dev
-
-# 3. API on http://localhost:5080 (Swagger UI at /swagger) and the Worker
+# 2. API on http://localhost:5080 (Swagger at /swagger) and the Worker (reservation sweeper, payment poller, outbox, housekeeping)
 dotnet run --project manoksha-backend/src/Hosts/Manoksha.Api
 dotnet run --project manoksha-backend/src/Hosts/Manoksha.Worker
 
-# 4. Admin web on http://localhost:3001 and customer/reseller web on http://localhost:3002
+# 3. Admin web on http://localhost:3001 and customer/reseller web on http://localhost:3002
 npm install
 cp manoksha-admin-web/.env.example manoksha-admin-web/.env.local
 cp manoksha-customer-web/.env.example manoksha-customer-web/.env.local
@@ -46,21 +47,14 @@ npm run admin:dev
 npm run customer:dev
 ```
 
-The dev seed creates branches Karimnagar (P1), Hyderabad (P2), Mulugu (P3) and users (password = `MANOKSHA_DEV_SEED_PASSWORD`):
-- **Owner (Super Admin)**: `owner@manoksha.local` (Full global permissions)
-- **Admin**: `admin@manoksha.local` (Full global permissions)
-- **Branch Manager**: `manager.karimnagar@manoksha.local` (Karimnagar branch admin)
-- **Sales Staff**: `sales.karimnagar@manoksha.local`
-- **Inventory Staff**: `inventory.karimnagar@manoksha.local`
-- **Customer (Storefront)**: Mobile `+919876543210` (`customer@manoksha.local` / "Dev Customer") — signs in with OTP printed to API console.
-
-(The Karimnagar staff users also have employee profiles). Development OTP codes are printed in the API log
-(`[FAKE SMS]`). Development-only adapters (fake SMS, logging email, local file storage, UPI payment simulator) are refused in Production.
+Because the database is shared with staging, **do not run `seed-dev`** — create data through the admin screens. Development OTP codes
+are printed in the API log (`[FAKE SMS]`). Development-only adapters (fake SMS, logging email, UPI payment simulator) are refused in
+Production. `infra/docker-compose.local.yml` (local Postgres/Mailpit) is no longer used for development; the automated tests start
+their own throwaway PostgreSQL container and never touch Supabase.
 
 **Online payments in development.** Until the Owner selects a UPI gateway, `Integrations:Payments:Provider=Simulator` is used:
 checkout redirects to a simulated UPI app at `http://localhost:3002/pay/simulator/…` where you can pay, decline, "lose" the
-webhook or pay a different amount. Run the **Worker** too — it releases expired 5-minute reservations (every 15 s) and polls the
-provider for missed webhooks and late successes (every 30 s).
+webhook or pay a different amount.
 
 A real environment's first Owner is created with:
 
