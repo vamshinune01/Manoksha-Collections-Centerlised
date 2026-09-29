@@ -31,6 +31,7 @@ foreach (var module in ModuleCatalog.All)
 {
     module.MapEndpoints(app);
 }
+app.MapDevelopmentStorage();
 
 await app.RunAsync();
 

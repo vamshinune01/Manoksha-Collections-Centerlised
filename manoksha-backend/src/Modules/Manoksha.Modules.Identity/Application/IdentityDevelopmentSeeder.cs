@@ -19,6 +19,7 @@ internal sealed class IdentityDevelopmentSeeder(ManokshaDbContext db, PasswordSe
         (string Email, string Name, string Role, Guid? Branch)[] seeds =
         [
             (DevelopmentSeedData.OwnerEmail, "Dev Owner", SystemRoles.Owner, null),
+            (DevelopmentSeedData.AdminEmail, "Dev Admin", SystemRoles.Owner, null),
             (DevelopmentSeedData.ManagerEmail, "Karimnagar Manager", SystemRoles.BranchManager, DevelopmentSeedData.BranchKarimnagar),
             (DevelopmentSeedData.SalesEmail, "Karimnagar Sales", SystemRoles.SalesEmployee, DevelopmentSeedData.BranchKarimnagar),
             (DevelopmentSeedData.InventoryEmail, "Karimnagar Inventory", SystemRoles.InventoryEmployee, DevelopmentSeedData.BranchKarimnagar),
@@ -36,6 +37,14 @@ internal sealed class IdentityDevelopmentSeeder(ManokshaDbContext db, PasswordSe
             db.Add(user);
             db.Add(new UserRoleAssignment(user.Id, roles[s.Role].Id, s.Branch, null, "Development seed", clock.UtcNow));
         }
+
+        var customerMobile = MobileNumber.Normalize(DevelopmentSeedData.CustomerMobile);
+        if (!await db.Set<User>().AnyAsync(u => u.AccountType == AccountType.Customer && u.MobileE164 == customerMobile, cancellationToken))
+        {
+            var customer = User.CreateCustomer(customerMobile, DevelopmentSeedData.CustomerName, DevelopmentSeedData.CustomerEmail, clock.UtcNow);
+            db.Add(customer);
+        }
+
         await db.SaveChangesAsync(cancellationToken);
     }
 }

@@ -2,6 +2,7 @@ import { Alert, Button, Input } from "@/components/ui";
 import { resellerFetch } from "@/lib/backend";
 import { type CatalogPage, inr } from "@/lib/types";
 import { AddToCart } from "./add-to-cart";
+import { ProductImage } from "@/components/product-image";
 
 type Search = Record<string, string | string[] | undefined>;
 
@@ -22,6 +23,7 @@ export default async function Catalog({ searchParams }: { searchParams: Promise<
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {result.data.items.map((i) => (
           <div key={i.skuId} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <ProductImage image={i.image} alt={i.productName} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="mb-3 aspect-[4/3] w-full rounded-md" />
             <p className="text-xs uppercase tracking-wide text-slate-400">{i.categoryName}</p>
             <p className="mt-1 font-medium text-slate-900">{i.productName}</p>
             <p className="text-sm text-slate-600">{i.variantName} <span className="font-mono text-xs text-slate-400">{i.skuCode}</span></p>

@@ -1,0 +1,70 @@
+name: docker-build-verify
+
+on:
+  pull_request:
+    paths:
+      - "manoksha-backend/**"
+      - "manoksha-admin-web/**"
+      - "manoksha-customer-web/**"
+      - "packages/**"
+      - "contracts/**"
+      - "Dockerfile"
+      - "*/Dockerfile"
+      - ".github/workflows/docker-build-verify.yml"
+  push:
+    branches: [main]
+    paths:
+      - "manoksha-backend/**"
+      - "manoksha-admin-web/**"
+      - "manoksha-customer-web/**"
+      - "packages/**"
+      - "contracts/**"
+      - "Dockerfile"
+      - "*/Dockerfile"
+      - ".github/workflows/docker-build-verify.yml"
+
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-containers:
+    name: Verify Container Builds
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: manoksha-api
+            context: manoksha-backend
+            dockerfile: manoksha-backend/Dockerfile
+            build-args: APP=Api
+          - name: manoksha-worker
+            context: manoksha-backend
+            dockerfile: manoksha-backend/Dockerfile
+            build-args: APP=Worker
+          - name: manoksha-admin-web
+            context: .
+            dockerfile: manoksha-admin-web/Dockerfile
+            build-args: ""
+          - name: manoksha-customer-web
+            context: .
+            dockerfile: manoksha-customer-web/Dockerfile
+            build-args: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build container image (verification)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          build-args: ${{ matrix.build-args }}
+          push: false
+          tags: ${{ matrix.name }}:test
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}

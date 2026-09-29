@@ -50,6 +50,8 @@ internal sealed class HousekeepingJob(IServiceScopeFactory scopeFactory, ILogger
         var tokens = await db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM identity.refresh_tokens WHERE expires_at < {now.AddDays(-30)}", ct);
         var outbox = await db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM platform.outbox_messages WHERE processed_at < {now.AddDays(-30)}", ct);
         await tx.CommitAsync(ct);
-        logger.LogInformation("Housekeeping removed {Otp} OTP challenges, {Idem} idempotency records, {Tokens} refresh tokens, {Outbox} outbox rows", otp, idem, tokens, outbox);
+        var media = await Manoksha.Modules.Catalog.CatalogJobs.CleanupAbandonedMediaAsync(scope.ServiceProvider, ct);
+        logger.LogInformation("Housekeeping removed {Otp} OTP challenges, {Idem} idempotency records, {Tokens} refresh tokens, {Outbox} outbox rows, {Media} abandoned uploads",
+            otp, idem, tokens, outbox, media);
     }
 }

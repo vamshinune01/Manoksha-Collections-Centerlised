@@ -2,6 +2,7 @@ import Link from "next/link";
 import { storeFetch } from "@/lib/backend";
 import { inr, type StoreCategory, type StorePage } from "@/lib/types";
 import { AddToCart } from "@/components/store-client";
+import { ProductImage } from "@/components/product-image";
 import { Alert, cx } from "@/components/ui";
 
 export const metadata = { title: "Shop" };
@@ -52,9 +53,7 @@ export default async function StoreHome({ searchParams }: { searchParams: Promis
             {items.data.items.map((i) => (
               <li key={i.skuId} className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <Link href={`/products/${i.productId}`} className="group flex-1">
-                  <div className="mb-3 flex aspect-square items-center justify-center rounded-lg bg-gradient-to-br from-brand-50 to-slate-100 text-3xl font-semibold text-brand-500/70">
-                    {i.productName.slice(0, 1)}
-                  </div>
+                  <ProductImage image={i.image} alt={i.productName} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw" className="mb-3 aspect-square w-full rounded-lg" />
                   <p className="text-xs uppercase tracking-wide text-slate-500">{i.categoryName}</p>
                   <h2 className="font-medium text-slate-900 group-hover:text-brand-700">{i.productName}</h2>
                   <p className="text-sm text-slate-600">{i.variantName}</p>

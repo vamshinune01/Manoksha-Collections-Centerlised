@@ -122,5 +122,28 @@ public sealed class CatalogModelConfiguration : IModuleModelConfiguration
             b.HasIndex(x => new { x.BarcodeId, x.PrintedAt });
             b.HasOne<Barcode>().WithMany().HasForeignKey(x => x.BarcodeId).OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<ProductMedia>(b =>
+        {
+            b.ToTable("product_media", SchemaName, t => t.HasCheckConstraint("ck_product_media_bytes", "original_bytes >= 0"));
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Kind).HasConversion<string>().HasMaxLength(10);
+            b.Property(x => x.Status).HasConversion<string>().HasMaxLength(15);
+            b.Property(x => x.AltText).HasMaxLength(200);
+            b.Property(x => x.OriginalKey).HasMaxLength(300);
+            b.Property(x => x.OriginalFileName).HasMaxLength(200);
+            b.Property(x => x.OriginalContentType).HasMaxLength(100);
+            b.Property(x => x.FailureReason).HasMaxLength(500);
+            b.Property(x => x.RowVersion).IsRowVersion();
+            b.Property(x => x.Renditions).HasColumnType("jsonb").HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, Manoksha.Persistence.JsonDefaults.Options),
+                v => System.Text.Json.JsonSerializer.Deserialize<List<MediaRendition>>(v, Manoksha.Persistence.JsonDefaults.Options) ?? new List<MediaRendition>(),
+                new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<MediaRendition>>(
+                    (a, c) => System.Text.Json.JsonSerializer.Serialize(a, Manoksha.Persistence.JsonDefaults.Options) == System.Text.Json.JsonSerializer.Serialize(c, Manoksha.Persistence.JsonDefaults.Options),
+                    v => v.Count, v => v.ToList()));
+            b.HasIndex(x => new { x.ProductId, x.Status, x.SortOrder });
+            b.HasIndex(x => new { x.Status, x.CreatedAt });
+            b.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }

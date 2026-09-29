@@ -728,6 +728,246 @@
         }
       }
     },
+    "/api/v1/admin/catalog/products/{productId}/media": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "ListProductMedia",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{productId}/media/uploads": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "StartProductMediaUpload",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartMediaUploadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaUploadDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{productId}/media/{mediaId}/complete": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "CompleteProductMediaUpload",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{productId}/media/{mediaId}": {
+      "put": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "UpdateProductMedia",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMediaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "DeleteProductMedia",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{productId}/media/order": {
+      "put": {
+        "tags": [
+          "Catalog"
+        ],
+        "operationId": "ReorderProductMedia",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderMediaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/catalog/attributes": {
       "get": {
         "tags": [
@@ -8852,6 +9092,36 @@
         },
         "additionalProperties": false
       },
+      "ImageUrls": {
+        "type": "object",
+        "properties": {
+          "thumb": {
+            "type": "string",
+            "nullable": true
+          },
+          "medium": {
+            "type": "string",
+            "nullable": true
+          },
+          "large": {
+            "type": "string",
+            "nullable": true
+          },
+          "altText": {
+            "type": "string",
+            "nullable": true
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "InquiryDto": {
         "type": "object",
         "properties": {
@@ -9199,6 +9469,108 @@
             "type": "string",
             "format": "uuid",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "MediaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "altText": {
+            "type": "string",
+            "nullable": true
+          },
+          "originalFileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "originalBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "durationSeconds": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "image": {
+            "$ref": "#/components/schemas/ImageUrls"
+          },
+          "videoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "posterUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "optimizedBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MediaUploadDto": {
+        "type": "object",
+        "properties": {
+          "mediaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "nullable": true
+          },
+          "uploadUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "method": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -10374,6 +10746,40 @@
         },
         "additionalProperties": false
       },
+      "PublicMedia": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "nullable": true
+          },
+          "image": {
+            "$ref": "#/components/schemas/ImageUrls"
+          },
+          "videoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "posterUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationSeconds": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "altText": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "PurchaseOrderDto": {
         "type": "object",
         "properties": {
@@ -10657,6 +11063,20 @@
         },
         "additionalProperties": false
       },
+      "ReorderMediaRequest": {
+        "type": "object",
+        "properties": {
+          "mediaIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "RerouteOptionDto": {
         "type": "object",
         "properties": {
@@ -10744,6 +11164,9 @@
           "resellerPrice": {
             "type": "number",
             "format": "double"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ImageUrls"
           }
         },
         "additionalProperties": false
@@ -11705,6 +12128,24 @@
         },
         "additionalProperties": false
       },
+      "StartMediaUploadRequest": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "StartOnlineDepositRequest": {
         "type": "object",
         "properties": {
@@ -11883,6 +12324,9 @@
           },
           "inStock": {
             "type": "boolean"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ImageUrls"
           }
         },
         "additionalProperties": false
@@ -11927,6 +12371,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StorefrontVariantDto"
+            },
+            "nullable": true
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicMedia"
             },
             "nullable": true
           }
@@ -12258,6 +12709,16 @@
             "nullable": true
           },
           "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateMediaRequest": {
+        "type": "object",
+        "properties": {
+          "altText": {
             "type": "string",
             "nullable": true
           }

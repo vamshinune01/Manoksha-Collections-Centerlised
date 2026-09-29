@@ -4,6 +4,7 @@ import { P, can } from "@/lib/access";
 import { backendFetch, getMe } from "@/lib/backend";
 import type { Category, ProductDetail } from "@/lib/types";
 import { AddVariantForm, ProductEditor, ProductStatusButtons, VariantsTable } from "./product-forms";
+import { MediaManager } from "./media-manager";
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -29,6 +30,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       </div>
       <div className="grid gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
+          <Card title="Photos & videos">
+            <MediaManager productId={p.id} canManage={manage} />
+          </Card>
           <Card title={`Variants & SKUs (${p.variants.length})`}>
             <VariantsTable product={p} canManage={manage} canPrint={can(me, P.barcodesPrint)} />
             {manage && <AddVariantForm product={p} />}

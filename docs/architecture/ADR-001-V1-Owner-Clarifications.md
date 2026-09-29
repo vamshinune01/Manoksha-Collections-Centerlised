@@ -190,3 +190,16 @@ Engineering decisions for Phase 7 (confirm or correct):
 - Cancelling a reseller order credits the wallet with a linked REVERSAL entry; cancelling a paid online order opens a payment
   reconciliation case (`ORDER_CANCELLED_AFTER_PAYMENT`) and is never marked refunded without an external refund reference.
 - Customers and resellers see order progress, courier and tracking number, but never internal notes.
+
+## Owner architecture directive (28 Sep 2026)
+27. **Keep the approved architecture:** .NET 8 modular monolith + EF Core + **PostgreSQL** as the only primary database. No
+    Firestore / Firebase Realtime Database. No Kubernetes, Kafka, Redis, microservices or other unnecessary infrastructure.
+28. **Portable database hosting:** PostgreSQL locally; initial production may use a low-cost/serverless PostgreSQL provider and
+    move to GCP Cloud SQL later. The application uses standard PostgreSQL 16 only (no provider-specific features); the provider
+    is chosen purely by the connection string (Secret Manager). Provider requirements: PostgreSQL 16, TLS, and a **direct or
+    session-mode** connection (not transaction-mode pooling) because background jobs use session advisory locks.
+29. **Media:** product HD images, thumbnails and videos live in **Google Cloud Storage**; PostgreSQL stores only media metadata
+    (type, size, dimensions, duration, order, alt text) and object paths/URLs. Originals are kept private; customers are served
+    **optimized renditions** (WebP images in several sizes, 720p H.264 MP4 video with a poster), never the large originals.
+30. **Scale target:** about 300 customers, 50 resellers and 3 branches — size everything for low cost (scale-to-zero services,
+    smallest database tier, no always-on extras).

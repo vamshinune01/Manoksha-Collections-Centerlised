@@ -59,3 +59,18 @@ public interface ICatalogBarcodes
 {
     Task<CatalogBarcode?> FindAsync(string code, CancellationToken cancellationToken = default);
 }
+
+/// <summary>Optimized image URLs of one product image (WebP renditions; never the original).</summary>
+public sealed record ImageUrls(string Thumb, string Medium, string Large, string? AltText, int Width, int Height);
+
+/// <summary>A public media item of a product: an image, or a video with its poster.</summary>
+public sealed record PublicMedia(Guid Id, string Kind, ImageUrls? Image, string? VideoUrl, string? PosterUrl, double? DurationSeconds, string? AltText);
+
+/// <summary>Published product media for the storefront and reseller catalog (ADR-001 §29).</summary>
+public interface ICatalogMedia
+{
+    /// <summary>The first (primary) ready image of each product, if any.</summary>
+    Task<IReadOnlyDictionary<Guid, ImageUrls>> PrimaryImagesAsync(IReadOnlyCollection<Guid> productIds, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<PublicMedia>> GalleryAsync(Guid productId, CancellationToken cancellationToken = default);
+}

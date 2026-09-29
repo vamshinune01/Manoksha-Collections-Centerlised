@@ -11,7 +11,12 @@ public static class DevelopmentSeedData
     public static readonly Guid BranchMulugu = Guid.Parse("01920000-0000-7000-8000-000000000003");
 
     public const string OwnerEmail = "owner@manoksha.local";
+    public const string AdminEmail = "admin@manoksha.local";
     public const string ManagerEmail = "manager.karimnagar@manoksha.local";
     public const string SalesEmail = "sales.karimnagar@manoksha.local";
     public const string InventoryEmail = "inventory.karimnagar@manoksha.local";
+
+    public const string CustomerMobile = "+919876543210";
+    public const string CustomerEmail = "customer@manoksha.local";
+    public const string CustomerName = "Dev Customer";
 }

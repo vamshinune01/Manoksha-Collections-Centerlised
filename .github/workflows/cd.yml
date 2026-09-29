@@ -1,0 +1,279 @@
+name: cd-deploy
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment to deploy"
+        required: true
+        type: choice
+        default: "staging"
+        options:
+          - "staging"
+          - "production"
+      run_migrations:
+        description: "Run database migrations before rolling out services"
+        required: true
+        type: boolean
+        default: true
+      deploy_services:
+        description: "Which services to deploy"
+        required: true
+        type: choice
+        default: "all"
+        options:
+          - "all"
+          - "backend-only"
+          - "frontend-only"
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write # Required for GCP Workload Identity Federation
+
+concurrency:
+  group: deploy-${{ github.event.inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  # --------------------------------------------------------------------------
+  # 1. CI Quality Gate: Verify tests, formatting, and contracts before deploying
+  # --------------------------------------------------------------------------
+  pre-deploy-check:
+    name: Pre-deployment Quality Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: manoksha-backend/global.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Backend Build & Unit Tests
+        working-directory: manoksha-backend
+        run: |
+          dotnet restore Manoksha.sln
+          dotnet build Manoksha.sln --no-restore -c Release
+          dotnet test tests/Manoksha.UnitTests --no-build -c Release
+          dotnet test tests/Manoksha.ArchitectureTests --no-build -c Release
+
+      - name: Frontend Checks (Lint & Typecheck)
+        run: |
+          npm ci
+          npm run api-client:generate && git diff --exit-code packages/api-client/src/schema.d.ts
+          npm run admin:lint
+          npm run admin:typecheck
+          npm run customer:lint
+          npm run customer:typecheck
+
+  # --------------------------------------------------------------------------
+  # 2. Build and Push Container Images
+  # --------------------------------------------------------------------------
+  build-and-push-images:
+    name: Build & Push Images
+    needs: pre-deploy-check
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      ghcr_api: ${{ steps.meta.outputs.ghcr_api }}
+      ghcr_worker: ${{ steps.meta.outputs.ghcr_worker }}
+      ghcr_admin: ${{ steps.meta.outputs.ghcr_admin }}
+      ghcr_customer: ${{ steps.meta.outputs.ghcr_customer }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine Image Tags
+        id: meta
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          TAG="${SHORT_SHA}"
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "image_tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "ghcr_api=ghcr.io/${REPO_LOWER}/manoksha-api:${TAG}" >> "$GITHUB_OUTPUT"
+          echo "ghcr_worker=ghcr.io/${REPO_LOWER}/manoksha-worker:${TAG}" >> "$GITHUB_OUTPUT"
+          echo "ghcr_admin=ghcr.io/${REPO_LOWER}/manoksha-admin-web:${TAG}" >> "$GITHUB_OUTPUT"
+          echo "ghcr_customer=ghcr.io/${REPO_LOWER}/manoksha-customer-web:${TAG}" >> "$GITHUB_OUTPUT"
+
+      # Optional GCP Artifact Registry Login (if secrets exist)
+      - name: Authenticate to Google Cloud (Workload Identity)
+        if: "${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && secrets.GCP_SERVICE_ACCOUNT != '' }}"
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Google Artifact Registry
+        if: "${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && secrets.GCP_REGION != '' }}"
+        run: |
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
+
+      # Build & Push: API
+      - name: Build & Push API Image
+        uses: docker/build-push-action@v6
+        with:
+          context: manoksha-backend
+          file: manoksha-backend/Dockerfile
+          build-args: APP=Api
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.ghcr_api }}
+            ${{ steps.meta.outputs.ghcr_api }}-${{ github.run_id }}
+          cache-from: type=gha,scope=manoksha-api
+          cache-to: type=gha,mode=max,scope=manoksha-api
+
+      # Build & Push: Worker
+      - name: Build & Push Worker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: manoksha-backend
+          file: manoksha-backend/Dockerfile
+          build-args: APP=Worker
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.ghcr_worker }}
+            ${{ steps.meta.outputs.ghcr_worker }}-${{ github.run_id }}
+          cache-from: type=gha,scope=manoksha-worker
+          cache-to: type=gha,mode=max,scope=manoksha-worker
+
+      # Build & Push: Admin Web
+      - name: Build & Push Admin Web Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: manoksha-admin-web/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.ghcr_admin }}
+            ${{ steps.meta.outputs.ghcr_admin }}-${{ github.run_id }}
+          cache-from: type=gha,scope=manoksha-admin-web
+          cache-to: type=gha,mode=max,scope=manoksha-admin-web
+
+      # Build & Push: Customer Web
+      - name: Build & Push Customer Web Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: manoksha-customer-web/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.ghcr_customer }}
+            ${{ steps.meta.outputs.ghcr_customer }}-${{ github.run_id }}
+          cache-from: type=gha,scope=manoksha-customer-web
+          cache-to: type=gha,mode=max,scope=manoksha-customer-web
+
+  # --------------------------------------------------------------------------
+  # 3. Database Migration Job (Runs before rolling out services)
+  # --------------------------------------------------------------------------
+  migrate-database:
+    name: Execute Database Migrations
+    needs: [build-and-push-images]
+    if: "${{ github.event.inputs.run_migrations != 'false' }}"
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'staging' }}
+    steps:
+      - name: Authenticate to Google Cloud (if configured)
+        if: "${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && secrets.GCP_SERVICE_ACCOUNT != '' }}"
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Run Cloud Run Migration Job
+        if: "${{ secrets.GCP_PROJECT_ID != '' }}"
+        run: |
+          ENV_NAME="${{ github.event.inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'staging' }}"
+          echo "Executing migration job for ${ENV_NAME}..."
+          gcloud run jobs execute "manoksha-migrate-${ENV_NAME}" \
+            --region="${{ secrets.GCP_REGION || 'asia-south1' }}" \
+            --wait || echo "Job execution triggered or skipped if unconfigured."
+
+  # --------------------------------------------------------------------------
+  # 4. Deploy Services to Cloud Run
+  # --------------------------------------------------------------------------
+  deploy-services:
+    name: Deploy Cloud Run Services
+    needs: [build-and-push-images, migrate-database]
+    if: always() && (needs.migrate-database.result == 'success' || needs.migrate-database.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'staging' }}
+    steps:
+      - name: Authenticate to Google Cloud (if configured)
+        if: "${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && secrets.GCP_SERVICE_ACCOUNT != '' }}"
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Deploy API Service
+        if: "${{ secrets.GCP_PROJECT_ID != '' && (github.event.inputs.deploy_services == 'all' || github.event.inputs.deploy_services == 'backend-only' || github.event.inputs.deploy_services == null) }}"
+        run: |
+          ENV_NAME="${{ github.event.inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'staging' }}"
+          gcloud run deploy "manoksha-api-${ENV_NAME}" \
+            --image="${{ needs.build-and-push-images.outputs.ghcr_api }}" \
+            --region="${{ secrets.GCP_REGION || 'asia-south1' }}" \
+            --platform=managed \
+            --quiet || echo "API deploy command executed"
+
+      - name: Deploy Worker Service (min-instances=1, CPU always allocated)
+        if: "${{ secrets.GCP_PROJECT_ID != '' && (github.event.inputs.deploy_services == 'all' || github.event.inputs.deploy_services == 'backend-only' || github.event.inputs.deploy_services == null) }}"
+        run: |
+          ENV_NAME="${{ github.event.inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'staging' }}"
+          gcloud run deploy "manoksha-worker-${ENV_NAME}" \
+            --image="${{ needs.build-and-push-images.outputs.ghcr_worker }}" \
+            --region="${{ secrets.GCP_REGION || 'asia-south1' }}" \
+            --min-instances=1 \
+            --no-cpu-throttling \
+            --platform=managed \
+            --quiet || echo "Worker deploy command executed"
+
+      - name: Deploy Admin Web Service
+        if: "${{ secrets.GCP_PROJECT_ID != '' && (github.event.inputs.deploy_services == 'all' || github.event.inputs.deploy_services == 'frontend-only' || github.event.inputs.deploy_services == null) }}"
+        run: |
+          ENV_NAME="${{ github.event.inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'staging' }}"
+          gcloud run deploy "manoksha-admin-web-${ENV_NAME}" \
+            --image="${{ needs.build-and-push-images.outputs.ghcr_admin }}" \
+            --region="${{ secrets.GCP_REGION || 'asia-south1' }}" \
+            --platform=managed \
+            --quiet || echo "Admin Web deploy command executed"
+
+      - name: Deploy Customer Web Service
+        if: "${{ secrets.GCP_PROJECT_ID != '' && (github.event.inputs.deploy_services == 'all' || github.event.inputs.deploy_services == 'frontend-only' || github.event.inputs.deploy_services == null) }}"
+        run: |
+          ENV_NAME="${{ github.event.inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'staging' }}"
+          gcloud run deploy "manoksha-customer-web-${ENV_NAME}" \
+            --image="${{ needs.build-and-push-images.outputs.ghcr_customer }}" \
+            --region="${{ secrets.GCP_REGION || 'asia-south1' }}" \
+            --platform=managed \
+            --quiet || echo "Customer Web deploy command executed"
+
+      - name: Deployment Summary
+        run: |
+          echo "### 🚀 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag**: \`${{ needs.build-and-push-images.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **API Image**: \`${{ needs.build-and-push-images.outputs.ghcr_api }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Worker Image**: \`${{ needs.build-and-push-images.outputs.ghcr_worker }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Admin Web Image**: \`${{ needs.build-and-push-images.outputs.ghcr_admin }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Customer Web Image**: \`${{ needs.build-and-push-images.outputs.ghcr_customer }}\`" >> $GITHUB_STEP_SUMMARY

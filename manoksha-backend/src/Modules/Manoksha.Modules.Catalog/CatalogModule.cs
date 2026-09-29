@@ -24,7 +24,17 @@ public sealed class CatalogModule : IModule
         services.AddScoped<ICatalogLookup>(sp => sp.GetRequiredService<ProductService>());
         services.AddScoped<IItemBarcodeIssuer>(sp => sp.GetRequiredService<BarcodeService>());
         services.AddScoped<ICatalogBarcodes>(sp => sp.GetRequiredService<BarcodeService>());
+        services.AddScoped<ProductMediaService>();
+        services.AddScoped<ICatalogMedia>(sp => sp.GetRequiredService<ProductMediaService>());
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => CatalogEndpoints.Map(endpoints);
+}
+
+/// <summary>Background operations for the Catalog module.</summary>
+public static class CatalogJobs
+{
+    /// <returns>Number of abandoned media uploads removed.</returns>
+    public static Task<int> CleanupAbandonedMediaAsync(IServiceProvider scopedServices, CancellationToken ct) =>
+        scopedServices.GetRequiredService<ProductMediaService>().CleanupAbandonedUploadsAsync(ct);
 }

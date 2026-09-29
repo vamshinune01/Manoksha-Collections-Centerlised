@@ -75,13 +75,15 @@ public sealed record OrderPaymentStatusDto(Guid OrderId, string OrderNumber, str
 // ---- Public storefront (anonymous browsing, SPEC §19.1) ----
 
 /// <param name="InStock">Hint only: some branch has AVAILABLE units now. Checkout decides per branch for the complete basket.</param>
-public sealed record StorefrontItemDto(Guid SkuId, string SkuCode, Guid ProductId, string ProductName, string VariantName, string CategoryName, decimal Price, bool InStock);
+public sealed record StorefrontItemDto(Guid SkuId, string SkuCode, Guid ProductId, string ProductName, string VariantName, string CategoryName, decimal Price, bool InStock,
+    Manoksha.Modules.Catalog.Contracts.ImageUrls? Image = null);
 
 public sealed record StorefrontPage(IReadOnlyList<StorefrontItemDto> Items, int Total, int Page, int PageSize);
 
 public sealed record StorefrontVariantDto(Guid SkuId, string SkuCode, string VariantName, decimal Price, bool InStock);
 
-public sealed record StorefrontProductDto(Guid ProductId, string ProductName, IReadOnlyList<StorefrontVariantDto> Variants);
+public sealed record StorefrontProductDto(Guid ProductId, string ProductName, IReadOnlyList<StorefrontVariantDto> Variants,
+    IReadOnlyList<Manoksha.Modules.Catalog.Contracts.PublicMedia> Media);
 
 public sealed record CartQuoteRequest(IReadOnlyList<Guid> SkuIds);
 

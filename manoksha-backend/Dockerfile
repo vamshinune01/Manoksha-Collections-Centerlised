@@ -10,6 +10,8 @@ RUN dotnet publish src/Hosts/Manoksha.${APP}/Manoksha.${APP}.csproj -c Release -
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 ARG APP
+# ffmpeg optimizes product videos (H.264 MP4 + poster) for web/mobile delivery (ADR-001 §29). Images use SkiaSharp (bundled).
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
 ENV APP_DLL=Manoksha.${APP}.dll \
     ASPNETCORE_HTTP_PORTS=8080 \
     DOTNET_RUNNING_IN_CONTAINER=true

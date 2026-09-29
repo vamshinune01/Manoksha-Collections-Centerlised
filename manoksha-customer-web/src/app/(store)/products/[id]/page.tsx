@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { storeFetch } from "@/lib/backend";
 import { inr, type StoreProduct } from "@/lib/types";
 import { AddToCart } from "@/components/store-client";
+import { Gallery } from "./gallery";
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -13,9 +14,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     <div className="space-y-6">
       <Link href="/" className="text-sm text-brand-700 hover:underline">← Back to shop</Link>
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="flex aspect-square items-center justify-center rounded-2xl bg-gradient-to-br from-brand-50 to-slate-100 text-7xl font-semibold text-brand-500/60">
-          {p.productName.slice(0, 1)}
-        </div>
+        <Gallery media={p.media} name={p.productName} />
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">{p.productName}</h1>
           <p className="mt-1 text-sm text-slate-500">Shipping is added once per order at checkout.</p>

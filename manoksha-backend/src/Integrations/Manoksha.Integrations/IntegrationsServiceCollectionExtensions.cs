@@ -1,5 +1,6 @@
 using Manoksha.Application.Abstractions;
 using Manoksha.Integrations.Email;
+using Manoksha.Integrations.Media;
 using Manoksha.Integrations.Sms;
 using Manoksha.Integrations.Storage;
 using Microsoft.Extensions.Configuration;
@@ -52,11 +53,19 @@ public static class IntegrationsServiceCollectionExtensions
             case "Local":
                 EnsureNotProduction(environment, "Integrations:Storage:Provider=Local");
                 services.Configure<LocalFileStorageOptions>(section.GetSection("Storage:Local"));
-                services.AddSingleton<IFileStorage, LocalFileStorage>();
+                services.AddSingleton<LocalFileStorage>();
+                services.AddSingleton<IFileStorage>(sp => sp.GetRequiredService<LocalFileStorage>());
+                break;
+            case "Gcs":
+                services.Configure<GcsStorageOptions>(section.GetSection("Storage:Gcs"));
+                services.AddSingleton<IFileStorage, GcsFileStorage>();
                 break;
             default:
                 throw new InvalidOperationException($"Unknown storage provider '{storage}'.");
         }
+
+        services.Configure<MediaProcessingOptions>(section.GetSection("Media"));
+        services.AddSingleton<IMediaProcessor, SkiaFfmpegMediaProcessor>();
 
         return services;
     }

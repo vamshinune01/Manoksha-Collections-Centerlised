@@ -4,6 +4,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MailKit" />
+    <PackageReference Include="Google.Cloud.Storage.V1" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\Manoksha.Application\Manoksha.Application.csproj" />

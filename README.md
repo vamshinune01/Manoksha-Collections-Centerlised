@@ -47,8 +47,14 @@ npm run customer:dev
 ```
 
 The dev seed creates branches Karimnagar (P1), Hyderabad (P2), Mulugu (P3) and users (password = `MANOKSHA_DEV_SEED_PASSWORD`):
-`owner@manoksha.local`, `manager.karimnagar@manoksha.local`, `sales.karimnagar@manoksha.local`, `inventory.karimnagar@manoksha.local`
-(the three Karimnagar users also have employee profiles). Development OTP codes are printed in the API log
+- **Owner (Super Admin)**: `owner@manoksha.local` (Full global permissions)
+- **Admin**: `admin@manoksha.local` (Full global permissions)
+- **Branch Manager**: `manager.karimnagar@manoksha.local` (Karimnagar branch admin)
+- **Sales Staff**: `sales.karimnagar@manoksha.local`
+- **Inventory Staff**: `inventory.karimnagar@manoksha.local`
+- **Customer (Storefront)**: Mobile `+919876543210` (`customer@manoksha.local` / "Dev Customer") — signs in with OTP printed to API console.
+
+(The Karimnagar staff users also have employee profiles). Development OTP codes are printed in the API log
 (`[FAKE SMS]`). Development-only adapters (fake SMS, logging email, local file storage, UPI payment simulator) are refused in Production.
 
 **Online payments in development.** Until the Owner selects a UPI gateway, `Integrations:Payments:Provider=Simulator` is used:

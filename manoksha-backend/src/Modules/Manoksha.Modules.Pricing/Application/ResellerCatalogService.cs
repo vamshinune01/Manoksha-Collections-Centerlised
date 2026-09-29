@@ -10,7 +10,7 @@ namespace Manoksha.Modules.Pricing.Application;
 /// The signed-in reseller's own catalog with their prices (SPEC §19.2, §31). The reseller is resolved from the token only,
 /// so one reseller can never price or browse as another.
 /// </summary>
-internal sealed class ResellerCatalogService(ICatalogLookup catalog, IResellerDirectory resellers, PriceCalculator calculator, ICurrentUser currentUser)
+internal sealed class ResellerCatalogService(ICatalogLookup catalog, ICatalogMedia media, IResellerDirectory resellers, PriceCalculator calculator, ICurrentUser currentUser)
 {
     public async Task<ResellerCatalogPage> CatalogAsync(string? q, Guid? categoryId, int? page, int? pageSize, CancellationToken ct)
     {
@@ -19,11 +19,12 @@ internal sealed class ResellerCatalogService(ICatalogLookup catalog, IResellerDi
         var ids = skus.Items.Select(s => s.Sku.SkuId).ToList();
         var priced = (await calculator.GetRetailPricesAsync(ids, ct)).Keys.ToHashSet();
         var lines = (await calculator.QuoteForResellerAsync(reseller.ResellerId, ids.Where(priced.Contains).ToList(), ct)).ToDictionary(l => l.SkuId);
+        var images = await media.PrimaryImagesAsync(skus.Items.Select(s => s.Sku.ProductId).Distinct().ToList(), ct);
         var items = skus.Items.Where(s => lines.ContainsKey(s.Sku.SkuId)).Select(s =>
         {
             var l = lines[s.Sku.SkuId];
             return new ResellerCatalogItemDto(s.Sku.SkuId, s.Sku.SkuCode, s.Sku.ProductId, s.Sku.ProductName, s.Sku.VariantName, s.CategoryName,
-                l.RetailPrice, l.DiscountSource, l.DiscountPct, l.FinalUnitPrice);
+                l.RetailPrice, l.DiscountSource, l.DiscountPct, l.FinalUnitPrice, images.GetValueOrDefault(s.Sku.ProductId));
         }).ToList();
         return new ResellerCatalogPage(items, skus.Total, skus.Page, skus.PageSize);
     }

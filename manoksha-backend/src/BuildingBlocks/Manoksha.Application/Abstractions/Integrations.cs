@@ -19,18 +19,72 @@ public interface IEmailSender
 
 public sealed record EmailMessage(string To, string Subject, string HtmlBody, string? TextBody = null);
 
-/// <summary>Binary object storage (deposit proofs, product images, PDFs). Implementations: GCS, local disk.</summary>
+/// <summary>
+/// Binary object storage (deposit proofs, product media, PDFs). Implementations: Google Cloud Storage, local disk (development).
+/// Containers are logical names mapped to buckets by configuration; <see cref="StorageContainers.Media"/> is the only public one.
+/// </summary>
 public interface IFileStorage
 {
-    Task<StoredObject> PutAsync(string container, string objectKey, Stream content, string contentType, CancellationToken cancellationToken);
+    Task<StoredObject> PutAsync(string container, string objectKey, Stream content, string contentType, CancellationToken cancellationToken,
+        string? cacheControl = null);
 
     Task<Stream> OpenReadAsync(string container, string objectKey, CancellationToken cancellationToken);
 
     /// <summary>Short-lived URL for private objects (never a permanent public link).</summary>
     Task<Uri> GetReadUrlAsync(string container, string objectKey, TimeSpan validFor, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Short-lived URL the browser uploads one object to directly with HTTP PUT and the given Content-Type (large media never
+    /// passes through the API). May be relative (development storage is reached through the web app's API proxy).
+    /// </summary>
+    Task<string> GetUploadUrlAsync(string container, string objectKey, string contentType, TimeSpan validFor, CancellationToken cancellationToken);
+
+    /// <summary>Permanent URL of an object in the public container (optimized media only).</summary>
+    string GetPublicUrl(string container, string objectKey);
+
+    /// <returns>Null when the object does not exist.</returns>
+    Task<StoredObjectInfo?> GetInfoAsync(string container, string objectKey, CancellationToken cancellationToken);
+
+    Task DeleteAsync(string container, string objectKey, CancellationToken cancellationToken);
+}
+
+public static class StorageContainers
+{
+    /// <summary>Private: reseller deposit proofs.</summary>
+    public const string DepositProofs = "deposit-proofs";
+
+    /// <summary>Private: original (HD) product images and videos as uploaded.</summary>
+    public const string MediaOriginals = "media-originals";
+
+    /// <summary>Public, cacheable: optimized product media renditions served to web and mobile.</summary>
+    public const string Media = "media";
 }
 
 public sealed record StoredObject(string Container, string ObjectKey, long Size, string Sha256);
+
+public sealed record StoredObjectInfo(long Size, string? ContentType);
+
+/// <summary>Web/mobile media optimization. Implementation: SkiaSharp (images, WebP) and ffmpeg (video, H.264 MP4).</summary>
+public interface IMediaProcessor
+{
+    /// <summary>Decodes an image (EXIF orientation applied) and encodes WebP renditions no larger than each requested width.</summary>
+    /// <exception cref="MediaProcessingException">Not a readable image.</exception>
+    ImageRenditionSet ProcessImage(Stream original, IReadOnlyList<ImageSize> sizes);
+
+    /// <summary>Transcodes a video to a web-friendly MP4 (≤ maxHeight, fast start) and extracts a poster frame (WebP).</summary>
+    /// <exception cref="MediaProcessingException">Not a readable video, or longer than allowed.</exception>
+    Task<VideoRendition> ProcessVideoAsync(string originalPath, string workDirectory, int maxHeight, TimeSpan maxDuration, CancellationToken cancellationToken);
+}
+
+public sealed record ImageSize(string Name, int MaxWidth);
+
+public sealed record ImageRendition(string Name, int Width, int Height, byte[] Webp);
+
+public sealed record ImageRenditionSet(int OriginalWidth, int OriginalHeight, IReadOnlyList<ImageRendition> Renditions);
+
+public sealed record VideoRendition(string Mp4Path, int Width, int Height, double DurationSeconds, byte[] PosterWebp, int PosterWidth, int PosterHeight);
+
+public sealed class MediaProcessingException(string message, Exception? inner = null) : Exception(message, inner);
 
 /// <summary>
 /// UPI payment gateway (SPEC §14). Implementations: provider adapter (chosen later), development simulator. The backend never

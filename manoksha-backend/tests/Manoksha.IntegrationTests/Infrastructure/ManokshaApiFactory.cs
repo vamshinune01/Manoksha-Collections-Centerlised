@@ -90,6 +90,8 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
         builder.UseSetting("Integrations:Email:Provider", "Logging");
         builder.UseSetting("Integrations:Storage:Provider", "Local");
         builder.UseSetting("Integrations:Storage:Local:RootPath", Path.Combine(Path.GetTempPath(), "manoksha-it-files"));
+        builder.UseSetting("Integrations:Storage:Local:UploadBaseUrl", "/api/v1/dev-storage");
+        builder.UseSetting("Integrations:Storage:Local:PublicBaseUrl", "http://localhost/local-files");
         builder.UseSetting("Integrations:Payments:Provider", "Simulator");
         builder.UseSetting("Integrations:Payments:Simulator:WebhookSecret", SimulatorWebhookSecret);
 

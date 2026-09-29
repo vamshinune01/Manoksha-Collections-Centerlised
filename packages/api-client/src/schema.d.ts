@@ -324,6 +324,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/catalog/products/{productId}/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListProductMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/products/{productId}/media/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StartProductMediaUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/products/{productId}/media/{mediaId}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CompleteProductMediaUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/products/{productId}/media/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["UpdateProductMedia"];
+        post?: never;
+        delete: operations["DeleteProductMedia"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/products/{productId}/media/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["ReorderProductMedia"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/catalog/attributes": {
         parameters: {
             query?: never;
@@ -3384,6 +3464,16 @@ export interface components {
             /** Format: double */
             unitCost?: number | null;
         };
+        ImageUrls: {
+            thumb?: string | null;
+            medium?: string | null;
+            large?: string | null;
+            altText?: string | null;
+            /** Format: int32 */
+            width?: number;
+            /** Format: int32 */
+            height?: number;
+        };
         InquiryDto: {
             reference?: string | null;
             message?: string | null;
@@ -3496,6 +3586,42 @@ export interface components {
             name?: string | null;
             /** Format: uuid */
             branchId?: string | null;
+        };
+        MediaDto: {
+            /** Format: uuid */
+            id?: string;
+            kind?: string | null;
+            status?: string | null;
+            /** Format: int32 */
+            sortOrder?: number;
+            altText?: string | null;
+            originalFileName?: string | null;
+            /** Format: int64 */
+            originalBytes?: number;
+            /** Format: int32 */
+            width?: number | null;
+            /** Format: int32 */
+            height?: number | null;
+            /** Format: double */
+            durationSeconds?: number | null;
+            image?: components["schemas"]["ImageUrls"];
+            videoUrl?: string | null;
+            posterUrl?: string | null;
+            /** Format: int64 */
+            optimizedBytes?: number;
+            failureReason?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        MediaUploadDto: {
+            /** Format: uuid */
+            mediaId?: string;
+            kind?: string | null;
+            uploadUrl?: string | null;
+            method?: string | null;
+            contentType?: string | null;
+            /** Format: date-time */
+            expiresAt?: string;
         };
         MfaEnrollmentConfirmRequest: {
             challengeToken?: string | null;
@@ -3900,6 +4026,17 @@ export interface components {
             name?: string | null;
             slug?: string | null;
         };
+        PublicMedia: {
+            /** Format: uuid */
+            id?: string;
+            kind?: string | null;
+            image?: components["schemas"]["ImageUrls"];
+            videoUrl?: string | null;
+            posterUrl?: string | null;
+            /** Format: double */
+            durationSeconds?: number | null;
+            altText?: string | null;
+        };
         PurchaseOrderDto: {
             /** Format: uuid */
             id?: string;
@@ -3991,6 +4128,9 @@ export interface components {
         RejectDepositRequest: {
             reason?: string | null;
         };
+        ReorderMediaRequest: {
+            mediaIds?: string[] | null;
+        };
         RerouteOptionDto: {
             /** Format: uuid */
             branchId?: string;
@@ -4022,6 +4162,7 @@ export interface components {
             discountPct?: number;
             /** Format: double */
             resellerPrice?: number;
+            image?: components["schemas"]["ImageUrls"];
         };
         ResellerCatalogPage: {
             items?: components["schemas"]["ResellerCatalogItemDto"][] | null;
@@ -4345,6 +4486,12 @@ export interface components {
             /** Format: double */
             productResellerDiscountPct?: number | null;
         };
+        StartMediaUploadRequest: {
+            fileName?: string | null;
+            contentType?: string | null;
+            /** Format: int64 */
+            sizeBytes?: number;
+        };
         StartOnlineDepositRequest: {
             /** Format: double */
             amount?: number;
@@ -4408,6 +4555,7 @@ export interface components {
             /** Format: double */
             price?: number;
             inStock?: boolean;
+            image?: components["schemas"]["ImageUrls"];
         };
         StorefrontPage: {
             items?: components["schemas"]["StorefrontItemDto"][] | null;
@@ -4423,6 +4571,7 @@ export interface components {
             productId?: string;
             productName?: string | null;
             variants?: components["schemas"]["StorefrontVariantDto"][] | null;
+            media?: components["schemas"]["PublicMedia"][] | null;
         };
         StorefrontVariantDto: {
             /** Format: uuid */
@@ -4536,6 +4685,9 @@ export interface components {
             fullName?: string | null;
             mobile?: string | null;
             reason?: string | null;
+        };
+        UpdateMediaRequest: {
+            altText?: string | null;
         };
         UpdateProductRequest: {
             /** Format: uuid */
@@ -5195,6 +5347,151 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+        };
+    };
+    ListProductMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaDto"][];
+                };
+            };
+        };
+    };
+    StartProductMediaUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartMediaUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaUploadDto"];
+                };
+            };
+        };
+    };
+    CompleteProductMediaUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaDto"];
+                };
+            };
+        };
+    };
+    UpdateProductMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMediaRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaDto"];
+                };
+            };
+        };
+    };
+    DeleteProductMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReorderProductMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderMediaRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaDto"][];
                 };
             };
         };

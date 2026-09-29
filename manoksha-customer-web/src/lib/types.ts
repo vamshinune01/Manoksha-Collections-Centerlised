@@ -22,6 +22,7 @@ export interface CatalogItem {
   discountSource: "RESELLER" | "PRODUCT_RESELLER";
   discountPct: number;
   resellerPrice: number;
+  image?: ImageUrls | null;
 }
 
 export interface CatalogPage {
@@ -150,6 +151,26 @@ export interface OrderCharges {
   shippingFeePerOrder: number;
 }
 
+/** Optimized WebP renditions (never the original upload). */
+export interface ImageUrls {
+  thumb: string;
+  medium: string;
+  large: string;
+  altText: string | null;
+  width: number;
+  height: number;
+}
+
+export interface PublicMedia {
+  id: string;
+  kind: "Image" | "Video";
+  image: ImageUrls | null;
+  videoUrl: string | null;
+  posterUrl: string | null;
+  durationSeconds: number | null;
+  altText: string | null;
+}
+
 export interface StoreItem {
   skuId: string;
   skuCode: string;
@@ -159,6 +180,7 @@ export interface StoreItem {
   categoryName: string;
   price: number;
   inStock: boolean;
+  image: ImageUrls | null;
 }
 
 export interface StorePage {
@@ -179,6 +201,7 @@ export interface StoreProduct {
   productId: string;
   productName: string;
   variants: { skuId: string; skuCode: string; variantName: string; price: number; inStock: boolean }[];
+  media: PublicMedia[];
 }
 
 export interface CartQuoteLine {

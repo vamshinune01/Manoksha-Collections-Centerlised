@@ -9,7 +9,7 @@ namespace Manoksha.Modules.Orders.Application;
 /// Anonymous storefront browsing (SPEC §19.1, ADR-001 §10): only products available for retail, active, and priced are shown, at
 /// the current retail price. Everything here is display-only; checkout re-prices and re-validates.
 /// </summary>
-internal sealed class StorefrontService(ICatalogLookup catalog, IPriceCalculator prices, IStockAvailability stock)
+internal sealed class StorefrontService(ICatalogLookup catalog, ICatalogMedia media, IPriceCalculator prices, IStockAvailability stock)
 {
     public async Task<StorefrontPage> ListAsync(string? q, Guid? categoryId, int? page, int? pageSize, CancellationToken ct)
     {
@@ -17,9 +17,10 @@ internal sealed class StorefrontService(ICatalogLookup catalog, IPriceCalculator
         var ids = skus.Items.Select(s => s.Sku.SkuId).ToList();
         var retail = await prices.GetRetailPricesAsync(ids, ct);
         var available = await stock.AvailableQuantitiesAsync(ids, ct);
+        var images = await media.PrimaryImagesAsync(skus.Items.Select(s => s.Sku.ProductId).Distinct().ToList(), ct);
         var items = skus.Items.Where(s => retail.ContainsKey(s.Sku.SkuId)).Select(s =>
             new StorefrontItemDto(s.Sku.SkuId, s.Sku.SkuCode, s.Sku.ProductId, s.Sku.ProductName, s.Sku.VariantName, s.CategoryName, retail[s.Sku.SkuId].Price,
-                available.GetValueOrDefault(s.Sku.SkuId) > 0)).ToList();
+                available.GetValueOrDefault(s.Sku.SkuId) > 0, images.GetValueOrDefault(s.Sku.ProductId))).ToList();
         return new StorefrontPage(items, skus.Total, skus.Page, skus.PageSize);
     }
 
@@ -35,7 +36,7 @@ internal sealed class StorefrontService(ICatalogLookup catalog, IPriceCalculator
         {
             throw new NotFoundException("PRODUCT_NOT_FOUND", "This product is not available online.");
         }
-        return new StorefrontProductDto(productId, skus[0].ProductName, variants);
+        return new StorefrontProductDto(productId, skus[0].ProductName, variants, await media.GalleryAsync(productId, ct));
     }
 
     public async Task<IReadOnlyList<CartQuoteLineDto>> CartQuoteAsync(CartQuoteRequest request, CancellationToken ct)

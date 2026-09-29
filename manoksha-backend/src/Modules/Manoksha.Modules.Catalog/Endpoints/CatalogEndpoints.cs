@@ -24,6 +24,23 @@ internal static class CatalogEndpoints
         admin.MapPost("/categories", (SaveCategoryRequest r, CatalogSetupService s, CancellationToken ct) => s.CreateCategoryAsync(r, ct)).RequirePermission(manage).WithName("CreateCategory");
         admin.MapPut("/categories/{id:guid}", (Guid id, SaveCategoryRequest r, CatalogSetupService s, CancellationToken ct) => s.UpdateCategoryAsync(id, r, ct)).RequirePermission(manage).WithName("UpdateCategory");
 
+        // Product media (ADR-001 §29): upload URL → browser PUTs the original straight to storage → complete (optimize).
+        admin.MapGet("/products/{productId:guid}/media", (Guid productId, ProductMediaService s, CancellationToken ct) => s.ListAsync(productId, ct))
+            .RequirePermission(view).WithName("ListProductMedia");
+        admin.MapPost("/products/{productId:guid}/media/uploads", (Guid productId, StartMediaUploadRequest r, ProductMediaService s, CancellationToken ct) =>
+            s.StartUploadAsync(productId, r, ct)).RequirePermission(manage).WithName("StartProductMediaUpload");
+        admin.MapPost("/products/{productId:guid}/media/{mediaId:guid}/complete", (Guid productId, Guid mediaId, ProductMediaService s, CancellationToken ct) =>
+            s.CompleteAsync(productId, mediaId, ct)).RequirePermission(manage).WithName("CompleteProductMediaUpload");
+        admin.MapPut("/products/{productId:guid}/media/{mediaId:guid}", (Guid productId, Guid mediaId, UpdateMediaRequest r, ProductMediaService s, CancellationToken ct) =>
+            s.UpdateAsync(productId, mediaId, r, ct)).RequirePermission(manage).WithName("UpdateProductMedia");
+        admin.MapPut("/products/{productId:guid}/media/order", (Guid productId, ReorderMediaRequest r, ProductMediaService s, CancellationToken ct) =>
+            s.ReorderAsync(productId, r, ct)).RequirePermission(manage).WithName("ReorderProductMedia");
+        admin.MapDelete("/products/{productId:guid}/media/{mediaId:guid}", async (Guid productId, Guid mediaId, ProductMediaService s, CancellationToken ct) =>
+            {
+                await s.DeleteAsync(productId, mediaId, ct);
+                return Results.NoContent();
+            }).RequirePermission(manage).WithName("DeleteProductMedia");
+
         admin.MapGet("/attributes", (CatalogSetupService s, CancellationToken ct) => s.ListAttributesAsync(ct)).RequirePermission(view).WithName("ListAttributes");
         admin.MapPost("/attributes", (CreateAttributeRequest r, CatalogSetupService s, CancellationToken ct) => s.CreateAttributeAsync(r, ct)).RequirePermission(manage).WithName("CreateAttribute");
         admin.MapPut("/attributes/{id:guid}", (Guid id, UpdateAttributeRequest r, CatalogSetupService s, CancellationToken ct) => s.UpdateAttributeAsync(id, r, ct)).RequirePermission(manage).WithName("UpdateAttribute");
