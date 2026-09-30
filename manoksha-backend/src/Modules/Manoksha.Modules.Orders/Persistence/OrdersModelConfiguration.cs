@@ -173,6 +173,7 @@ public sealed class OrdersModelConfiguration : IModuleModelConfiguration
             b.Property(x => x.EvaluationsJson).HasColumnName("evaluations").HasColumnType("jsonb").Unbounded();
             b.Property(x => x.FailureReason).HasMaxLength(200);
             b.Property(x => x.Status).HasMaxLength(20);
+            b.Property(x => x.FollowUpNote).HasMaxLength(1000);
             b.HasIndex(x => x.Reference).IsUnique();
             b.HasIndex(x => new { x.Status, x.CreatedAt });
         });

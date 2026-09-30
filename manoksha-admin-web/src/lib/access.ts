@@ -65,7 +65,11 @@ export const P = {
   ordersReroute: "orders.reroute",
   ordersCancel: "orders.cancel",
   exceptionsView: "exceptions.view",
+  exceptionsManage: "exceptions.manage",
   reconciliationManage: "reconciliation.manage",
+  notificationsView: "notifications.view",
+  reportsView: "reports.view",
+  reportsGlobal: "reports.global",
 } as const;
 
 export interface NavItem {
@@ -75,9 +79,12 @@ export interface NavItem {
   permission?: string | string[];
 }
 
-/** Sections delivered so far. Later phases add Branches, Catalog, Inventory, … here. */
+/** Admin sections; each is shown only to users who hold one of its permissions. */
 export const NAV: NavItem[] = [
   { href: "/", label: "Dashboard" },
+  { href: "/exceptions", label: "Exception Center", permission: P.exceptionsView },
+  { href: "/notifications", label: "Notifications", permission: P.notificationsView },
+  { href: "/reports", label: "Reports", permission: P.reportsView },
   { href: "/branches", label: "Branches & priority", permission: P.branchesView },
   { href: "/employees", label: "Employees", permission: P.employeesView },
   { href: "/attendance", label: "Attendance", permission: [P.attendanceSelf, P.attendanceView] },

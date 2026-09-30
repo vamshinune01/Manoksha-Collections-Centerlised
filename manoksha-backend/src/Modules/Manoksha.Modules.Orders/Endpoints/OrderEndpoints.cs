@@ -86,7 +86,10 @@ internal static class OrderEndpoints
         admin.MapGet("/fulfillment-inquiries", async (ManokshaDbContext db, CancellationToken ct) =>
                 (await db.Set<FulfillmentInquiry>().AsNoTracking().OrderByDescending(i => i.CreatedAt).Take(200).ToListAsync(ct))
                 .Select(i => new FulfillmentInquiryDto(i.Id, i.Reference, i.Channel.ToString(), i.ResellerId, i.ContactName, i.ContactMobile, i.CartJson, i.EvaluationsJson,
-                    i.FailureReason, i.Status, i.CreatedAt)).ToList())
+                    i.FailureReason, i.Status, i.CreatedAt, i.FollowUpNote, i.ClosedAt)).ToList())
             .RequirePermission(Permissions.Exceptions.View).WithName("ListFulfillmentInquiries");
+        admin.MapPost("/fulfillment-inquiries/{id:guid}/close", async (Guid id, CloseInquiryRequest r, InquiryService s, CancellationToken ct) =>
+                await s.CloseAsync(id, r, ct))
+            .RequirePermission(Permissions.Exceptions.Manage).WithName("CloseFulfillmentInquiry");
     }
 }

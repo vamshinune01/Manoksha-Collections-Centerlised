@@ -9,6 +9,8 @@ public static class AdvisoryLocks
     public const long WalletIntegrity = 7_100_002;
     public const long ReservationSweeper = 7_100_003;
     public const long PaymentPoller = 7_100_004;
+    public const long EmailSender = 7_100_005;
+    public const long NotificationDaily = 7_100_006;
 
     /// <summary>Transaction-scoped lock; released automatically at commit/rollback. Requires an open transaction.</summary>
     public static async Task<bool> TryAcquireTransactionLockAsync(ManokshaDbContext db, long key, CancellationToken cancellationToken)

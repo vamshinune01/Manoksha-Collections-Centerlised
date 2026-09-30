@@ -16,7 +16,7 @@ public sealed record SetApprovalPinRequest(string CurrentPassword, string Pin);
 /// Approval PINs for on-device approvals. A PIN is 4–6 digits, stored hashed, set by its owner after re-entering their password;
 /// 5 wrong entries lock it for 15 minutes. Approvers never share passwords with the device.
 /// </summary>
-internal sealed class ApprovalService(ManokshaDbContext db, PasswordService passwords, IAuditWriter audit, ICurrentUser currentUser, IClock clock) : IApprovals
+internal sealed class ApprovalService(ManokshaDbContext db, PasswordService passwords, IAuditWriter audit, ICurrentUser currentUser, IOutbox outbox, IClock clock) : IApprovals
 {
     private const int MaxFailures = 5;
     private static readonly TimeSpan LockFor = TimeSpan.FromMinutes(15);
@@ -58,7 +58,11 @@ internal sealed class ApprovalService(ManokshaDbContext db, PasswordService pass
         }
         if (_hasher.VerifyHashedPassword(user, user.ApprovalPinHash, pin ?? string.Empty) == PasswordVerificationResult.Failed)
         {
-            user.RecordApprovalPinFailure(now, MaxFailures, LockFor);
+            if (user.RecordApprovalPinFailure(now, MaxFailures, LockFor))
+            {
+                outbox.Enqueue(new SecurityAlertRaised("APPROVAL_PIN_LOCKED", user.Id, user.DisplayName,
+                    $"Approval PIN locked for {LockFor.TotalMinutes:0} minutes after {MaxFailures} wrong PINs on the POS."));
+            }
             await audit.RecordAsync(new AuditRecord("identity.approval_pin.failed", "User", user.Id.ToString(), After: new { branchId, permission }), cancellationToken);
             await db.SaveChangesAsync(cancellationToken);
             throw new BusinessRuleException("APPROVAL_PIN_INVALID", "The approval PIN is not correct.", 400);

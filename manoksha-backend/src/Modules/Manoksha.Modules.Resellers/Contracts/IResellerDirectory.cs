@@ -13,7 +13,12 @@ public interface IResellerDirectory
     Task<ResellerInfo?> FindAsync(Guid resellerId, CancellationToken cancellationToken = default);
 
     Task<ResellerTerms> GetCurrentTermsAsync(Guid resellerId, CancellationToken cancellationToken = default);
+
+    /// <summary>Contact details for notifications (never shown to other resellers).</summary>
+    Task<ResellerContact?> GetContactAsync(Guid resellerId, CancellationToken cancellationToken = default);
 }
+
+public sealed record ResellerContact(Guid ResellerId, string ResellerNumber, string ContactName, string? BusinessName, string? Email, string Status);
 
 /// <summary>
 /// Modules that must set something up for every new reseller (the Wallet module opens the ₹0 wallet). Called inside the

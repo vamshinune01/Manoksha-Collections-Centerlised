@@ -16,6 +16,8 @@ public static class BackgroundJobs
         services.AddHostedService<WalletIntegrityJob>();
         services.AddHostedService<ReservationSweeperJob>();
         services.AddHostedService<PaymentPollerJob>();
+        services.AddHostedService<EmailSenderJob>();
+        services.AddHostedService<NotificationDailyJob>();
         return services;
     }
 }

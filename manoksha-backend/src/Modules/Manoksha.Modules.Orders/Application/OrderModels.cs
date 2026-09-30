@@ -61,7 +61,9 @@ public sealed record InquiryDto(string Reference, string Message, string WhatsAp
 public sealed record CheckoutResult(string Outcome, OrderDto? Order, decimal? WalletBalance, InquiryDto? Inquiry);
 
 public sealed record FulfillmentInquiryDto(Guid Id, string Reference, string Channel, Guid? ResellerId, string? ContactName, string? ContactMobile,
-    string Cart, string Evaluations, string FailureReason, string Status, DateTimeOffset CreatedAt);
+    string Cart, string Evaluations, string FailureReason, string Status, DateTimeOffset CreatedAt, string? FollowUpNote = null, DateTimeOffset? ClosedAt = null);
+
+public sealed record CloseInquiryRequest(string Note);
 
 // ---- Online (customer) checkout ----
 

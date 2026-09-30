@@ -6,6 +6,7 @@ using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Manoksha.Modules.Payments.Contracts;
 
 namespace Manoksha.Modules.Payments.Application;
 

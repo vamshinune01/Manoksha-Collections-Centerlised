@@ -630,6 +630,8 @@ export interface FulfillmentInquiry {
   failureReason: string;
   status: string;
   createdAt: string;
+  followUpNote: string | null;
+  closedAt: string | null;
 }
 
 export interface ResellerCustomer {
@@ -708,4 +710,74 @@ export interface PosSaleDetail {
     skuCode: string; quantity: number; originalUnitPrice: number; finalUnitPrice: number; discountPct: number; reason: string;
     approvalLevel: string; seller: string; approver: string | null; occurredAt: string;
   }[];
+}
+
+// ---- Phase 9: notifications, Exception Center, dashboards and reports ----
+
+export type Severity = "CRITICAL" | "WARNING" | "INFO";
+
+export interface NotificationItem { id: string; category: Severity; title: string; body: string; link: string | null; createdAt: string; read: boolean }
+export interface Inbox { unread: number; items: NotificationItem[] }
+
+export interface EmailDelivery {
+  id: string; eventType: string; category: Severity; reference: string | null; toAddress: string; toName: string | null; recipientKind: string;
+  subject: string; status: "Pending" | "Sent" | "Failed"; attempts: number; nextAttemptAt: string; lastError: string | null; sentAt: string | null; createdAt: string;
+}
+export interface EmailPreview { id: string; subject: string; toAddress: string; htmlBody: string; textBody: string }
+export interface OperationalAlert {
+  id: string; kind: string; severity: Severity; title: string; detail: string; reference: string | null; status: "Open" | "Resolved";
+  createdAt: string; resolvedAt: string | null; resolutionNote: string | null;
+}
+
+export type ExceptionType =
+  | "PAYMENT_RECONCILIATION" | "FULFILLMENT_EXCEPTION" | "UNFULFILLED_CHECKOUT" | "TRANSFER_DISCREPANCY" | "INVENTORY_DISCREPANCY"
+  | "WALLET_DEPOSIT_PENDING" | "FAILED_NOTIFICATION" | "SENSITIVE_ALERT";
+export interface ExceptionCount { type: ExceptionType; open: number }
+export interface ExceptionItem {
+  type: ExceptionType; id: string; reference: string; severity: Severity; branchId: string | null; branchName: string | null; createdAt: string; detail: string;
+  relatedId: string | null;
+}
+export interface ExceptionCenter { counts: ExceptionCount[]; items: ExceptionItem[] }
+
+export interface ChannelSales { channel: string; orders: number; units: number; revenue: number; shippingFees: number; cost: number | null }
+export interface SalesBlock {
+  orders: number; units: number; revenue: number; shippingFees: number; cost: number | null; grossProfit: number | null; marginPct: number | null; byChannel: ChannelSales[];
+}
+export interface LowStockRow { branchId: string; branchName: string; skuId: string; skuCode: string; productName: string; variantName: string; available: number }
+export interface Dashboard {
+  today: string;
+  branches: { id: string; name: string }[];
+  costVisible: boolean;
+  salesToday: SalesBlock;
+  salesMonth: SalesBlock;
+  last14Days: { date: string; orders: number; revenue: number; grossProfit: number | null }[];
+  branchSales: { branchId: string; branchName: string; ordersToday: number; revenueToday: number; ordersMonth: number; revenueMonth: number; grossProfitMonth: number | null }[];
+  inventory: { availableUnits: number; reservedUnits: number; inTransitUnits: number; onHandUnits: number; stockValue: number | null };
+  lowStockThreshold: number;
+  lowStockCount: number;
+  lowStock: LowStockRow[];
+  operations: { transfersAwaitingApproval: number; transfersInProgress: number; adjustmentsPending: number; discrepanciesOpen: number; depositsPending: number | null };
+  attendance: { clockedInNow: number; clockedInToday: number; activeEmployees: number };
+  priceChanges: { at: string; skuCode: string; productName: string; oldPrice: number | null; newPrice: number; reason: string }[] | null;
+  resellers: { active: number; frozen: number; walletBalances: number; topThisMonth: { resellerId: string; resellerNumber: string; name: string; orders: number; revenue: number }[] } | null;
+  openExceptions: ExceptionCount[] | null;
+}
+
+export interface SalesReportRow {
+  key: string; label: string; orders: number; units: number; revenue: number; shippingFees: number; cost: number | null; grossProfit: number | null; marginPct: number | null;
+}
+export interface SalesReport { from: string; to: string; groupBy: string; costVisible: boolean; rows: SalesReportRow[]; total: SalesReportRow }
+export interface ProductSalesReport {
+  from: string; to: string; costVisible: boolean;
+  rows: { skuId: string; skuCode: string; productName: string; variantName: string; units: number; revenue: number; cost: number | null; grossProfit: number | null; marginPct: number | null }[];
+}
+export interface InventoryValuation {
+  asOf: string; totalValue: number;
+  branches: { branchId: string; branchName: string; costedUnits: number; value: number }[];
+  rows: { branchId: string; branchName: string; skuId: string; skuCode: string; productName: string; variantName: string; availableUnits: number; onHandUnits: number; costedUnits: number; value: number }[];
+}
+export interface LowStockReport { threshold: number; rows: LowStockRow[] }
+export interface ResellerReport {
+  from: string; to: string;
+  rows: { resellerId: string; resellerNumber: string; name: string; status: string; discountPct: number; orders: number; revenue: number; walletBalance: number; lastOrderAt: string | null }[];
 }

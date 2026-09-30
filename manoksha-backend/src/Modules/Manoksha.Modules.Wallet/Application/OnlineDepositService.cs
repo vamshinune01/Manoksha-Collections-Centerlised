@@ -6,6 +6,7 @@ using Manoksha.Modules.Wallet.Domain;
 using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
+using Manoksha.Modules.Wallet.Contracts;
 
 namespace Manoksha.Modules.Wallet.Application;
 
@@ -19,11 +20,6 @@ public sealed record OnlineDepositDto(Guid Id, string Number, decimal Amount, st
 public sealed record OnlineDepositStage(Guid DepositId, Guid AttemptId);
 
 public sealed record OnlineDepositPaymentDto(Guid AttemptId, string Status, string? RedirectUrl, DateTimeOffset ExpiresAt);
-
-public sealed record WalletDepositCredited(Guid ResellerId, Guid DepositId, string Number, decimal Amount) : IIntegrationEvent
-{
-    public static string EventType => "wallet.online_deposit_credited";
-}
 
 /// <summary>
 /// Provider-confirmed online wallet deposits (SPEC §17.1). The reseller chooses the amount; the wallet is credited only by the

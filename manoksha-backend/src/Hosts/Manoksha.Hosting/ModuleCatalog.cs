@@ -12,6 +12,8 @@ using Manoksha.Modules.Resellers;
 using Manoksha.Modules.Wallet;
 using Manoksha.Modules.Purchasing;
 using Manoksha.Modules.Settings;
+using Manoksha.Modules.Reporting;
+using Manoksha.Modules.Notifications;
 
 namespace Manoksha.Hosting;
 
@@ -33,5 +35,7 @@ public static class ModuleCatalog
         new PricingModule(),
         new PaymentsModule(),
         new OrdersModule(),
+        new ReportingModule(),
+        new NotificationsModule(),
     ];
 }

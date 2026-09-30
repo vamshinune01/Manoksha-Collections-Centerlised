@@ -6,6 +6,7 @@ using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using P = Manoksha.Application.Security.Permissions;
+using Manoksha.Modules.Inventory.Contracts;
 
 namespace Manoksha.Modules.Inventory.Application;
 
@@ -16,6 +17,7 @@ namespace Manoksha.Modules.Inventory.Application;
 /// </summary>
 internal sealed class AdjustmentService(
     ManokshaDbContext db,
+    IOutbox outbox,
     IUnitOfWork unitOfWork,
     StockEngine engine,
     InventoryAccess access,
@@ -123,6 +125,7 @@ internal sealed class AdjustmentService(
             var adj = new InventoryAdjustment(await Numbering.NextAsync(db, "adjustment_seq", "ADJ", innerCt), r.BranchId, r.SkuId, kind, from, to, quantity, itemIds,
                 r.ReasonCode.Trim(), r.Notes.Trim(), r.DiscrepancyId, currentUser.UserId, clock.UtcNow);
             db.Add(adj);
+            outbox.Enqueue(new AdjustmentRequested(adj.Id, adj.Number, r.BranchId, r.SkuId, kind.ToString(), quantity));
             await audit.RecordAsync(new AuditRecord("inventory.adjustment.requested", "InventoryAdjustment", adj.Id.ToString(),
                 After: new { adj.Number, kind = kind.ToString(), from = from?.ToString(), to = to?.ToString(), quantity, itemIds, r.ReasonCode },
                 Reason: r.Notes, BranchId: r.BranchId), innerCt);

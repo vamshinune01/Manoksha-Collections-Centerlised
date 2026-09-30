@@ -34,4 +34,10 @@ public static class SettingKeys
 
     /// <summary>Comma-separated store payment methods accepted at the POS: CASH, UPI, CARD, OTHER (Phase 8: UPI).</summary>
     public const string PosPaymentMethods = "pos.payment_methods";
+
+    /// <summary>A SKU is low on stock at a branch when its available quantity is at or below this number (ADR-001 §38: one global threshold).</summary>
+    public const string LowStockThreshold = "inventory.low_stock_threshold";
+
+    /// <summary>Hour of the day (IST, 0–23) when the Owner's daily summary email is sent (ADR-001 §39).</summary>
+    public const string DailySummaryHour = "notifications.daily_summary_hour";
 }

@@ -228,3 +228,34 @@ Engineering decisions for Phase 7 (confirm or correct):
 36. **Device:** Android phones/tablets with a paired **Bluetooth ESC/POS thermal printer** (58 mm or 80 mm). A sale needs an
     internet connection; the server validates prices, limits, PIN and stock and completes the sale in one transaction
     (`MC-POS-…`, idempotent per basket so a retry never sells twice).
+
+## Owner decisions (30 Sep 2026): Phase 9 — notifications, Exception Center, reporting
+37. **Customer / reseller messages: email only.** Order confirmed, shipped (courier + tracking), delivered, cancelled; wallet
+    deposit credited or rejected; new commercial terms; reseller account status. Sent only when the person has an email address
+    (online customers: the checkout email, else their profile email; resellers: their profile email). **SMS stays OTP-only**
+    (no DLT templates needed beyond OTP). Everything is also visible in the customer/reseller account.
+38. **Low stock: one global threshold** — the setting `inventory.low_stock_threshold` (default **2**): a SKU is low at a branch when
+    its available quantity is at or below it. Shown on dashboards/reports; branch staff with `inventory.view` get one in-app
+    notification per branch per day (from 09:00 IST).
+39. **Owner email:** immediately for **CRITICAL** events (payment needs reconciliation, fulfillment exception, sensitive alert:
+    staff sign-in or approval-PIN lockout, wallet integrity mismatch) plus **one daily summary** at `notifications.daily_summary_hour`
+    (default **21:00 IST**). Everything else is in-app (the bell) and in the Exception Center.
+40. **Branch managers never see cost:** dashboards and reports show them sales, stock counts, low stock, transfers, approvals and
+    attendance for their branches only; FIFO cost, gross profit, margin, stock value and reseller reports are Owner-only
+    (`reports.global`).
+
+### Phase 9 engineering notes
+- **Providers are mocked until chosen:** email uses the `Logging` provider (Staging/Development; refused in Production) and every
+  email is stored in `notifications.email_deliveries`, viewable by the Owner (*Notifications → Email log*, with preview). Adding the
+  real provider = one `IEmailSender` adapter + configuration; no business code changes.
+- **Delivery never affects the business transaction (SPEC §29, §33):** business events go to the outbox in the business
+  transaction; handlers only create notification/email/alert rows (idempotent dedupe keys); the email job sends with backoff
+  (1, 5, 15, 60, 180 min; 6 attempts), then the email becomes a **Failed Notification** in the Exception Center with manual retry.
+- **Exception Center = one query over the authoritative records** (reconciliations, fulfillment exceptions, inquiries,
+  discrepancies, deposits, failed emails, alerts) instead of a separate `exception_cases` index table: nothing extra to keep in sync
+  at this scale. Items carry severity and branch; visibility follows the viewer's permissions and branch scope.
+- **Reporting** reads across schemas with read-only SQL (no tables of its own). A sale counts on its confirmation date (IST);
+  cancelled orders are excluded; revenue excludes shipping; gross profit = revenue − FIFO cost of the order's current allocation.
+- Business events moved to each module's `Contracts` namespace so the Notifications module consumes them without touching module
+  internals. New events: inventory discrepancy opened, transfer requested, adjustment requested, security alert (lockouts).
+- Unfulfilled checkouts can now be closed after support follow-up (note required, audited).

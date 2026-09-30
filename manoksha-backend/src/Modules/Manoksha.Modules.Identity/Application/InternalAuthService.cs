@@ -1,5 +1,6 @@
 using Manoksha.Application.Abstractions;
 using Manoksha.Application.Security;
+using Manoksha.Modules.Identity.Contracts;
 using Manoksha.Modules.Identity.Domain;
 using Manoksha.Modules.Identity.Infrastructure;
 using Manoksha.Persistence;
@@ -23,9 +24,20 @@ internal sealed class InternalAuthService(
     ICurrentUser currentUser,
     IRequestContext requestContext,
     IOptions<IdentityOptions> options,
+    IOutbox outbox,
     IClock clock)
 {
     private const string MfaIssuer = "Manoksha Collections";
+
+    private void RecordFailure(User user, DateTimeOffset now)
+    {
+        var p = options.Value.Password;
+        if (user.RecordFailedLogin(now, p.MaxFailedAttempts, TimeSpan.FromMinutes(p.LockoutMinutes)))
+        {
+            outbox.Enqueue(new SecurityAlertRaised("ACCOUNT_LOCKED", user.Id, user.DisplayName,
+                $"Staff sign-in locked for {p.LockoutMinutes} minutes after {p.MaxFailedAttempts} failed attempts (IP {requestContext.IpAddress ?? "unknown"})."));
+        }
+    }
 
     public async Task<AuthResponse> LoginAsync(InternalLoginRequest request, CancellationToken ct)
     {
@@ -44,7 +56,7 @@ internal sealed class InternalAuthService(
         {
             if (user is not null)
             {
-                user.RecordFailedLogin(now, options.Value.Password.MaxFailedAttempts, TimeSpan.FromMinutes(options.Value.Password.LockoutMinutes));
+                RecordFailure(user, now);
             }
             await LogAsync(user?.Id, email, client, "FAILED", "INVALID_CREDENTIALS", ct);
             throw InvalidCredentials();
@@ -93,7 +105,7 @@ internal sealed class InternalAuthService(
         var step = Totp.Verify(protector.Unprotect(user.MfaSecretProtected!), request.Code ?? string.Empty, now);
         if (step is null || !user.TryConsumeMfaTimeStep(step.Value))
         {
-            user.RecordFailedLogin(now, options.Value.Password.MaxFailedAttempts, TimeSpan.FromMinutes(options.Value.Password.LockoutMinutes));
+            RecordFailure(user, now);
             await LogAsync(user.Id, user.EmailNormalized!, client, "FAILED", "INVALID_MFA_CODE", ct);
             throw new BusinessRuleException("MFA_CODE_INVALID", "The authenticator code is incorrect.", 401);
         }

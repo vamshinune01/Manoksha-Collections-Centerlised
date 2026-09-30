@@ -23,16 +23,6 @@ public sealed record PriorityDto(int Version, DateTimeOffset? ChangedAt, Guid? C
 
 public sealed record SetPriorityRequest(IReadOnlyList<Guid> BranchIds, int ExpectedVersion, string Reason);
 
-public sealed record BranchCreated(Guid BranchId, string Code) : IIntegrationEvent
-{
-    public static string EventType => "branches.branch_created";
-}
-
-public sealed record FulfillmentPriorityChanged(int Version) : IIntegrationEvent
-{
-    public static string EventType => "branches.fulfillment_priority_changed";
-}
-
 internal sealed class BranchService(
     ManokshaDbContext db,
     IUnitOfWork unitOfWork,

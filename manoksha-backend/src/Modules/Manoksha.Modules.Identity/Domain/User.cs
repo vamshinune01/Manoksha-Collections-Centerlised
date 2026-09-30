@@ -110,14 +110,17 @@ internal sealed class User : Entity
         RotateSecurityStamp();
     }
 
-    public void RecordFailedLogin(DateTimeOffset now, int maxAttempts, TimeSpan lockoutDuration)
+    /// <returns>True when this failure locked the account.</returns>
+    public bool RecordFailedLogin(DateTimeOffset now, int maxAttempts, TimeSpan lockoutDuration)
     {
         FailedLoginCount++;
         if (FailedLoginCount >= maxAttempts)
         {
             LockoutUntil = now + lockoutDuration;
             FailedLoginCount = 0;
+            return true;
         }
+        return false;
     }
 
     public void RecordSuccessfulLogin(DateTimeOffset now)
@@ -176,14 +179,17 @@ internal sealed class User : Entity
         ApprovalPinLockedUntil = null;
     }
 
-    public void RecordApprovalPinFailure(DateTimeOffset now, int maxFailures, TimeSpan lockFor)
+    /// <returns>True when this failure locked the PIN.</returns>
+    public bool RecordApprovalPinFailure(DateTimeOffset now, int maxFailures, TimeSpan lockFor)
     {
         ApprovalPinFailures++;
         if (ApprovalPinFailures >= maxFailures)
         {
             ApprovalPinLockedUntil = now.Add(lockFor);
             ApprovalPinFailures = 0;
+            return true;
         }
+        return false;
     }
 
     public void RecordApprovalPinSuccess() => ApprovalPinFailures = 0;

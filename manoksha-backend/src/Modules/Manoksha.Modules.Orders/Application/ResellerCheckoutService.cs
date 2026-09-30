@@ -11,18 +11,9 @@ using Manoksha.Modules.Wallet.Contracts;
 using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
+using Manoksha.Modules.Orders.Contracts;
 
 namespace Manoksha.Modules.Orders.Application;
-
-public sealed record OrderConfirmed(Guid OrderId, string OrderNumber, string Channel, Guid FulfillmentBranchId) : IIntegrationEvent
-{
-    public static string EventType => "orders.order_confirmed";
-}
-
-public sealed record FulfillmentInquiryCreated(Guid InquiryId, string Reference) : IIntegrationEvent
-{
-    public static string EventType => "orders.fulfillment_inquiry_created";
-}
 
 /// <summary>
 /// Reseller checkout (SPEC §19.2, §32): in ONE transaction — backend pricing, branch resolution by Owner priority (complete basket

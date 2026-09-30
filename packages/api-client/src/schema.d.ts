@@ -1572,6 +1572,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MyNotifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MyUnreadNotificationCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MarkNotificationRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MarkAllNotificationsRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListEmailDeliveries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/emails/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetEmailDelivery"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/emails/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RetryEmailDelivery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListAlerts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/alerts/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ResolveAlert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/orders": {
         parameters: {
             query?: never;
@@ -1806,6 +1950,22 @@ export interface paths {
         get: operations["ListFulfillmentInquiries"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/fulfillment-inquiries/{id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CloseFulfillmentInquiry"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2324,6 +2484,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetDashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SalesReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProductSalesReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/low-stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LowStockReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/inventory-valuation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["InventoryValuationReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/resellers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/exceptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ExceptionCenter"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reseller/wallet": {
         parameters: {
             query?: never;
@@ -2541,6 +2813,22 @@ export interface paths {
         };
         get?: never;
         put: operations["UpdateResellerCustomer"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reseller/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ResellerDashboard"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -3048,6 +3336,10 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        "0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]": {
+            /** Format: int32 */
+            unread?: number;
+        };
         AcceptInvitationRequest: {
             password?: string | null;
         };
@@ -3094,6 +3386,21 @@ export interface components {
             estimatedValue?: number | null;
             requiresOwner?: boolean | null;
         };
+        AlertDto: {
+            /** Format: uuid */
+            id?: string;
+            kind?: string | null;
+            severity?: string | null;
+            title?: string | null;
+            detail?: string | null;
+            reference?: string | null;
+            status?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            resolvedAt?: string | null;
+            resolutionNote?: string | null;
+        };
         AmendLineRequest: {
             /** Format: uuid */
             lineId?: string | null;
@@ -3123,6 +3430,14 @@ export interface components {
             /** Format: uuid */
             branchId?: string | null;
             reason?: string | null;
+        };
+        AttendanceBlockDto: {
+            /** Format: int32 */
+            clockedInNow?: number;
+            /** Format: int32 */
+            clockedInToday?: number;
+            /** Format: int32 */
+            activeEmployees?: number;
         };
         AttendanceDto: {
             /** Format: uuid */
@@ -3219,6 +3534,26 @@ export interface components {
             /** Format: date-time */
             createdAt?: string;
         };
+        BranchRefDto: {
+            /** Format: uuid */
+            id?: string;
+            name?: string | null;
+        };
+        BranchSalesDto: {
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: int32 */
+            ordersToday?: number;
+            /** Format: double */
+            revenueToday?: number;
+            /** Format: int32 */
+            ordersMonth?: number;
+            /** Format: double */
+            revenueMonth?: number;
+            /** Format: double */
+            grossProfitMonth?: number | null;
+        };
         CancelOrderRequest: {
             reason?: string | null;
             lines?: components["schemas"]["StockIssueLineRequest"][] | null;
@@ -3285,6 +3620,19 @@ export interface components {
             status?: string | null;
             reason?: string | null;
         };
+        ChannelSales: {
+            channel?: string | null;
+            /** Format: int32 */
+            orders?: number;
+            /** Format: int32 */
+            units?: number;
+            /** Format: double */
+            revenue?: number;
+            /** Format: double */
+            shippingFees?: number;
+            /** Format: double */
+            cost?: number | null;
+        };
         CheckoutLineRequest: {
             /** Format: uuid */
             skuId?: string;
@@ -3297,6 +3645,9 @@ export interface components {
             /** Format: double */
             walletBalance?: number | null;
             inquiry?: components["schemas"]["InquiryDto"];
+        };
+        CloseInquiryRequest: {
+            note?: string | null;
         };
         CommercialTermDto: {
             /** Format: uuid */
@@ -3497,6 +3848,37 @@ export interface components {
             fullName?: string | null;
             email?: string | null;
         };
+        DailySalesPointDto: {
+            /** Format: date */
+            date?: string;
+            /** Format: int32 */
+            orders?: number;
+            /** Format: double */
+            revenue?: number;
+            /** Format: double */
+            grossProfit?: number | null;
+        };
+        DashboardDto: {
+            /** Format: date */
+            today?: string;
+            branches?: components["schemas"]["BranchRefDto"][] | null;
+            costVisible?: boolean;
+            salesToday?: components["schemas"]["SalesBlockDto"];
+            salesMonth?: components["schemas"]["SalesBlockDto"];
+            last14Days?: components["schemas"]["DailySalesPointDto"][] | null;
+            branchSales?: components["schemas"]["BranchSalesDto"][] | null;
+            inventory?: components["schemas"]["InventoryBlockDto"];
+            /** Format: int32 */
+            lowStockThreshold?: number;
+            /** Format: int32 */
+            lowStockCount?: number;
+            lowStock?: components["schemas"]["LowStockRow"][] | null;
+            operations?: components["schemas"]["OperationsBlockDto"];
+            attendance?: components["schemas"]["AttendanceBlockDto"];
+            priceChanges?: components["schemas"]["PriceChangeDto"][] | null;
+            resellers?: components["schemas"]["ResellerBlockDto"];
+            openExceptions?: components["schemas"]["ExceptionCount"][] | null;
+        };
         DecisionRequest: {
             note?: string | null;
         };
@@ -3568,6 +3950,35 @@ export interface components {
             /** Format: date-time */
             resolvedAt?: string | null;
         };
+        EmailDeliveryDto: {
+            /** Format: uuid */
+            id?: string;
+            eventType?: string | null;
+            category?: string | null;
+            reference?: string | null;
+            toAddress?: string | null;
+            toName?: string | null;
+            recipientKind?: string | null;
+            subject?: string | null;
+            status?: string | null;
+            /** Format: int32 */
+            attempts?: number;
+            /** Format: date-time */
+            nextAttemptAt?: string;
+            lastError?: string | null;
+            /** Format: date-time */
+            sentAt?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        EmailPreviewDto: {
+            /** Format: uuid */
+            id?: string;
+            subject?: string | null;
+            toAddress?: string | null;
+            htmlBody?: string | null;
+            textBody?: string | null;
+        };
         EmployeeDto: {
             /** Format: uuid */
             id?: string;
@@ -3585,6 +3996,30 @@ export interface components {
             joinedOn?: string;
             /** Format: date-time */
             createdAt?: string;
+        };
+        ExceptionCenterDto: {
+            counts?: components["schemas"]["ExceptionCount"][] | null;
+            items?: components["schemas"]["ExceptionItemDto"][] | null;
+        };
+        ExceptionCount: {
+            type?: string | null;
+            /** Format: int32 */
+            open?: number;
+        };
+        ExceptionItemDto: {
+            type?: string | null;
+            /** Format: uuid */
+            id?: string;
+            reference?: string | null;
+            severity?: string | null;
+            /** Format: uuid */
+            branchId?: string | null;
+            branchName?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+            detail?: string | null;
+            /** Format: uuid */
+            relatedId?: string | null;
         };
         FirstPasswordChangeRequest: {
             challengeToken?: string | null;
@@ -3625,6 +4060,9 @@ export interface components {
             status?: string | null;
             /** Format: date-time */
             createdAt?: string;
+            followUpNote?: string | null;
+            /** Format: date-time */
+            closedAt?: string | null;
         };
         FulfillmentPriorityEntry: {
             /** Format: int32 */
@@ -3694,6 +4132,11 @@ export interface components {
             /** Format: int32 */
             height?: number;
         };
+        InboxDto: {
+            /** Format: int32 */
+            unread?: number;
+            items?: components["schemas"]["NotificationDto"][] | null;
+        };
         InquiryDto: {
             reference?: string | null;
             message?: string | null;
@@ -3704,8 +4147,28 @@ export interface components {
             password?: string | null;
             client?: string | null;
         };
+        InventoryBlockDto: {
+            /** Format: int32 */
+            availableUnits?: number;
+            /** Format: int32 */
+            reservedUnits?: number;
+            /** Format: int32 */
+            inTransitUnits?: number;
+            /** Format: int32 */
+            onHandUnits?: number;
+            /** Format: double */
+            stockValue?: number | null;
+        };
         InventoryReasonRequest: {
             reason?: string | null;
+        };
+        InventoryValuationDto: {
+            /** Format: date-time */
+            asOf?: string;
+            branches?: components["schemas"]["ValuationBranchTotalDto"][] | null;
+            /** Format: double */
+            totalValue?: number;
+            rows?: components["schemas"]["ValuationRowDto"][] | null;
         };
         InvitationDto: {
             displayName?: string | null;
@@ -3784,6 +4247,23 @@ export interface components {
         };
         LogoutRequest: {
             refreshToken?: string | null;
+        };
+        LowStockReportDto: {
+            /** Format: int32 */
+            threshold?: number;
+            rows?: components["schemas"]["LowStockRow"][] | null;
+        };
+        LowStockRow: {
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            /** Format: int32 */
+            available?: number;
         };
         ManualAdjustmentRequest: {
             direction?: string | null;
@@ -3904,6 +4384,17 @@ export interface components {
             /** Format: date-time */
             expiresAt?: string;
         };
+        NotificationDto: {
+            /** Format: uuid */
+            id?: string;
+            category?: string | null;
+            title?: string | null;
+            body?: string | null;
+            link?: string | null;
+            /** Format: date-time */
+            createdAt?: string;
+            read?: boolean;
+        };
         OnlineDepositDto: {
             /** Format: uuid */
             id?: string;
@@ -3938,6 +4429,18 @@ export interface components {
             /** Format: date-time */
             completedAt?: string | null;
             message?: string | null;
+        };
+        OperationsBlockDto: {
+            /** Format: int32 */
+            transfersAwaitingApproval?: number;
+            /** Format: int32 */
+            transfersInProgress?: number;
+            /** Format: int32 */
+            adjustmentsPending?: number;
+            /** Format: int32 */
+            discrepanciesOpen?: number;
+            /** Format: int32 */
+            depositsPending?: number | null;
         };
         OrderChargesDto: {
             /** Format: double */
@@ -4341,6 +4844,17 @@ export interface components {
             /** Format: int32 */
             availableHere?: number;
         };
+        PriceChangeDto: {
+            /** Format: date-time */
+            at?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            /** Format: double */
+            oldPrice?: number | null;
+            /** Format: double */
+            newPrice?: number;
+            reason?: string | null;
+        };
         PricePreviewDto: {
             /** Format: uuid */
             resellerId?: string;
@@ -4423,6 +4937,31 @@ export interface components {
             page?: number;
             /** Format: int32 */
             pageSize?: number;
+        };
+        ProductSalesReportDto: {
+            /** Format: date */
+            from?: string;
+            /** Format: date */
+            to?: string;
+            costVisible?: boolean;
+            rows?: components["schemas"]["ProductSalesRowDto"][] | null;
+        };
+        ProductSalesRowDto: {
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            /** Format: int32 */
+            units?: number;
+            /** Format: double */
+            revenue?: number;
+            /** Format: double */
+            cost?: number | null;
+            /** Format: double */
+            grossProfit?: number | null;
+            /** Format: double */
+            marginPct?: number | null;
         };
         ProductSummaryDto: {
             /** Format: uuid */
@@ -4569,6 +5108,15 @@ export interface components {
             targetBranchId?: string;
             reason?: string | null;
         };
+        ResellerBlockDto: {
+            /** Format: int32 */
+            active?: number;
+            /** Format: int32 */
+            frozen?: number;
+            /** Format: double */
+            walletBalances?: number;
+            topThisMonth?: components["schemas"]["TopResellerDto"][] | null;
+        };
         ResellerCatalogItemDto: {
             /** Format: uuid */
             skuId?: string;
@@ -4611,6 +5159,22 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        ResellerDashboardDto: {
+            /** Format: int32 */
+            ordersThisMonth?: number;
+            /** Format: double */
+            spentThisMonth?: number;
+            /** Format: int32 */
+            openOrders?: number;
+            /** Format: int32 */
+            deliveredThisMonth?: number;
+            /** Format: double */
+            walletBalance?: number;
+            /** Format: double */
+            spentAllTime?: number;
+            /** Format: int32 */
+            ordersAllTime?: number;
         };
         ResellerDetailDto: {
             /** Format: uuid */
@@ -4660,6 +5224,30 @@ export interface components {
             pin?: string | null;
             notes?: string | null;
         };
+        ResellerReportDto: {
+            /** Format: date */
+            from?: string;
+            /** Format: date */
+            to?: string;
+            rows?: components["schemas"]["ResellerReportRowDto"][] | null;
+        };
+        ResellerReportRowDto: {
+            /** Format: uuid */
+            resellerId?: string;
+            resellerNumber?: string | null;
+            name?: string | null;
+            status?: string | null;
+            /** Format: double */
+            discountPct?: number;
+            /** Format: int32 */
+            orders?: number;
+            /** Format: double */
+            revenue?: number;
+            /** Format: double */
+            walletBalance?: number;
+            /** Format: date-time */
+            lastOrderAt?: string | null;
+        };
         ResellerSelfDto: {
             resellerNumber?: string | null;
             contactName?: string | null;
@@ -4702,6 +5290,9 @@ export interface components {
             /** Format: date-time */
             effectiveFrom?: string;
             isCurrent?: boolean;
+        };
+        ResolveAlertRequest: {
+            note?: string | null;
         };
         ResolveDiscrepancyRequest: {
             action?: string | null;
@@ -4760,6 +5351,51 @@ export interface components {
          * @enum {integer}
          */
         RoleScope: 1 | 2;
+        SalesBlockDto: {
+            /** Format: int32 */
+            orders?: number;
+            /** Format: int32 */
+            units?: number;
+            /** Format: double */
+            revenue?: number;
+            /** Format: double */
+            shippingFees?: number;
+            /** Format: double */
+            cost?: number | null;
+            /** Format: double */
+            grossProfit?: number | null;
+            /** Format: double */
+            marginPct?: number | null;
+            byChannel?: components["schemas"]["ChannelSales"][] | null;
+        };
+        SalesReportDto: {
+            /** Format: date */
+            from?: string;
+            /** Format: date */
+            to?: string;
+            groupBy?: string | null;
+            costVisible?: boolean;
+            rows?: components["schemas"]["SalesReportRowDto"][] | null;
+            total?: components["schemas"]["SalesReportRowDto"];
+        };
+        SalesReportRowDto: {
+            key?: string | null;
+            label?: string | null;
+            /** Format: int32 */
+            orders?: number;
+            /** Format: int32 */
+            units?: number;
+            /** Format: double */
+            revenue?: number;
+            /** Format: double */
+            shippingFees?: number;
+            /** Format: double */
+            cost?: number | null;
+            /** Format: double */
+            grossProfit?: number | null;
+            /** Format: double */
+            marginPct?: number | null;
+        };
         SaveCategoryRequest: {
             /** Format: uuid */
             parentId?: string | null;
@@ -5029,6 +5665,16 @@ export interface components {
             /** Format: date-time */
             refreshTokenExpiresAt?: string;
         };
+        TopResellerDto: {
+            /** Format: uuid */
+            resellerId?: string;
+            resellerNumber?: string | null;
+            name?: string | null;
+            /** Format: int32 */
+            orders?: number;
+            /** Format: double */
+            revenue?: number;
+        };
         TransferDto: {
             /** Format: uuid */
             id?: string;
@@ -5173,6 +5819,33 @@ export interface components {
             /** Format: date-time */
             lastLoginAt?: string | null;
             roles?: components["schemas"]["RoleAssignmentDto"][] | null;
+        };
+        ValuationBranchTotalDto: {
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: int32 */
+            costedUnits?: number;
+            /** Format: double */
+            value?: number;
+        };
+        ValuationRowDto: {
+            /** Format: uuid */
+            branchId?: string;
+            branchName?: string | null;
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            /** Format: int32 */
+            availableUnits?: number;
+            /** Format: int32 */
+            onHandUnits?: number;
+            /** Format: int32 */
+            costedUnits?: number;
+            /** Format: double */
+            value?: number;
         };
         VariantDto: {
             /** Format: uuid */
@@ -7913,6 +8586,200 @@ export interface operations {
             };
         };
     };
+    MyNotifications: {
+        parameters: {
+            query?: {
+                unreadOnly?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxDto"];
+                };
+            };
+        };
+    };
+    MyUnreadNotificationCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"];
+                };
+            };
+        };
+    };
+    MarkNotificationRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MarkAllNotificationsRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ListEmailDeliveries: {
+        parameters: {
+            query?: {
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailDeliveryDto"][];
+                };
+            };
+        };
+    };
+    GetEmailDelivery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailPreviewDto"];
+                };
+            };
+        };
+    };
+    RetryEmailDelivery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailDeliveryDto"];
+                };
+            };
+        };
+    };
+    ListAlerts: {
+        parameters: {
+            query?: {
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertDto"][];
+                };
+            };
+        };
+    };
+    ResolveAlert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveAlertRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertDto"];
+                };
+            };
+        };
+    };
     ListOrders: {
         parameters: {
             query?: {
@@ -8274,6 +9141,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FulfillmentInquiryDto"][];
+                };
+            };
+        };
+    };
+    CloseFulfillmentInquiry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseInquiryRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FulfillmentInquiryDto"];
                 };
             };
         };
@@ -9156,6 +10049,166 @@ export interface operations {
             };
         };
     };
+    GetDashboard: {
+        parameters: {
+            query?: {
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardDto"];
+                };
+            };
+        };
+    };
+    SalesReport: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+                branchId?: string;
+                groupBy?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalesReportDto"];
+                };
+            };
+        };
+    };
+    ProductSalesReport: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductSalesReportDto"];
+                };
+            };
+        };
+    };
+    LowStockReport: {
+        parameters: {
+            query?: {
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LowStockReportDto"];
+                };
+            };
+        };
+    };
+    InventoryValuationReport: {
+        parameters: {
+            query?: {
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryValuationDto"];
+                };
+            };
+        };
+    };
+    ResellerReport: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerReportDto"];
+                };
+            };
+        };
+    };
+    ExceptionCenter: {
+        parameters: {
+            query?: {
+                type?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExceptionCenterDto"];
+                };
+            };
+        };
+    };
     ResellerWallet: {
         parameters: {
             query?: {
@@ -9540,6 +10593,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResellerCustomerDto"];
+                };
+            };
+        };
+    };
+    ResellerDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResellerDashboardDto"];
                 };
             };
         };

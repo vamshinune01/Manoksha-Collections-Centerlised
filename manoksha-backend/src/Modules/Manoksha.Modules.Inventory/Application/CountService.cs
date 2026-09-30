@@ -5,6 +5,7 @@ using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using P = Manoksha.Application.Security.Permissions;
+using Manoksha.Modules.Inventory.Contracts;
 
 namespace Manoksha.Modules.Inventory.Application;
 
@@ -14,6 +15,7 @@ namespace Manoksha.Modules.Inventory.Application;
 /// </summary>
 internal sealed class CountService(
     ManokshaDbContext db,
+    IOutbox outbox,
     IUnitOfWork unitOfWork,
     InventoryAccess access,
     IAuditWriter audit,
@@ -116,6 +118,7 @@ internal sealed class CountService(
                         line.SystemQty.Value, line.CountedQty!.Value, [], clock.UtcNow);
                     db.Add(d);
                     discrepancies.Add(d.Number);
+                    outbox.Enqueue(new InventoryDiscrepancyOpened(d.Id, d.Number, d.SourceType, d.SourceNumber, d.BranchId, d.SkuId, d.ExpectedQty, d.ActualQty));
                 }
             }
             await audit.RecordAsync(new AuditRecord("inventory.count.submitted", "StockCount", id.ToString(),
