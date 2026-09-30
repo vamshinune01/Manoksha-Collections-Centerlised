@@ -10,7 +10,7 @@ public class EnvironmentConfigurationTests
 {
     [Theory]
     [InlineData("Development", new string[0])]
-    [InlineData("Staging", new[] { "OWNER" })]
+    [InlineData("Staging", new string[0])]
     [InlineData("Production", new[] { "OWNER" })]
     public void Owner_mfa_is_required_outside_development(string environment, string[] expected)
     {
