@@ -13,12 +13,15 @@ Container images: `manoksha-backend/Dockerfile` (API by default, `--build-arg AP
 | Piece | Setup |
 |---|---|
 | Database | Supabase PostgreSQL (free tier), **Session pooler** host, port 5432 (not the transaction pooler; the direct host is IPv6-only). Connection string in Secret Manager `manoksha-db-connection`. Migrations run on API start. |
-| API | Cloud Run `manoksha-api` (image `asia-south1-docker.pkg.dev/manokshacenterlised/manoksha/api`), `ASPNETCORE_ENVIRONMENT=Staging`, `Jobs__InProcess=true` (no separate Worker), min 0 / max 1 instance, 1 GiB, 300 s timeout (video optimization). |
+| API | Cloud Run `manoksha-api` (image `asia-south1-docker.pkg.dev/manokshacenterlised/manoksha/api`), `ASPNETCORE_ENVIRONMENT=Staging`, `Jobs__InProcess=true` (no separate Worker), `Notifications__AdminWebUrl` / `Notifications__CustomerWebUrl` (links in emails), min 0 / max 1 instance, 1 GiB, 300 s timeout (video optimization). |
 | Web | Cloud Run `manoksha-admin-web`, `manoksha-customer-web` (min 0 / max 1), `MANOKSHA_API_URL` = API URL. |
 | Media & files | GCS `manokshacenterlised-private` (originals + deposit proofs, public access prevented, CORS PUT from the admin site) and `manokshacenterlised-media` (public read, optimized renditions only). |
 | Secrets | `manoksha-db-connection`, `manoksha-auth-signing-key`, `manoksha-auth-data-key`, `manoksha-auth-otp-pepper`, `manoksha-payments-sim-secret` — readable only by `manoksha-run`. |
 | Identity | Service account `manoksha-run`: object admin on the two buckets, secret accessor on the secrets, token creator on itself (signed upload URLs via IAM, no key files). |
 
-Staging still uses the development stand-ins (fake SMS — OTP codes in Cloud Logging, logging email, UPI simulator).
+Staging still uses the development stand-ins (fake SMS — OTP codes in Cloud Logging, logging email, UPI simulator). Emails are
+recorded in the database and shown to the Owner under *Notifications → Email log*. With min 0 instances the in-process jobs
+(email sending, daily low-stock alert and Owner summary) only run while the API is awake; production runs the Worker with
+min 1 instance.
 Images are built locally with `docker buildx build --platform linux/amd64` and pushed to Artifact Registry (no Cloud Build).
 Moving to Cloud SQL later = new connection string (Cloud SQL socket or TCP) + `--add-cloudsql-instances`; no code change.

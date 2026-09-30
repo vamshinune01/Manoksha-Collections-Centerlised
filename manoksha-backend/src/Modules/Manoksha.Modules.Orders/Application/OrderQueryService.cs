@@ -184,7 +184,7 @@ internal sealed class OrderQueryService(
         return lines.Any(l => l.CostAmount is not null) ? lines.Sum(l => l.CostAmount ?? 0m) : null;
     }
 
-    private static string CourierLabel(Shipment s) => s.Courier switch
+    internal static string CourierLabel(Shipment s) => s.Courier switch
     {
         "XPRESSBEES" => "Xpressbees",
         "DELHIVERY" => "Delhivery",

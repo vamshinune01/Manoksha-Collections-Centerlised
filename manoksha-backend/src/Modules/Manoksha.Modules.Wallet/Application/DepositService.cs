@@ -7,18 +7,9 @@ using Manoksha.SharedKernel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Manoksha.Modules.Wallet.Contracts;
 
 namespace Manoksha.Modules.Wallet.Application;
-
-public sealed record DepositSubmittedEvent(Guid DepositId, Guid ResellerId, decimal Amount) : IIntegrationEvent
-{
-    public static string EventType => "wallet.deposit_submitted";
-}
-
-public sealed record DepositDecidedEvent(Guid DepositId, Guid ResellerId, string Status) : IIntegrationEvent
-{
-    public static string EventType => "wallet.deposit_decided";
-}
 
 /// <summary>
 /// Direct/PhonePe deposits (SPEC §17.2): the reseller submits amount + reference + screenshot (ADR-001 §20); the Owner approves
@@ -81,7 +72,7 @@ internal sealed class DepositService(
             db.Add(deposit);
             await audit.RecordAsync(new AuditRecord("wallet.deposit.submitted", "DepositRequest", deposit.Id.ToString(),
                 After: new { deposit.Number, amount, method = normalizedMethod, reference = normalizedReference }), innerCt);
-            outbox.Enqueue(new DepositSubmittedEvent(deposit.Id, reseller.ResellerId, amount));
+            outbox.Enqueue(new DepositSubmittedEvent(deposit.Id, reseller.ResellerId, amount, deposit.Number));
             try
             {
                 await db.SaveChangesAsync(innerCt);
@@ -130,7 +121,7 @@ internal sealed class DepositService(
             await audit.RecordAsync(new AuditRecord("wallet.deposit.approved", "DepositRequest", id.ToString(),
                 new { status = "Pending", balance = entry.BalanceBefore },
                 new { status = "Credited", ledgerEntryId = entry.Id, amount = deposit.Amount, balance = entry.BalanceAfter }, r.Note), innerCt);
-            outbox.Enqueue(new DepositDecidedEvent(id, deposit.ResellerId, deposit.Status.ToString()));
+            outbox.Enqueue(new DepositDecidedEvent(id, deposit.ResellerId, deposit.Status.ToString(), deposit.Number, deposit.Amount, deposit.ReviewNote));
             return (await ToDtosAsync([deposit], innerCt))[0];
         }, ct);
 
@@ -146,7 +137,7 @@ internal sealed class DepositService(
             deposit.Reject(currentUser.UserId, r.Reason.Trim(), clock.UtcNow);
             await audit.RecordAsync(new AuditRecord("wallet.deposit.rejected", "DepositRequest", id.ToString(),
                 new { status = "Pending" }, new { status = "Rejected", deposit.Amount }, r.Reason), innerCt);
-            outbox.Enqueue(new DepositDecidedEvent(id, deposit.ResellerId, deposit.Status.ToString()));
+            outbox.Enqueue(new DepositDecidedEvent(id, deposit.ResellerId, deposit.Status.ToString(), deposit.Number, deposit.Amount, deposit.ReviewNote));
             return (await ToDtosAsync([deposit], innerCt))[0];
         }, ct);
     }

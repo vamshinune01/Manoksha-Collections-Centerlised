@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\src\Modules\Manoksha.Modules.Settings\Manoksha.Modules.Settings.csproj" />
     <ProjectReference Include="..\..\src\Modules\Manoksha.Modules.Catalog\Manoksha.Modules.Catalog.csproj" />
     <ProjectReference Include="..\..\src\Modules\Manoksha.Modules.Pricing\Manoksha.Modules.Pricing.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Manoksha.Modules.Notifications\Manoksha.Modules.Notifications.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

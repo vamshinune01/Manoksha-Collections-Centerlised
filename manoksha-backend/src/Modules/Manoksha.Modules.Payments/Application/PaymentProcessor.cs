@@ -7,18 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Manoksha.Modules.Payments.Application;
 
-public sealed record PaymentConfirmed(Guid AttemptId, string Purpose, Guid ReferenceId, string ReferenceNumber, decimal Amount, string Status) : IIntegrationEvent
-{
-    public static string EventType => "payments.payment_confirmed";
-}
-
-/// <summary>CRITICAL: money received that could not be applied (SPEC §14.2, §36). The Owner is alerted from the outbox.</summary>
-public sealed record PaymentReconciliationRequired(Guid CaseId, string CaseNumber, string ReasonCode, decimal ExpectedAmount, decimal? PaidAmount, string ReferenceNumber)
-    : IIntegrationEvent
-{
-    public static string EventType => "payments.reconciliation_required";
-}
-
 /// <summary>
 /// Applies the provider's authoritative answer to one attempt, in one transaction with the attempt row locked (design §11, §13).
 /// Idempotent: settled attempts ignore further events, so duplicate or concurrent callbacks never double-confirm, double-credit

@@ -24,5 +24,7 @@
     <ProjectReference Include="..\..\Modules\Manoksha.Modules.Pricing\Manoksha.Modules.Pricing.csproj" />
     <ProjectReference Include="..\..\Modules\Manoksha.Modules.Orders\Manoksha.Modules.Orders.csproj" />
     <ProjectReference Include="..\..\Modules\Manoksha.Modules.Payments\Manoksha.Modules.Payments.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Reporting\Manoksha.Modules.Reporting.csproj" />
+    <ProjectReference Include="..\..\Modules\Manoksha.Modules.Notifications\Manoksha.Modules.Notifications.csproj" />
   </ItemGroup>
 </Project>

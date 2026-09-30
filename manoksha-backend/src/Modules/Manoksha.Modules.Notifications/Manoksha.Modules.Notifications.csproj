@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Manoksha.Modules.Notifications</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Manoksha.Persistence\Manoksha.Persistence.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Identity\Manoksha.Modules.Identity.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Branches\Manoksha.Modules.Branches.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Catalog\Manoksha.Modules.Catalog.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Inventory\Manoksha.Modules.Inventory.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Orders\Manoksha.Modules.Orders.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Payments\Manoksha.Modules.Payments.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Resellers\Manoksha.Modules.Resellers.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Wallet\Manoksha.Modules.Wallet.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Reporting\Manoksha.Modules.Reporting.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Manoksha.UnitTests" />
+    <InternalsVisibleTo Include="Manoksha.IntegrationTests" />
+  </ItemGroup>
+</Project>

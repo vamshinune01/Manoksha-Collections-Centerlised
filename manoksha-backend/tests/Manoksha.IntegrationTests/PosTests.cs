@@ -225,11 +225,13 @@ public class PosTests(ManokshaApiFactory factory)
     [Fact]
     public async Task Sellers_sell_only_at_their_branch_and_only_from_the_pos_app()
     {
-        var sku = await SkuAsync(300m);
+        var (sku, productId) = await factory.CreatePricedSkuAsync(300m);
+        await factory.StockUpAsync(Knr, sku, 5, 150m);
+        var name = (await (await factory.OwnerClientAsync()).GetAsync($"/api/v1/admin/catalog/products/{productId}").OkJsonAsync())["name"]!.GetValue<string>();
         var (seller, _, _) = await StaffAsync(SystemRoles.SalesEmployee, Knr);
         (await SellAsync(seller, Sale(sku, 1, null, null, [Upi(300m)], branch: Hyd))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
         var admin = await factory.UserClientAsync(SystemRoles.SalesEmployee, Knr);
         (await SellAsync(admin, Sale(sku, 1, null, null, [Upi(300m)]))).StatusCode.Should().Be(HttpStatusCode.Forbidden, "POS routes need a POS sign-in");
-        (await seller.GetAsync($"/api/v1/pos/items?branchId={Knr}&q=Priced").OkJsonAsync()).AsArray().Should().Contain(i => i!["skuId"]!.GetValue<Guid>() == sku);
+        (await seller.GetAsync($"/api/v1/pos/items?branchId={Knr}&q={Uri.EscapeDataString(name)}").OkJsonAsync()).AsArray().Should().Contain(i => i!["skuId"]!.GetValue<Guid>() == sku);
     }
 }

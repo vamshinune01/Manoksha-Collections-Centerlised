@@ -11,18 +11,9 @@ using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using P = Manoksha.Application.Security.Permissions;
+using Manoksha.Modules.Orders.Contracts;
 
 namespace Manoksha.Modules.Orders.Application;
-
-public sealed record OrderStatusChanged(Guid OrderId, string OrderNumber, string Channel, string Status, Guid FulfillmentBranchId) : IIntegrationEvent
-{
-    public static string EventType => "orders.order_status_changed";
-}
-
-public sealed record FulfillmentExceptionRaised(Guid ExceptionId, Guid OrderId, string OrderNumber, Guid BranchId, string Reason) : IIntegrationEvent
-{
-    public static string EventType => "orders.fulfillment_exception_raised";
-}
 
 internal sealed record AllocationLine(Guid SkuId, int Quantity, Guid[] ItemIds, decimal? Cost);
 

@@ -52,6 +52,14 @@ internal static class SettingDefinitions
             SettingValueKind.String, "\"UPI\"",
             v => v.ValueKind == JsonValueKind.String && v.GetString() is { } m && m.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) is { Length: > 0 } parts
                  && parts.All(p => p is "CASH" or "UPI" or "CARD" or "OTHER") ? null : "List one or more of CASH, UPI, CARD, OTHER, separated by commas."),
+        new(SettingKeys.LowStockThreshold,
+            "Low stock: a SKU is flagged at a branch when its available quantity is at or below this number (dashboard, daily alert).",
+            SettingValueKind.Integer, "2",
+            v => v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var n) && n is >= 0 and <= 10000 ? null : "Must be a whole number between 0 and 10000."),
+        new(SettingKeys.DailySummaryHour,
+            "Hour of the day (IST, 0–23) when the Owner's daily summary email is sent.",
+            SettingValueKind.Integer, "21",
+            v => v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var h) && h is >= 0 and <= 23 ? null : "Must be a whole hour between 0 and 23."),
     ];
 
     private static string? Percent(JsonElement v) =>

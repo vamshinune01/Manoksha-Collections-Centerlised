@@ -3,6 +3,7 @@ using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Manoksha.Modules.Wallet.Contracts;
 
 namespace Manoksha.Modules.Wallet.Application;
 
@@ -11,11 +12,6 @@ public sealed record WalletIntegrityIssue(Guid WalletId, Guid ResellerId, string
 public sealed record WalletIntegrityReport(DateTimeOffset CheckedAt, int WalletsChecked, IReadOnlyList<WalletIntegrityIssue> Issues)
 {
     public bool Healthy => Issues.Count == 0;
-}
-
-public sealed record WalletIntegrityMismatch(int IssueCount) : IIntegrationEvent
-{
-    public static string EventType => "wallet.integrity_mismatch";
 }
 
 /// <summary>

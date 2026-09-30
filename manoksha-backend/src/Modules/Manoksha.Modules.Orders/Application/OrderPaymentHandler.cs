@@ -5,6 +5,7 @@ using Manoksha.Modules.Payments.Contracts;
 using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
+using Manoksha.Modules.Orders.Contracts;
 
 namespace Manoksha.Modules.Orders.Application;
 

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Card } from "@/components/ui";
 import { getResellerMe, resellerFetch } from "@/lib/backend";
-import { type Order, inr } from "@/lib/types";
+import { type Order, type ResellerDashboard, inr } from "@/lib/types";
 
 export default async function Dashboard() {
   const me = (await getResellerMe())!;
-  const orders = await resellerFetch<Order[]>("orders");
+  const [orders, stats] = await Promise.all([resellerFetch<Order[]>("orders"), resellerFetch<ResellerDashboard>("dashboard")]);
   const recent = orders.ok ? orders.data.slice(0, 5) : [];
   return (
     <div className="space-y-6">
@@ -18,6 +18,13 @@ export default async function Dashboard() {
         <Card title="Your reseller discount"><p className="text-2xl font-semibold">{me.resellerDiscountPct}%</p><p className="text-xs text-slate-500">Terms version {me.termsVersion}. Some products carry their own reseller discount instead.</p></Card>
         <Card title="Shipping"><p className="text-2xl font-semibold">₹100</p><p className="text-xs text-slate-500">per order, included in the wallet debit.</p></Card>
       </div>
+      {stats.ok && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card title="This month"><p className="text-2xl font-semibold">{inr(stats.data.spentThisMonth)}</p><p className="text-xs text-slate-500">{stats.data.ordersThisMonth} order{stats.data.ordersThisMonth === 1 ? "" : "s"} · {stats.data.deliveredThisMonth} delivered</p></Card>
+          <Card title="On the way"><p className="text-2xl font-semibold">{stats.data.openOrders}</p><p className="text-xs text-slate-500">orders confirmed but not yet delivered</p></Card>
+          <Card title="All time"><p className="text-2xl font-semibold">{inr(stats.data.spentAllTime)}</p><p className="text-xs text-slate-500">{stats.data.ordersAllTime} orders with Manoksha</p></Card>
+        </div>
+      )}
       <Card title="Recent orders" actions={<Link className="text-sm text-brand-700" href="/reseller/orders">All orders</Link>}>
         {recent.length === 0 ? <p className="text-sm text-slate-500">No orders yet. <Link className="text-brand-700" href="/reseller/catalog">Browse the catalog</Link>.</p> : (
           <ul className="divide-y divide-slate-100 text-sm">

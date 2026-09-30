@@ -7,6 +7,7 @@ using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PermissionCatalog = Manoksha.Application.Security.Permissions;
+using Manoksha.Modules.Identity.Contracts;
 
 namespace Manoksha.Modules.Identity.Application;
 

@@ -278,3 +278,14 @@ export function orderStatusTone(status: string): "green" | "amber" | "red" | "sl
 
 export const inr = (v: number | null | undefined) =>
   v == null ? "—" : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 2 }).format(v);
+
+/** The signed-in reseller's own figures (GET /reseller/dashboard). */
+export interface ResellerDashboard {
+  ordersThisMonth: number;
+  spentThisMonth: number;
+  openOrders: number;
+  deliveredThisMonth: number;
+  walletBalance: number;
+  spentAllTime: number;
+  ordersAllTime: number;
+}

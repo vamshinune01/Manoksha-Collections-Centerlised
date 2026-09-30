@@ -82,3 +82,31 @@ internal sealed class PaymentPollerJob(IServiceScopeFactory scopeFactory, IConfi
     protected override Task<int> RunAsync(IServiceProvider scopedServices, CancellationToken ct) =>
         Manoksha.Modules.Payments.PaymentJobs.PollAsync(scopedServices, ct);
 }
+
+/// <summary>Sends queued emails with retries (design §16: continuous).</summary>
+internal sealed class EmailSenderJob(IServiceScopeFactory scopeFactory, IConfiguration configuration, ILogger<EmailSenderJob> logger)
+    : PeriodicJob(scopeFactory, logger)
+{
+    protected override TimeSpan Interval => TimeSpan.FromSeconds(configuration.GetValue("Jobs:EmailSenderSeconds", 15.0));
+
+    protected override long LockKey => AdvisoryLocks.EmailSender;
+
+    protected override string Name => "Email sender";
+
+    protected override Task<int> RunAsync(IServiceProvider scopedServices, CancellationToken ct) =>
+        Manoksha.Modules.Notifications.NotificationJobs.SendDueEmailsAsync(scopedServices, ct);
+}
+
+/// <summary>Daily low-stock alerts and the Owner's summary email; checks every few minutes, sends once per day (dedupe keys).</summary>
+internal sealed class NotificationDailyJob(IServiceScopeFactory scopeFactory, IConfiguration configuration, ILogger<NotificationDailyJob> logger)
+    : PeriodicJob(scopeFactory, logger)
+{
+    protected override TimeSpan Interval => TimeSpan.FromMinutes(configuration.GetValue("Jobs:NotificationDailyMinutes", 10.0));
+
+    protected override long LockKey => AdvisoryLocks.NotificationDaily;
+
+    protected override string Name => "Daily notifications";
+
+    protected override Task<int> RunAsync(IServiceProvider scopedServices, CancellationToken ct) =>
+        Manoksha.Modules.Notifications.NotificationJobs.RunDailyAsync(scopedServices, ct);
+}

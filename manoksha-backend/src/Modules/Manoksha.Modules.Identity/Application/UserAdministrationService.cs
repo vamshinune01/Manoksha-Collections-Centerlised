@@ -7,18 +7,9 @@ using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Manoksha.Modules.Identity.Contracts;
 
 namespace Manoksha.Modules.Identity.Application;
-
-public sealed record InternalUserCreated(Guid UserId, string Email) : IIntegrationEvent
-{
-    public static string EventType => "identity.internal_user_created";
-}
-
-public sealed record UserAccessChanged(Guid UserId, string Change) : IIntegrationEvent
-{
-    public static string EventType => "identity.user_access_changed";
-}
 
 /// <summary>
 /// Internal user administration. Role assignment and every role/permission change is Owner-only (SPEC §26)

@@ -10,21 +10,6 @@ using Npgsql;
 
 namespace Manoksha.Modules.Resellers.Application;
 
-public sealed record ResellerCreated(Guid ResellerId, string ResellerNumber) : IIntegrationEvent
-{
-    public static string EventType => "resellers.reseller_created";
-}
-
-public sealed record CommercialTermsChanged(Guid ResellerId, int Version) : IIntegrationEvent
-{
-    public static string EventType => "resellers.commercial_terms_changed";
-}
-
-public sealed record ResellerStatusChanged(Guid ResellerId, string Status) : IIntegrationEvent
-{
-    public static string EventType => "resellers.status_changed";
-}
-
 /// <summary>
 /// Owner-only reseller onboarding and lifecycle (SPEC §6, §27.6; ADR-001 §17–19). Creation, activation, status and
 /// commercial-term changes are all audited.
@@ -146,7 +131,7 @@ internal sealed class ResellerService(
             }
             await audit.RecordAsync(new AuditRecord("resellers.reseller.status_changed", "Reseller", id.ToString(),
                 new { status = from.ToString() }, new { status = to.ToString() }, req.Reason), innerCt);
-            outbox.Enqueue(new ResellerStatusChanged(id, to.ToString()));
+            outbox.Enqueue(new ResellerStatusChanged(id, to.ToString(), req.Reason));
             await db.SaveChangesAsync(innerCt);
             return await ToDetailAsync(r, innerCt);
         }, ct);
@@ -172,7 +157,7 @@ internal sealed class ResellerService(
             await audit.RecordAsync(new AuditRecord("resellers.commercial_terms.changed", "Reseller", id.ToString(),
                 new { version = current.Version, discountPct = current.DiscountPct, current.Notes },
                 new { version = term.Version, discountPct = term.DiscountPct, term.Notes }, req.Reason), innerCt);
-            outbox.Enqueue(new CommercialTermsChanged(id, term.Version));
+            outbox.Enqueue(new CommercialTermsChanged(id, term.Version, term.DiscountPct, term.EffectiveFrom, term.Notes));
             await db.SaveChangesAsync(innerCt);
             return await ToDetailAsync(r, innerCt);
         }, ct);
@@ -206,6 +191,11 @@ internal sealed class ResellerService(
 
     public async Task<ResellerInfo?> FindAsync(Guid resellerId, CancellationToken cancellationToken = default) =>
         await db.Set<Reseller>().AsNoTracking().Where(r => r.Id == resellerId).Select(r => ToInfo(r)).SingleOrDefaultAsync(cancellationToken);
+
+    public async Task<ResellerContact?> GetContactAsync(Guid resellerId, CancellationToken cancellationToken = default) =>
+        await db.Set<Reseller>().AsNoTracking().Where(r => r.Id == resellerId)
+            .Select(r => new ResellerContact(r.Id, r.ResellerNumber, r.Profile.ContactName, r.Profile.BusinessName, r.Profile.Email, r.Status.ToString()))
+            .SingleOrDefaultAsync(cancellationToken);
 
     public async Task<ResellerTerms> GetCurrentTermsAsync(Guid resellerId, CancellationToken cancellationToken = default)
     {

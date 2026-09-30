@@ -1,5 +1,6 @@
 using Manoksha.Application.Modules;
 using Manoksha.Modules.Orders.Application;
+using Manoksha.Modules.Orders.Contracts;
 using Manoksha.Modules.Orders.Endpoints;
 using Manoksha.Modules.Orders.Persistence;
 using Manoksha.Modules.Payments.Contracts;
@@ -21,6 +22,7 @@ public sealed class OrdersModule : IModule
         services.AddScoped<WhatsApp>();
         services.AddScoped<ResellerCustomerService>();
         services.AddScoped<OrderQueryService>();
+        services.AddScoped<IOrderNotificationView, OrderNotificationView>();
         services.AddScoped<ResellerCheckoutService>();
         services.AddScoped<FulfillmentRouter>();
         services.AddScoped<InquiryService>();

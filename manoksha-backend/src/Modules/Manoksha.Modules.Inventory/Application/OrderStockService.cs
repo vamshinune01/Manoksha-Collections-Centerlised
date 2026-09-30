@@ -13,7 +13,7 @@ namespace Manoksha.Modules.Inventory.Application;
 /// restored for units that are physically back (AVAILABLE or DAMAGED) with their original cost and layer date, so company cost
 /// is unchanged; missing units stay consumed (a loss) and open an ORDER discrepancy for investigation (SPEC §9, §22).
 /// </summary>
-internal sealed class OrderStockService(ManokshaDbContext db, StockEngine engine, ICatalogLookup catalog, IAuditWriter audit, IClock clock) : IOrderStock
+internal sealed class OrderStockService(ManokshaDbContext db, IOutbox outbox, StockEngine engine, ICatalogLookup catalog, IAuditWriter audit, IClock clock) : IOrderStock
 {
     public const string ReturnLayerSource = "ORDER_RETURN";
 
@@ -105,6 +105,7 @@ internal sealed class OrderStockService(ManokshaDbContext db, StockEngine engine
                 missing, 0, missingItems, clock.UtcNow);
             db.Add(d);
             discrepancies.Add(d.Number);
+            outbox.Enqueue(new InventoryDiscrepancyOpened(d.Id, d.Number, d.SourceType, d.SourceNumber, d.BranchId, d.SkuId, d.ExpectedQty, d.ActualQty));
             await audit.RecordAsync(new AuditRecord("inventory.discrepancy.opened", "Discrepancy", d.Id.ToString(),
                 After: new { d.Number, source = "ORDER", referenceNumber, skuId, missing }, BranchId: branchId), ct);
         }

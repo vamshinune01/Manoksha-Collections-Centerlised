@@ -11,6 +11,7 @@ using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using P = Manoksha.Application.Security.Permissions;
+using Manoksha.Modules.Orders.Contracts;
 
 namespace Manoksha.Modules.Orders.Application;
 

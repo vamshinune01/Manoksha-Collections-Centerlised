@@ -1,3 +1,4 @@
+using Manoksha.Application.Abstractions;
 using Manoksha.Application.Modules;
 using Manoksha.Modules.Branches.Application;
 using Manoksha.Modules.Identity;
@@ -33,6 +34,8 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
     public const string SimulatorWebhookSecret = "integration-test-simulator-secret";
 
     public TestClock Clock { get; } = new();
+
+    public RecordingEmailSender Emails { get; } = new();
 
     public Guid OwnerUserId { get; private set; }
 
@@ -102,6 +105,8 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
         {
             services.RemoveAll<IClock>();
             services.AddSingleton<IClock>(Clock);
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<IEmailSender>(Emails);
         });
     }
 

@@ -376,9 +376,28 @@ internal sealed class FulfillmentInquiry : Entity
 
     public string FailureReason { get; private set; } = default!;
 
+    /// <summary>Open, or Closed once support has followed up with the customer (SPEC §28).</summary>
     public string Status { get; private set; } = default!;
 
     public DateTimeOffset CreatedAt { get; private set; }
+
+    public string? FollowUpNote { get; private set; }
+
+    public Guid? ClosedBy { get; private set; }
+
+    public DateTimeOffset? ClosedAt { get; private set; }
+
+    public void Close(Guid userId, string note, DateTimeOffset now)
+    {
+        if (Status != "Open")
+        {
+            throw new BusinessRuleException("INQUIRY_CLOSED", "This inquiry is already closed.", 409);
+        }
+        Status = "Closed";
+        FollowUpNote = note;
+        ClosedBy = userId;
+        ClosedAt = now;
+    }
 }
 
 internal enum ReservationStatus

@@ -6,6 +6,7 @@ using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using P = Manoksha.Application.Security.Permissions;
+using Manoksha.Modules.Inventory.Contracts;
 
 namespace Manoksha.Modules.Inventory.Application;
 
@@ -16,6 +17,7 @@ namespace Manoksha.Modules.Inventory.Application;
 /// </summary>
 internal sealed class TransferService(
     ManokshaDbContext db,
+    IOutbox outbox,
     IUnitOfWork unitOfWork,
     StockEngine engine,
     InventoryAccess access,
@@ -81,6 +83,7 @@ internal sealed class TransferService(
             {
                 db.Add(new TransferLine(transfer.Id, l.SkuId, InventoryAccess.IsSerialized(skus[l.SkuId]), l.Quantity));
             }
+            outbox.Enqueue(new TransferRequested(transfer.Id, transfer.Number, r.SourceBranchId, r.DestinationBranchId));
             await audit.RecordAsync(new AuditRecord("inventory.transfer.requested", "Transfer", transfer.Id.ToString(),
                 After: new { transfer.Number, from = r.SourceBranchId, to = r.DestinationBranchId, lines }, Reason: r.Reason, BranchId: r.SourceBranchId), innerCt);
             await db.SaveChangesAsync(innerCt);
@@ -264,6 +267,7 @@ internal sealed class TransferService(
                         t.DestinationBranchId, line.SkuId, line.DispatchedQty, line.ReceivedQty, missingItems, clock.UtcNow);
                     db.Add(d);
                     discrepancies.Add(d);
+                    outbox.Enqueue(new InventoryDiscrepancyOpened(d.Id, d.Number, d.SourceType, d.SourceNumber, d.BranchId, d.SkuId, d.ExpectedQty, d.ActualQty));
                 }
             }
 

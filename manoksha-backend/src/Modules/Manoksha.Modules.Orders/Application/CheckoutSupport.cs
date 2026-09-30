@@ -7,6 +7,7 @@ using Manoksha.Modules.Orders.Domain;
 using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
+using Manoksha.Modules.Orders.Contracts;
 
 namespace Manoksha.Modules.Orders.Application;
 
@@ -65,9 +66,27 @@ internal sealed class InquiryService(ManokshaDbContext db, WhatsApp whatsApp, IA
         db.Add(inquiry);
         await audit.RecordAsync(new AuditRecord("orders.fulfillment_inquiry.created", "FulfillmentInquiry", inquiry.Id.ToString(),
             After: new { reference, channel = channel.ToString(), resellerId, lines, evaluations }), ct);
-        outbox.Enqueue(new FulfillmentInquiryCreated(inquiry.Id, reference));
+        outbox.Enqueue(new FulfillmentInquiryCreated(inquiry.Id, reference, channel.ToString(), contact?.Name));
         await db.SaveChangesAsync(ct);
         return await whatsApp.InquiryAsync(reference, ct);
+    }
+
+    /// <summary>Support has followed up with the customer (Exception Center "Unfulfilled Checkout").</summary>
+    public async Task<FulfillmentInquiryDto> CloseAsync(Guid id, CloseInquiryRequest request, CancellationToken ct)
+    {
+        var note = request.Note?.Trim();
+        if (string.IsNullOrEmpty(note) || note.Length > 1000)
+        {
+            throw new BusinessRuleException("FOLLOW_UP_NOTE_REQUIRED", "Describe the follow-up with the customer (up to 1000 characters).", 400);
+        }
+        var i = await db.Set<FulfillmentInquiry>().SingleOrDefaultAsync(x => x.Id == id, ct)
+                ?? throw new NotFoundException("INQUIRY_NOT_FOUND", "Inquiry not found.");
+        i.Close(currentUser.UserId, note, clock.UtcNow);
+        await audit.RecordAsync(new AuditRecord("orders.fulfillment_inquiry.closed", "FulfillmentInquiry", id.ToString(),
+            new { status = "Open" }, new { status = "Closed" }, note), ct);
+        await db.SaveChangesAsync(ct);
+        return new FulfillmentInquiryDto(i.Id, i.Reference, i.Channel.ToString(), i.ResellerId, i.ContactName, i.ContactMobile, i.CartJson, i.EvaluationsJson,
+            i.FailureReason, i.Status, i.CreatedAt, i.FollowUpNote, i.ClosedAt);
     }
 }
 

@@ -41,6 +41,7 @@ internal sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<M
             new ResellersModelConfiguration(),
             new PricingModelConfiguration(),
             new PaymentsModelConfiguration(),
+            new Manoksha.Modules.Notifications.Persistence.NotificationsModelConfiguration(),
             new OrdersModelConfiguration(),
         ]);
     }
