@@ -44,6 +44,17 @@ internal static class OrderEndpoints
         customer.MapGet("/delivery-defaults", async (OrderQueryService s, CancellationToken ct) => Results.Ok(await s.LastDeliveryAsync(ct)))
             .Produces<DeliveryDto>().WithName("CustomerDeliveryDefaults");
 
+        // POS store sales (Phase 8). Branch permissions are checked in the service for the requested branch.
+        var pos = endpoints.MapGroup("/api/v1/pos").WithTags("POS").RequireAudience(Audiences.Pos);
+        pos.MapGet("/context", (PosSaleService s, CancellationToken ct) => s.ContextAsync(ct)).WithName("PosContext");
+        pos.MapGet("/items", (Guid branchId, string? q, PosSaleService s, CancellationToken ct) => s.SearchAsync(branchId, q, ct)).WithName("PosSearchItems");
+        pos.MapPost("/sales/quote", (PosSaleRequest r, PosSaleService s, CancellationToken ct) => s.QuoteAsync(r, ct)).WithName("PosQuote");
+        pos.MapGet("/approvers", (Guid branchId, string level, PosSaleService s, CancellationToken ct) => s.ApproversAsync(branchId, level, ct)).WithName("PosApprovers");
+        pos.MapPost("/sales", (PosSaleRequest r, HttpRequest http, PosSaleService s, CancellationToken ct) => s.SellAsync(r, http.GetRequiredIdempotencyKey(), ct))
+            .WithName("PosFinalizeSale");
+        pos.MapGet("/sales/today", (Guid branchId, PosSaleService s, CancellationToken ct) => s.TodayAsync(branchId, ct)).WithName("PosSalesToday");
+        pos.MapGet("/sales/{id:guid}/receipt", (Guid id, PosSaleService s, CancellationToken ct) => s.ReceiptAsync(id, ct)).WithName("PosReceipt");
+
         var admin = endpoints.MapGroup("/api/v1/admin").WithTags("Orders").RequireAudience(Audiences.Admin);
         admin.MapGet("/orders", (string? channel, string? status, Guid? branchId, Guid? resellerId, OrderQueryService s, CancellationToken ct) =>
             s.ListAsync(channel, status, branchId, resellerId, ct)).RequirePermission(Permissions.Orders.View).WithName("ListOrders");

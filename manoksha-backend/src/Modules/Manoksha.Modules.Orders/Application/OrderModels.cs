@@ -47,7 +47,14 @@ public sealed record OrderDto(
     string HelpWhatsAppUrl,
     decimal? CostOfGoods,
     ShipmentDto? Shipment = null,
-    FulfillmentExceptionDto? OpenException = null);
+    FulfillmentExceptionDto? OpenException = null,
+    PosSaleDetailDto? PosSale = null);
+
+/// <summary>Store (POS) sale details for staff: who sold it, how it was paid and every authorized price change.</summary>
+public sealed record PosSaleDetailDto(string Cashier, string? CustomerName, string? CustomerMobile, IReadOnlyList<PosPaymentDto> Payments, IReadOnlyList<PosOverrideDto> PriceOverrides);
+
+public sealed record PosOverrideDto(string SkuCode, int Quantity, decimal OriginalUnitPrice, decimal FinalUnitPrice, decimal DiscountPct, string Reason, string ApprovalLevel,
+    string Seller, string? Approver, DateTimeOffset OccurredAt);
 
 public sealed record InquiryDto(string Reference, string Message, string WhatsAppUrl);
 

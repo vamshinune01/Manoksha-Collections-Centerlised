@@ -1,5 +1,6 @@
 using Manoksha.Application.Security;
 using Manoksha.Modules.Branches.Contracts;
+using Manoksha.Modules.Identity.Contracts;
 using Manoksha.Modules.Orders.Domain;
 using Manoksha.Modules.Resellers.Contracts;
 using Manoksha.Persistence;
@@ -15,7 +16,8 @@ internal sealed class OrderQueryService(
     IResellerDirectory resellers,
     IBranchDirectory branches,
     WhatsApp whatsApp,
-    ICurrentUser currentUser)
+    ICurrentUser currentUser,
+    IApprovals approvals)
 {
     // ---- Reseller: own orders only (SPEC §24). Another reseller's order id is simply "not found". ----
 
@@ -104,7 +106,30 @@ internal sealed class OrderQueryService(
             return await GetMineAsync(id, ct);
         }
         await permissions.EnsurePermissionForBranchAsync(P.Orders.View, order.FulfillmentBranchId, ct);
-        return (await ToDtosAsync([id], includeCost: (await permissions.GetEffectiveAccessAsync(ct)).IsOwner, ct))[0];
+        var dto = (await ToDtosAsync([id], includeCost: (await permissions.GetEffectiveAccessAsync(ct)).IsOwner, ct))[0];
+        return order.Channel == OrderChannel.Store ? dto with { PosSale = await PosSaleDetailAsync(order, ct) } : dto;
+    }
+
+    private async Task<PosSaleDetailDto> PosSaleDetailAsync(Order order, CancellationToken ct)
+    {
+        var payments = await db.Set<PosPayment>().AsNoTracking().Where(p => p.OrderId == order.Id).OrderBy(p => p.RecordedAt).ToListAsync(ct);
+        var overrides = await (from x in db.Set<PosPriceOverride>().AsNoTracking()
+                               join l in db.Set<OrderLine>() on x.OrderLineId equals l.Id
+                               where x.OrderId == order.Id
+                               orderby l.SkuCode
+                               select new { x, l.SkuCode }).ToListAsync(ct);
+        var names = new Dictionary<Guid, string>();
+        async Task<string> Name(Guid userId) => names.TryGetValue(userId, out var n) ? n : names[userId] = await approvals.DisplayNameAsync(userId, ct);
+        var overrideDtos = new List<PosOverrideDto>();
+        foreach (var o in overrides)
+        {
+            overrideDtos.Add(new PosOverrideDto(o.SkuCode, o.x.Quantity, o.x.OriginalUnitPrice, o.x.FinalUnitPrice, o.x.DiscountPct, o.x.Reason, o.x.ApprovalLevel,
+                await Name(o.x.SellerUserId), o.x.ApproverUserId is { } a ? await Name(a) : null, o.x.OccurredAt));
+        }
+        var walkIn = order.Delivery.Name == "Walk-in customer";
+        return new PosSaleDetailDto(await Name(order.PlacedBy), walkIn ? null : order.Delivery.Name,
+            string.IsNullOrEmpty(order.Delivery.Mobile) ? null : MobileNumber.Mask(order.Delivery.Mobile),
+            payments.Select(p => new PosPaymentDto(p.Method, p.Amount, p.Reference)).ToList(), overrideDtos);
     }
 
     /// <param name="external">Customer/reseller view: internal notes are not shown.</param>

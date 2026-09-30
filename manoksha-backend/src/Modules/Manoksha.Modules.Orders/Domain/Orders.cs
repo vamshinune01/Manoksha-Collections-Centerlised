@@ -103,6 +103,14 @@ internal sealed class Order : Entity
         ConfirmedAt = now;
     }
 
+    /// <summary>POS: a store sale is created directly as COMPLETED in its finalize transaction (ADR-001 §9).</summary>
+    public void CompleteStoreSale(DateTimeOffset now)
+    {
+        Ensure(OrderStatus.CheckoutAttempt);
+        Status = OrderStatus.Completed;
+        ConfirmedAt = now;
+    }
+
     /// <summary>Online: the complete basket is reserved at one branch and payment can start (SPEC §19.1).</summary>
     public void AwaitPayment()
     {
@@ -659,4 +667,94 @@ internal sealed class OrderReroute : Entity
     public Guid ActorUserId { get; private set; }
 
     public DateTimeOffset OccurredAt { get; private set; }
+}
+
+/// <summary>
+/// POS negotiated price (SPEC §20, §30): original and final price, discount amount and %, branch, seller, approver and reason.
+/// Append-only.
+/// </summary>
+internal sealed class PosPriceOverride : Entity
+{
+    private PosPriceOverride()
+    {
+    }
+
+    public PosPriceOverride(Guid orderId, Guid orderLineId, Guid branchId, Guid skuId, decimal originalUnitPrice, decimal finalUnitPrice, decimal discountPct,
+        int quantity, string reason, string approvalLevel, Guid sellerUserId, Guid? approverUserId, DateTimeOffset now)
+    {
+        OrderId = orderId;
+        OrderLineId = orderLineId;
+        BranchId = branchId;
+        SkuId = skuId;
+        OriginalUnitPrice = originalUnitPrice;
+        FinalUnitPrice = finalUnitPrice;
+        DiscountPerUnit = originalUnitPrice - finalUnitPrice;
+        DiscountPct = discountPct;
+        Quantity = quantity;
+        Reason = reason;
+        ApprovalLevel = approvalLevel;
+        SellerUserId = sellerUserId;
+        ApproverUserId = approverUserId;
+        OccurredAt = now;
+    }
+
+    public Guid OrderId { get; private set; }
+
+    public Guid OrderLineId { get; private set; }
+
+    public Guid BranchId { get; private set; }
+
+    public Guid SkuId { get; private set; }
+
+    public decimal OriginalUnitPrice { get; private set; }
+
+    public decimal FinalUnitPrice { get; private set; }
+
+    public decimal DiscountPerUnit { get; private set; }
+
+    public decimal DiscountPct { get; private set; }
+
+    public int Quantity { get; private set; }
+
+    public string Reason { get; private set; } = default!;
+
+    /// <summary>SELLER (within the seller's own limit), MANAGER or OWNER.</summary>
+    public string ApprovalLevel { get; private set; } = default!;
+
+    public Guid SellerUserId { get; private set; }
+
+    public Guid? ApproverUserId { get; private set; }
+
+    public DateTimeOffset OccurredAt { get; private set; }
+}
+
+/// <summary>One payment component of a store sale (split payments — SPEC §20). Append-only.</summary>
+internal sealed class PosPayment : Entity
+{
+    private PosPayment()
+    {
+    }
+
+    public PosPayment(Guid orderId, string method, decimal amount, string? reference, Guid recordedBy, DateTimeOffset now)
+    {
+        OrderId = orderId;
+        Method = method;
+        Amount = amount;
+        Reference = reference;
+        RecordedBy = recordedBy;
+        RecordedAt = now;
+    }
+
+    public Guid OrderId { get; private set; }
+
+    /// <summary>CASH, UPI, CARD or OTHER (enabled methods come from settings).</summary>
+    public string Method { get; private set; } = default!;
+
+    public decimal Amount { get; private set; }
+
+    public string? Reference { get; private set; }
+
+    public Guid RecordedBy { get; private set; }
+
+    public DateTimeOffset RecordedAt { get; private set; }
 }

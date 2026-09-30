@@ -582,6 +582,7 @@ export interface Order {
   costOfGoods: number | null;
   shipment: Shipment | null;
   openException: FulfillmentExceptionInfo | null;
+  posSale?: PosSaleDetail | null;
 }
 
 export interface Shipment {
@@ -696,4 +697,15 @@ export function orderStatusTone(status: string): "green" | "amber" | "red" | "sl
   if (status === "PaymentPending" || status === "FulfillmentException") return "amber";
   if (["PaymentFailed", "PaymentExpired", "Cancelled"].includes(status)) return "red";
   return "slate";
+}
+
+export interface PosSaleDetail {
+  cashier: string;
+  customerName: string | null;
+  customerMobile: string | null;
+  payments: { method: string; amount: number; reference: string | null }[];
+  priceOverrides: {
+    skuCode: string; quantity: number; originalUnitPrice: number; finalUnitPrice: number; discountPct: number; reason: string;
+    approvalLevel: string; seller: string; approver: string | null; occurredAt: string;
+  }[];
 }

@@ -213,3 +213,18 @@ Engineering decisions for Phase 7 (confirm or correct):
       (valid 72 h, single use; a new link revokes older ones) where they set their own password. The temporary-password option remains.
     - **Customers:** self sign-up by mobile OTP, now shown as "Create account" in the shop.
     - **Resellers:** unchanged — Owner-created only, activated by mobile OTP (SPEC §5.3).
+
+## Owner decisions (30 Sep 2026): Phase 8 — store POS
+33. **Authorized bargaining limits** (settings, Owner-editable): a sales employee may lower a price by up to
+    `pos.staff_max_discount_pct` (**5 %**) alone; up to `pos.manager_max_discount_pct` (**15 %**) needs a branch manager; more
+    than that only the **Owner**. A reason is always required and a price can never exceed retail. Every change is recorded
+    (append-only `orders.pos_price_overrides`: original and final price, %, reason, seller, approver, level).
+34. **Approval on the same device by PIN:** the approver picks their name on the POS and enters their own 4–6 digit approval PIN
+    (hashed; 5 wrong tries lock it for 15 minutes; set under *My account* on the admin site or *Settings* in the app with the
+    current password). Nobody approves their own sale.
+35. **Payments:** **UPI only** for now — the customer pays the shop QR and staff enter the UPI transaction reference.
+    Accepted methods are the `pos.payment_methods` setting so CASH, CARD and OTHER can be switched on later; split payments are
+    supported and must add up exactly to the bill. Non-cash payments always need a reference.
+36. **Device:** Android phones/tablets with a paired **Bluetooth ESC/POS thermal printer** (58 mm or 80 mm). A sale needs an
+    internet connection; the server validates prices, limits, PIN and stock and completes the sale in one transaction
+    (`MC-POS-…`, idempotent per basket so a retry never sells twice).
