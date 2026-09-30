@@ -1,6 +1,6 @@
 namespace Manoksha.Modules.Identity.Contracts;
 
-public sealed record NewInternalAccount(Guid UserId, string TemporaryPassword);
+public sealed record NewInternalAccount(Guid UserId, string? TemporaryPassword, string? InviteToken = null, DateTimeOffset? InviteExpiresAt = null);
 
 public sealed record InternalAccountInfo(Guid UserId, string DisplayName, string? Email, string Status);
 
@@ -10,8 +10,11 @@ public sealed record InternalAccountInfo(Guid UserId, string DisplayName, string
 /// </summary>
 public interface IInternalUserAccounts
 {
-    /// <summary>Creates an internal account with a one-time temporary password (must be changed at first sign-in).</summary>
-    Task<NewInternalAccount> CreateAsync(string email, string displayName, string? mobile, string reason, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Creates an internal account with a one-time temporary password (changed at first sign-in), or — with
+    /// <paramref name="invite"/> — a one-time invite link where the person sets their own password.
+    /// </summary>
+    Task<NewInternalAccount> CreateAsync(string email, string displayName, string? mobile, string reason, bool invite = false, CancellationToken cancellationToken = default);
 
     Task<InternalAccountInfo?> FindAsync(Guid userId, CancellationToken cancellationToken = default);
 

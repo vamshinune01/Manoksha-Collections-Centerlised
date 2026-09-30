@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Alert, Button, Field, Input, Select } from "@/components/ui";
 import { ApiError, callApi } from "@/lib/client-api";
+import { InviteLink } from "@/components/invite-link";
 
 function useAction() {
   const router = useRouter();
@@ -124,6 +125,33 @@ export function UserStatusForm({ userId, status, canRevokeSessions }: { userId: 
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+/** New one-time set-password link (e.g. the first one expired, or the person forgot their password). Older links stop working. */
+export function NewInviteLink({ userId }: { userId: string }) {
+  const [invite, setInvite] = useState<{ token: string; expiresAt: string }>();
+  const [error, setError] = useState<string>();
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="mt-4 space-y-2 border-t border-slate-100 pt-4">
+      {error && <Alert>{error}</Alert>}
+      {invite ? (
+        <InviteLink token={invite.token} expiresAt={invite.expiresAt} />
+      ) : (
+        <Button variant="secondary" disabled={busy} onClick={async () => {
+          setBusy(true);
+          setError(undefined);
+          try {
+            setInvite(await callApi<{ token: string; expiresAt: string }>(`admin/users/${userId}/invitations`, "POST"));
+          } catch (e) {
+            setError(e instanceof ApiError ? e.message : "Could not create a link.");
+          } finally {
+            setBusy(false);
+          }
+        }}>Create set-password link</Button>
+      )}
     </div>
   );
 }

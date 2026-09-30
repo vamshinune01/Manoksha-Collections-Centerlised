@@ -26,6 +26,8 @@ internal static class AdminIdentityEndpoints
             })
             .RequirePermission(Permissions.Identity.UsersManage).WithName("CreateInternalUser");
 
+        admin.MapPost("/users/{userId:guid}/invitations", (Guid userId, InvitationService s, CancellationToken ct) => s.ReissueAsync(userId, ct))
+            .RequirePermission(Permissions.Identity.UsersManage).WithName("ReissueUserInvitation");
         admin.MapPost("/users/{userId:guid}/status", async (Guid userId, ChangeUserStatusRequest request, UserAdministrationService s, CancellationToken ct) =>
             {
                 await s.ChangeStatusAsync(userId, request, ct);

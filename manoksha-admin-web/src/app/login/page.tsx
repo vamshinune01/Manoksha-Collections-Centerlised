@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import Link from "next/link";
+import { publicGet, type SetupStatus } from "@/lib/public-api";
 import { LoginFlow } from "./login-flow";
 
 export const metadata: Metadata = { title: "Sign in" };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const status = await publicGet<SetupStatus>("setup/status");
+  const needsSetup = status.ok && !status.data.ownerExists && status.data.setupEnabled;
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-slate-100 px-4">
       <div className="w-full max-w-sm">
@@ -18,6 +22,13 @@ export default function LoginPage() {
             <LoginFlow />
           </Suspense>
         </div>
+        <p className="mt-4 text-center text-xs text-slate-500">
+          {needsSetup ? (
+            <>First time? <Link href="/setup" className="font-medium text-brand-700 hover:underline">Set up the Owner account</Link></>
+          ) : (
+            <>New staff member? Use the invite link the Owner sent you.</>
+          )}
+        </p>
       </div>
     </main>
   );

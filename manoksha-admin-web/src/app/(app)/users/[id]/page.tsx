@@ -3,7 +3,7 @@ import { Alert, Badge, Card, Forbidden, PageHeader, formatDateTime } from "@/com
 import { P, can, shortId } from "@/lib/access";
 import { backendFetch, getMe } from "@/lib/backend";
 import type { Branch, Role, UserSummary } from "@/lib/types";
-import { AssignRoleForm, RevokeRoleButton, UserStatusForm } from "./user-actions";
+import { AssignRoleForm, RevokeRoleButton, UserStatusForm, NewInviteLink } from "./user-actions";
 
 export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -54,6 +54,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
             <div className="flex justify-between"><dt className="text-slate-500">Last sign-in</dt><dd>{formatDateTime(u.lastLoginAt)}</dd></div>
           </dl>
           {can(me, P.usersManage) && u.id !== me.userId && <UserStatusForm userId={u.id} status={u.status} canRevokeSessions={can(me, P.sessionsRevoke)} />}
+          {can(me, P.usersManage) && u.id !== me.userId && u.status === "Active" && <NewInviteLink userId={u.id} />}
         </Card>
       </div>
     </>

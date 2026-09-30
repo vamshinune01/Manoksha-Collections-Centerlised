@@ -124,5 +124,16 @@ public sealed class IdentityModelConfiguration : IModuleModelConfiguration
             b.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
             b.HasOne<Role>().WithMany().HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<UserInvitation>(b =>
+        {
+            b.ToTable("user_invitations", SchemaName);
+            b.HasKey(x => x.Id);
+            b.Property(x => x.TokenHash).HasMaxLength(64);
+            b.Property(x => x.RowVersion).IsRowVersion();
+            b.HasIndex(x => x.TokenHash).IsUnique();
+            b.HasIndex(x => x.UserId);
+            b.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }

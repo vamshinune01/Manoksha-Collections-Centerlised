@@ -2,9 +2,10 @@ using Manoksha.Application.Security;
 
 namespace Manoksha.Modules.Identity.Application;
 
-public sealed record CreateInternalUserRequest(string Email, string DisplayName, string? Mobile, string Reason);
+/// <param name="SendInvite">True: no temporary password; a one-time invite link lets the person set their own password.</param>
+public sealed record CreateInternalUserRequest(string Email, string DisplayName, string? Mobile, string Reason, bool SendInvite = false);
 
-public sealed record CreateInternalUserResponse(Guid UserId, string TemporaryPassword);
+public sealed record CreateInternalUserResponse(Guid UserId, string? TemporaryPassword, string? InviteToken = null, DateTimeOffset? InviteExpiresAt = null);
 
 public sealed record ChangeUserStatusRequest(string Status, string Reason);
 

@@ -72,6 +72,22 @@ internal static class AuthEndpoints
         auth.MapGet("/me", (MeService service, CancellationToken ct) => service.GetAsync(ct))
             .RequireAuthorization().WithName("Me");
 
+        // First-run Owner setup (only while no Owner exists and a setup code is configured) and staff invitations.
+        var setup = endpoints.MapGroup("/api/v1/setup").WithTags("Setup").AllowAnonymous().RequireRateLimiting(RateLimitPolicies.Auth);
+        setup.MapGet("/status", (OwnerSetupService s, CancellationToken ct) => s.StatusAsync(ct)).WithName("OwnerSetupStatus");
+        setup.MapPost("/owner", async (OwnerSetupRequest r, OwnerSetupService s, CancellationToken ct) =>
+        {
+            await s.CreateOwnerAsync(r, ct);
+            return Results.NoContent();
+        }).WithName("OwnerSetup");
+        var invites = endpoints.MapGroup("/api/v1/invitations/{token}").WithTags("Invitations").AllowAnonymous().RequireRateLimiting(RateLimitPolicies.Auth);
+        invites.MapGet("", (string token, InvitationService s, CancellationToken ct) => s.GetAsync(token, ct)).WithName("GetInvitation");
+        invites.MapPost("/accept", async (string token, AcceptInvitationRequest r, InvitationService s, CancellationToken ct) =>
+        {
+            await s.AcceptAsync(token, r, ct);
+            return Results.NoContent();
+        }).WithName("AcceptInvitation");
+
         var customer = endpoints.MapGroup("/api/v1/customer").WithTags("Customer").RequireAudience(Audiences.Customer);
         customer.MapGet("/profile", (CustomerProfileService s, CancellationToken ct) => s.GetAsync(ct)).WithName("CustomerProfile");
         customer.MapPut("/profile", (UpdateCustomerProfileRequest r, CustomerProfileService s, CancellationToken ct) => s.UpdateAsync(r, ct)).WithName("UpdateCustomerProfile");

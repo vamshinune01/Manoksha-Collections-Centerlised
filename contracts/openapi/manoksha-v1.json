@@ -3852,6 +3852,69 @@
         }
       }
     },
+    "/api/v1/invitations/{token}": {
+      "get": {
+        "tags": [
+          "Invitations"
+        ],
+        "operationId": "GetInvitation",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invitations/{token}/accept": {
+      "post": {
+        "tags": [
+          "Invitations"
+        ],
+        "operationId": "AcceptInvitation",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/admin/orders": {
       "get": {
         "tags": [
@@ -6342,6 +6405,49 @@
         }
       }
     },
+    "/api/v1/setup/status": {
+      "get": {
+        "tags": [
+          "Setup"
+        ],
+        "operationId": "OwnerSetupStatus",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnerSetupStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/setup/owner": {
+      "post": {
+        "tags": [
+          "Setup"
+        ],
+        "operationId": "OwnerSetup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnerSetupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/catalog/categories": {
       "get": {
         "tags": [
@@ -6570,6 +6676,37 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserSummaryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users/{userId}/invitations": {
+      "post": {
+        "tags": [
+          "Users \u0026 Roles"
+        ],
+        "operationId": "ReissueUserInvitation",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewInvitationDto"
                 }
               }
             }
@@ -7164,6 +7301,16 @@
   },
   "components": {
     "schemas": {
+      "AcceptInvitationRequest": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "AddOptionRequest": {
         "type": "object",
         "properties": {
@@ -8199,6 +8346,9 @@
           "reason": {
             "type": "string",
             "nullable": true
+          },
+          "sendInvite": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -8247,6 +8397,9 @@
           "reason": {
             "type": "string",
             "nullable": true
+          },
+          "sendInvite": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -9168,6 +9321,24 @@
         },
         "additionalProperties": false
       },
+      "InvitationDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailMasked": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "ItemDto": {
         "type": "object",
         "properties": {
@@ -9724,6 +9895,24 @@
         },
         "additionalProperties": false
       },
+      "NewInvitationDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "OnlineDepositDto": {
         "type": "object",
         "properties": {
@@ -10061,6 +10250,40 @@
           "code": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OwnerSetupRequest": {
+        "type": "object",
+        "properties": {
+          "setupCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OwnerSetupStatus": {
+        "type": "object",
+        "properties": {
+          "ownerExists": {
+            "type": "boolean"
+          },
+          "setupEnabled": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

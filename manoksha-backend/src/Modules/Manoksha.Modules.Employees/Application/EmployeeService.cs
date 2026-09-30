@@ -77,6 +77,7 @@ internal sealed class EmployeeService(
         {
             Guid userId;
             string? temporaryPassword = null;
+            NewInternalAccount? created = null;
             if (request.ExistingUserId is { } existing)
             {
                 var account = await accounts.FindAsync(existing, innerCt) ?? throw new NotFoundException("USER_NOT_FOUND", "Internal user not found.");
@@ -84,7 +85,7 @@ internal sealed class EmployeeService(
             }
             else
             {
-                var created = await accounts.CreateAsync(request.Email!, request.FullName, mobile, request.Reason, innerCt);
+                created = await accounts.CreateAsync(request.Email!, request.FullName, mobile, request.Reason, request.SendInvite, innerCt);
                 userId = created.UserId;
                 temporaryPassword = created.TemporaryPassword;
             }
@@ -105,7 +106,7 @@ internal sealed class EmployeeService(
             {
                 throw new ConflictException("EMPLOYEE_ALREADY_EXISTS", "This user already has an employee profile.");
             }
-            return new CreateEmployeeResponse((await ToDtosAsync([employee], innerCt))[0], temporaryPassword);
+            return new CreateEmployeeResponse((await ToDtosAsync([employee], innerCt))[0], temporaryPassword, created?.InviteToken, created?.InviteExpiresAt);
         }, ct);
     }
 

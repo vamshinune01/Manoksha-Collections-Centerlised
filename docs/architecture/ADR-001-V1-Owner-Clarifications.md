@@ -203,3 +203,13 @@ Engineering decisions for Phase 7 (confirm or correct):
     **optimized renditions** (WebP images in several sizes, 720p H.264 MP4 video with a poster), never the large originals.
 30. **Scale target:** about 300 customers, 50 resellers and 3 branches — size everything for low cost (scale-to-zero services,
     smallest database tier, no always-on extras).
+
+## Owner decisions (29–30 Sep 2026): sign-up and sign-in
+31. **Owner MFA:** not required on **Staging** (direct email + password); still required in **Production** (Owner's own change).
+32. **Account creation / sign-up:**
+    - **Owner:** a one-time **first-setup page** (`/setup` on the admin site) creates the Owner only while no Owner exists and only
+      with the setup code held in Secret Manager (`Setup:OwnerSetupCode`); it closes permanently after that.
+    - **Staff (managers, employees):** no open sign-up (SPEC §5.1). The Owner adds the person and shares a one-time **invite link**
+      (valid 72 h, single use; a new link revokes older ones) where they set their own password. The temporary-password option remains.
+    - **Customers:** self sign-up by mobile OTP, now shown as "Create account" in the shop.
+    - **Resellers:** unchanged — Owner-created only, activated by mobile OTP (SPEC §5.3).

@@ -20,9 +20,11 @@ public sealed record CreateEmployeeRequest(
     string? Mobile,
     Guid AssignedBranchId,
     DateOnly? JoinedOn,
-    string Reason);
+    string Reason,
+    bool SendInvite = false);
 
-public sealed record CreateEmployeeResponse(EmployeeDto Employee, string? TemporaryPassword);
+/// <param name="InviteToken">When invited: one-time token for the set-password link (the web app builds the URL).</param>
+public sealed record CreateEmployeeResponse(EmployeeDto Employee, string? TemporaryPassword, string? InviteToken = null, DateTimeOffset? InviteExpiresAt = null);
 
 public sealed record UpdateEmployeeRequest(string FullName, string? Mobile, string Reason);
 

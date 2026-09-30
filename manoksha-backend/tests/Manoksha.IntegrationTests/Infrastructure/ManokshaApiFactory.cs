@@ -28,6 +28,8 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
     private string? _externalServer;
     private string? _externalDatabase;
 
+    public const string OwnerSetupCode = "integration-owner-setup-code";
+
     public const string SimulatorWebhookSecret = "integration-test-simulator-secret";
 
     public TestClock Clock { get; } = new();
@@ -92,6 +94,7 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
         builder.UseSetting("Integrations:Storage:Local:RootPath", Path.Combine(Path.GetTempPath(), "manoksha-it-files"));
         builder.UseSetting("Integrations:Storage:Local:UploadBaseUrl", "/api/v1/dev-storage");
         builder.UseSetting("Integrations:Storage:Local:PublicBaseUrl", "http://localhost/local-files");
+        builder.UseSetting("Setup:OwnerSetupCode", OwnerSetupCode);
         builder.UseSetting("Integrations:Payments:Provider", "Simulator");
         builder.UseSetting("Integrations:Payments:Simulator:WebhookSecret", SimulatorWebhookSecret);
 

@@ -34,7 +34,8 @@ internal sealed class UserAdministrationService(
     IAuditWriter audit,
     IOutbox outbox,
     IBranchDirectory branches,
-    IClock clock)
+    IClock clock,
+    InvitationService invitations)
 {
     public async Task<IReadOnlyList<UserSummaryDto>> ListInternalUsersAsync(CancellationToken ct)
     {
@@ -70,8 +71,12 @@ internal sealed class UserAdministrationService(
         return unitOfWork.ExecuteInTransactionAsync(async innerCt =>
         {
             var user = User.CreateInternal(request.Email, request.DisplayName, mobile, clock.UtcNow, currentUser.UserId);
-            var temporary = PasswordService.GenerateTemporaryPassword();
-            user.SetPassword(passwords.Hash(user, temporary), mustChange: true);
+            string? temporary = null;
+            if (!request.SendInvite)
+            {
+                temporary = PasswordService.GenerateTemporaryPassword();
+                user.SetPassword(passwords.Hash(user, temporary), mustChange: true);
+            }
             db.Add(user);
             await audit.RecordAsync(new AuditRecord("identity.internal_user.created", "User", user.Id.ToString(),
                 After: new { user.Id, user.Email, user.DisplayName, mobile = mobile is null ? null : MobileNumber.Mask(mobile) },
@@ -84,6 +89,11 @@ internal sealed class UserAdministrationService(
             catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
             {
                 throw new ConflictException("EMAIL_ALREADY_EXISTS", "An internal user with this email already exists.");
+            }
+            if (request.SendInvite)
+            {
+                var invite = await invitations.IssueAsync(user.Id, innerCt);
+                return new CreateInternalUserResponse(user.Id, null, invite.Token, invite.ExpiresAt);
             }
             return new CreateInternalUserResponse(user.Id, temporary);
         }, ct);

@@ -1524,6 +1524,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/invitations/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetInvitation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invitations/{token}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AcceptInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/orders": {
         parameters: {
             query?: never;
@@ -2484,6 +2516,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/setup/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OwnerSetupStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/setup/owner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OwnerSetup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/catalog/categories": {
         parameters: {
             query?: never;
@@ -2590,6 +2654,22 @@ export interface paths {
         get: operations["GetInternalUser"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{userId}/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ReissueUserInvitation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2840,6 +2920,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AcceptInvitationRequest: {
+            password?: string | null;
+        };
         AddOptionRequest: {
             value?: string | null;
             reason?: string | null;
@@ -3182,6 +3265,7 @@ export interface components {
             /** Format: date */
             joinedOn?: string | null;
             reason?: string | null;
+            sendInvite?: boolean;
         };
         CreateGoodsReceiptRequest: {
             supplierInvoiceRef?: string | null;
@@ -3195,6 +3279,7 @@ export interface components {
             displayName?: string | null;
             mobile?: string | null;
             reason?: string | null;
+            sendInvite?: boolean;
         };
         CreateProductRequest: {
             /** Format: uuid */
@@ -3487,6 +3572,12 @@ export interface components {
         InventoryReasonRequest: {
             reason?: string | null;
         };
+        InvitationDto: {
+            displayName?: string | null;
+            emailMasked?: string | null;
+            /** Format: date-time */
+            expiresAt?: string;
+        };
         ItemDto: {
             /** Format: uuid */
             id?: string;
@@ -3671,6 +3762,13 @@ export interface components {
             assignedBranchId?: string | null;
             assignedBranchName?: string | null;
         };
+        NewInvitationDto: {
+            /** Format: uuid */
+            userId?: string;
+            token?: string | null;
+            /** Format: date-time */
+            expiresAt?: string;
+        };
         OnlineDepositDto: {
             /** Format: uuid */
             id?: string;
@@ -3792,6 +3890,16 @@ export interface components {
             mobile?: string | null;
             context?: string | null;
             code?: string | null;
+        };
+        OwnerSetupRequest: {
+            setupCode?: string | null;
+            email?: string | null;
+            fullName?: string | null;
+            password?: string | null;
+        };
+        OwnerSetupStatus: {
+            ownerExists?: boolean;
+            setupEnabled?: boolean;
         };
         PaymentAttemptDto: {
             /** Format: uuid */
@@ -7418,6 +7526,52 @@ export interface operations {
             };
         };
     };
+    GetInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationDto"];
+                };
+            };
+        };
+    };
+    AcceptInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptInvitationRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ListOrders: {
         parameters: {
             query?: {
@@ -9080,6 +9234,48 @@ export interface operations {
             };
         };
     };
+    OwnerSetupStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerSetupStatus"];
+                };
+            };
+        };
+    };
+    OwnerSetup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OwnerSetupRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     StorefrontCategories: {
         parameters: {
             query?: never;
@@ -9251,6 +9447,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserSummaryDto"];
+                };
+            };
+        };
+    };
+    ReissueUserInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewInvitationDto"];
                 };
             };
         };

@@ -9,10 +9,11 @@ namespace Manoksha.Modules.Identity.Application;
 
 internal sealed class InternalUserAccounts(UserAdministrationService users, ManokshaDbContext db) : IInternalUserAccounts
 {
-    public async Task<NewInternalAccount> CreateAsync(string email, string displayName, string? mobile, string reason, CancellationToken cancellationToken = default)
+    public async Task<NewInternalAccount> CreateAsync(string email, string displayName, string? mobile, string reason, bool invite = false,
+        CancellationToken cancellationToken = default)
     {
-        var created = await users.CreateInternalUserCoreAsync(new CreateInternalUserRequest(email, displayName, mobile, reason), cancellationToken);
-        return new NewInternalAccount(created.UserId, created.TemporaryPassword);
+        var created = await users.CreateInternalUserCoreAsync(new CreateInternalUserRequest(email, displayName, mobile, reason, invite), cancellationToken);
+        return new NewInternalAccount(created.UserId, created.TemporaryPassword, created.InviteToken, created.InviteExpiresAt);
     }
 
     public async Task<InternalAccountInfo?> FindAsync(Guid userId, CancellationToken cancellationToken = default) =>
