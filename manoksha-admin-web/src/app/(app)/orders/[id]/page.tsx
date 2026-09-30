@@ -59,9 +59,33 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               </p>
             )}
           </Card>
-          <Card title="Deliver to">
-            <p className="text-sm">{o.delivery.name} · {o.delivery.mobile}<br />{o.delivery.addressLine}, {o.delivery.city}, {o.delivery.state} {o.delivery.pin}</p>
-          </Card>
+          {o.posSale ? (
+            <Card title="Store sale">
+              <div className="space-y-2 text-sm">
+                <p>Sold by <strong>{o.posSale.cashier}</strong>{o.posSale.customerName || o.posSale.customerMobile ? ` · customer ${o.posSale.customerName ?? ""} ${o.posSale.customerMobile ?? ""}` : ""}</p>
+                <ul className="space-y-0.5">
+                  {o.posSale.payments.map((p, i) => <li key={i}>{p.method} {inr(p.amount)}{p.reference ? <span className="font-mono text-xs text-slate-500"> · {p.reference}</span> : null}</li>)}
+                </ul>
+                {o.posSale.priceOverrides.length > 0 && (
+                  <div className="rounded-md border border-slate-200 p-2">
+                    <p className="text-xs font-medium text-slate-700">Price changes</p>
+                    <ul className="mt-1 space-y-1 text-xs text-slate-600">
+                      {o.posSale.priceOverrides.map((x, i) => (
+                        <li key={i}>
+                          <span className="font-mono">{x.skuCode}</span> × {x.quantity}: {inr(x.originalUnitPrice)} → {inr(x.finalUnitPrice)} ({x.discountPct}%) · “{x.reason}” ·{" "}
+                          {x.approver ? `approved by ${x.approver} (${x.approvalLevel.toLowerCase()})` : `within ${x.seller}'s limit`}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </Card>
+          ) : (
+            <Card title="Deliver to">
+              <p className="text-sm">{o.delivery.name} · {o.delivery.mobile}<br />{o.delivery.addressLine}, {o.delivery.city}, {o.delivery.state} {o.delivery.pin}</p>
+            </Card>
+          )}
           <Card title="Status">
             <Badge tone={orderStatusTone(o.status)}>{o.status}</Badge>
             <ul className="mt-2 space-y-1 text-xs text-slate-600">{o.history.map((h) => <li key={h.occurredAt}>{formatDateTime(h.occurredAt)} · {h.toStatus}{h.note ? ` · ${h.note}` : ""}</li>)}</ul>

@@ -212,6 +212,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/me/approval-pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["SetApprovalPin"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/branches": {
         parameters: {
             query?: never;
@@ -1812,6 +1828,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pos/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosContext"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosSearchItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sales/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PosQuote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/approvers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosApprovers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PosFinalizeSale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sales/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosSalesToday"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sales/{id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosReceipt"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/payment-simulator/{providerOrderRef}": {
         parameters: {
             query?: never;
@@ -2982,6 +3110,13 @@ export interface components {
             /** Format: double */
             unitCost?: number | null;
         };
+        ApproverOption: {
+            /** Format: uuid */
+            userId?: string;
+            displayName?: string | null;
+            isOwner?: boolean;
+            hasPin?: boolean;
+        };
         AssignRoleRequest: {
             /** Format: uuid */
             roleId?: string;
@@ -3837,6 +3972,7 @@ export interface components {
             costOfGoods?: number | null;
             shipment?: components["schemas"]["ShipmentDto"];
             openException?: components["schemas"]["FulfillmentExceptionDto"];
+            posSale?: components["schemas"]["PosSaleDetailDto"];
         };
         OrderLineDto: {
             /** Format: uuid */
@@ -3999,6 +4135,171 @@ export interface components {
         PoReasonRequest: {
             reason?: string | null;
         };
+        PosApprovalRequest: {
+            /** Format: uuid */
+            approverUserId?: string;
+            pin?: string | null;
+        };
+        PosBranchDto: {
+            /** Format: uuid */
+            id?: string;
+            code?: string | null;
+            name?: string | null;
+            canOverridePrice?: boolean;
+            canApprove?: boolean;
+        };
+        PosContextDto: {
+            /** Format: uuid */
+            userId?: string;
+            displayName?: string | null;
+            isOwner?: boolean;
+            branches?: components["schemas"]["PosBranchDto"][] | null;
+            /** Format: double */
+            staffMaxDiscountPct?: number;
+            /** Format: double */
+            managerMaxDiscountPct?: number;
+            paymentMethods?: string[] | null;
+            shopName?: string | null;
+        };
+        PosLineRequest: {
+            /** Format: uuid */
+            skuId?: string;
+            /** Format: int32 */
+            quantity?: number;
+            itemIds?: string[] | null;
+            /** Format: double */
+            unitPrice?: number | null;
+            priceReason?: string | null;
+        };
+        PosOverrideDto: {
+            skuCode?: string | null;
+            /** Format: int32 */
+            quantity?: number;
+            /** Format: double */
+            originalUnitPrice?: number;
+            /** Format: double */
+            finalUnitPrice?: number;
+            /** Format: double */
+            discountPct?: number;
+            reason?: string | null;
+            approvalLevel?: string | null;
+            seller?: string | null;
+            approver?: string | null;
+            /** Format: date-time */
+            occurredAt?: string;
+        };
+        PosPaymentDto: {
+            method?: string | null;
+            /** Format: double */
+            amount?: number;
+            reference?: string | null;
+        };
+        PosPaymentRequest: {
+            method?: string | null;
+            /** Format: double */
+            amount?: number;
+            reference?: string | null;
+        };
+        PosQuoteDto: {
+            lines?: components["schemas"]["PosQuoteLineDto"][] | null;
+            /** Format: double */
+            retailTotal?: number;
+            /** Format: double */
+            discountTotal?: number;
+            /** Format: double */
+            grandTotal?: number;
+            approvalRequired?: string | null;
+            /** Format: double */
+            maxDiscountPct?: number;
+            /** Format: double */
+            sellerLimitPct?: number;
+        };
+        PosQuoteLineDto: {
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            productName?: string | null;
+            variantName?: string | null;
+            /** Format: int32 */
+            quantity?: number;
+            /** Format: double */
+            retailUnitPrice?: number;
+            /** Format: double */
+            finalUnitPrice?: number;
+            /** Format: double */
+            discountPct?: number;
+            /** Format: double */
+            lineTotal?: number;
+        };
+        PosReceiptDto: {
+            /** Format: uuid */
+            orderId?: string;
+            number?: string | null;
+            shopName?: string | null;
+            branchName?: string | null;
+            /** Format: date-time */
+            soldAt?: string;
+            cashier?: string | null;
+            customerName?: string | null;
+            customerMobile?: string | null;
+            lines?: components["schemas"]["PosReceiptLineDto"][] | null;
+            /** Format: double */
+            retailTotal?: number;
+            /** Format: double */
+            discountTotal?: number;
+            /** Format: double */
+            grandTotal?: number;
+            payments?: components["schemas"]["PosPaymentDto"][] | null;
+            approvedBy?: string | null;
+        };
+        PosReceiptLineDto: {
+            name?: string | null;
+            skuCode?: string | null;
+            /** Format: int32 */
+            quantity?: number;
+            /** Format: double */
+            retailUnitPrice?: number;
+            /** Format: double */
+            finalUnitPrice?: number;
+            /** Format: double */
+            lineTotal?: number;
+        };
+        PosSaleDetailDto: {
+            cashier?: string | null;
+            customerName?: string | null;
+            customerMobile?: string | null;
+            payments?: components["schemas"]["PosPaymentDto"][] | null;
+            priceOverrides?: components["schemas"]["PosOverrideDto"][] | null;
+        };
+        PosSaleRequest: {
+            /** Format: uuid */
+            branchId?: string;
+            lines?: components["schemas"]["PosLineRequest"][] | null;
+            payments?: components["schemas"]["PosPaymentRequest"][] | null;
+            approval?: components["schemas"]["PosApprovalRequest"];
+            customerName?: string | null;
+            customerMobile?: string | null;
+        };
+        PosSaleResult: {
+            /** Format: uuid */
+            orderId?: string;
+            number?: string | null;
+            /** Format: double */
+            grandTotal?: number;
+        };
+        PosSaleSummaryDto: {
+            /** Format: uuid */
+            orderId?: string;
+            number?: string | null;
+            /** Format: date-time */
+            soldAt?: string;
+            /** Format: double */
+            grandTotal?: number;
+            /** Format: int32 */
+            items?: number;
+            /** Format: uuid */
+            cashierUserId?: string;
+        };
         PosScanDto: {
             barcode?: string | null;
             barcodeKind?: string | null;
@@ -4025,6 +4326,20 @@ export interface components {
             /** Format: double */
             retailPrice?: number | null;
             availability?: components["schemas"]["BranchAvailabilityDto"][] | null;
+        };
+        PosSearchItemDto: {
+            /** Format: uuid */
+            skuId?: string;
+            skuCode?: string | null;
+            /** Format: uuid */
+            productId?: string;
+            productName?: string | null;
+            variantName?: string | null;
+            trackingMode?: string | null;
+            /** Format: double */
+            price?: number;
+            /** Format: int32 */
+            availableHere?: number;
         };
         PricePreviewDto: {
             /** Format: uuid */
@@ -4490,6 +4805,10 @@ export interface components {
             trackingMode?: string | null;
             availableForRetail?: boolean;
             availableForReseller?: boolean;
+        };
+        SetApprovalPinRequest: {
+            currentPassword?: string | null;
+            pin?: string | null;
         };
         SetOptionStatusRequest: {
             isActive?: boolean;
@@ -5206,6 +5525,28 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MeResponse"];
                 };
+            };
+        };
+    };
+    SetApprovalPin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetApprovalPinRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -7955,6 +8296,164 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PosScanDto"];
+                };
+            };
+        };
+    };
+    PosContext: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PosContextDto"];
+                };
+            };
+        };
+    };
+    PosSearchItems: {
+        parameters: {
+            query: {
+                branchId: string;
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PosSearchItemDto"][];
+                };
+            };
+        };
+    };
+    PosQuote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PosSaleRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PosQuoteDto"];
+                };
+            };
+        };
+    };
+    PosApprovers: {
+        parameters: {
+            query: {
+                branchId: string;
+                level: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApproverOption"][];
+                };
+            };
+        };
+    };
+    PosFinalizeSale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PosSaleRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PosSaleResult"];
+                };
+            };
+        };
+    };
+    PosSalesToday: {
+        parameters: {
+            query: {
+                branchId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PosSaleSummaryDto"][];
+                };
+            };
+        };
+    };
+    PosReceipt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PosReceiptDto"];
                 };
             };
         };

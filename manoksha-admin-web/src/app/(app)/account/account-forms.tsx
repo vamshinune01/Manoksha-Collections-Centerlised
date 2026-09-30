@@ -88,3 +88,41 @@ export function MfaSetup({ enabled }: { enabled: boolean }) {
     </div>
   );
 }
+
+export function ApprovalPinForm() {
+  const [error, setError] = useState<string>();
+  const [saved, setSaved] = useState(false);
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const formEl = e.currentTarget;
+        const form = new FormData(formEl);
+        setError(undefined);
+        setSaved(false);
+        if (form.get("pin") !== form.get("confirmPin")) {
+          setError("The two PINs do not match.");
+          return;
+        }
+        try {
+          await callApi("auth/me/approval-pin", "PUT", { currentPassword: form.get("currentPassword"), pin: form.get("pin") });
+          formEl.reset();
+          setSaved(true);
+        } catch (err) {
+          setError(err instanceof ApiError ? err.message : "Could not save the PIN.");
+        }
+      }}
+    >
+      <p className="text-sm text-slate-600">
+        You enter this PIN on the store POS to approve a discount above the seller&apos;s limit. You cannot approve your own sales.
+      </p>
+      {error && <Alert>{error}</Alert>}
+      {saved && <Alert tone="success">Approval PIN saved.</Alert>}
+      <Field label="Current password"><Input name="currentPassword" type="password" autoComplete="current-password" required /></Field>
+      <Field label="New PIN" hint="4–6 digits, not all the same digit."><Input name="pin" type="password" inputMode="numeric" pattern="[0-9]{4,6}" autoComplete="off" required /></Field>
+      <Field label="Confirm PIN"><Input name="confirmPin" type="password" inputMode="numeric" pattern="[0-9]{4,6}" autoComplete="off" required /></Field>
+      <Button type="submit">Save PIN</Button>
+    </form>
+  );
+}

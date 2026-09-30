@@ -40,6 +40,8 @@ public sealed class IdentityModule : IModule
         services.AddScoped<UserAdministrationService>();
         services.AddScoped<InvitationService>();
         services.AddScoped<OwnerSetupService>();
+        services.AddScoped<ApprovalService>();
+        services.AddScoped<IApprovals>(sp => sp.GetRequiredService<ApprovalService>());
         services.AddScoped<RoleAdministrationService>();
         services.AddScoped<MeService>();
         services.AddScoped<CustomerProfileService>();

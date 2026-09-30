@@ -71,6 +71,11 @@ internal static class AuthEndpoints
 
         auth.MapGet("/me", (MeService service, CancellationToken ct) => service.GetAsync(ct))
             .RequireAuthorization().WithName("Me");
+        auth.MapPut("/me/approval-pin", async (SetApprovalPinRequest r, ApprovalService s, CancellationToken ct) =>
+        {
+            await s.SetMyPinAsync(r, ct);
+            return Results.NoContent();
+        }).RequireAudience(Audiences.Admin, Audiences.Pos).WithName("SetApprovalPin");
 
         // First-run Owner setup (only while no Owner exists and a setup code is configured) and staff invitations.
         var setup = endpoints.MapGroup("/api/v1/setup").WithTags("Setup").AllowAnonymous().RequireRateLimiting(RateLimitPolicies.Auth);

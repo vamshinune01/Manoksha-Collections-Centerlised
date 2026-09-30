@@ -1327,6 +1327,19 @@ namespace Manoksha.Migrations.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("account_type");
 
+                    b.Property<int>("ApprovalPinFailures")
+                        .HasColumnType("integer")
+                        .HasColumnName("approval_pin_failures");
+
+                    b.Property<string>("ApprovalPinHash")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("approval_pin_hash");
+
+                    b.Property<DateTimeOffset?>("ApprovalPinLockedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("approval_pin_locked_until");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -2923,6 +2936,142 @@ namespace Manoksha.Migrations.Migrations
                         .HasDatabaseName("ix_order_status_changes_order_id_occurred_at");
 
                     b.ToTable("order_status_changes", "orders");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.PosPayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("method");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("recorded_at");
+
+                    b.Property<Guid>("RecordedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recorded_by");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("reference");
+
+                    b.HasKey("Id")
+                        .HasName("pk_pos_payments");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_pos_payments_order_id");
+
+                    b.ToTable("pos_payments", "orders", t =>
+                        {
+                            t.HasCheckConstraint("ck_pos_payments_amount", "amount > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.PosPriceOverride", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ApprovalLevel")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("approval_level");
+
+                    b.Property<Guid?>("ApproverUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("approver_user_id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<decimal>("DiscountPct")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("numeric(7,4)")
+                        .HasColumnName("discount_pct");
+
+                    b.Property<decimal>("DiscountPerUnit")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("discount_per_unit");
+
+                    b.Property<decimal>("FinalUnitPrice")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("final_unit_price");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<Guid>("OrderLineId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_line_id");
+
+                    b.Property<decimal>("OriginalUnitPrice")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("original_unit_price");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("SellerUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("seller_user_id");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sku_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_pos_price_overrides");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_pos_price_overrides_order_id");
+
+                    b.HasIndex("OrderLineId")
+                        .HasDatabaseName("ix_pos_price_overrides_order_line_id");
+
+                    b.HasIndex("BranchId", "OccurredAt")
+                        .HasDatabaseName("ix_pos_price_overrides_branch_id_occurred_at");
+
+                    b.ToTable("pos_price_overrides", "orders", t =>
+                        {
+                            t.HasCheckConstraint("ck_pos_price_overrides_prices", "final_unit_price >= 0 AND final_unit_price < original_unit_price AND discount_per_unit = original_unit_price - final_unit_price");
+                        });
                 });
 
             modelBuilder.Entity("Manoksha.Modules.Orders.Domain.ResellerCustomer", b =>
@@ -5248,6 +5397,33 @@ namespace Manoksha.Migrations.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_order_status_changes_orders_order_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.PosPayment", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Orders.Domain.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_pos_payments_orders_order_id");
+                });
+
+            modelBuilder.Entity("Manoksha.Modules.Orders.Domain.PosPriceOverride", b =>
+                {
+                    b.HasOne("Manoksha.Modules.Orders.Domain.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_pos_price_overrides_orders_order_id");
+
+                    b.HasOne("Manoksha.Modules.Orders.Domain.OrderLine", null)
+                        .WithMany()
+                        .HasForeignKey("OrderLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_pos_price_overrides_order_lines_order_line_id");
                 });
 
             modelBuilder.Entity("Manoksha.Modules.Orders.Domain.ResellerCustomer", b =>

@@ -33,6 +33,13 @@ public interface IStockAllocator
     Task<IReadOnlyList<AllocatedLine>> CommitReservedAsync(Guid branchId, IReadOnlyList<ReservedLine> lines, string referenceType, Guid referenceId, string referenceNumber,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Store (POS) sale at one branch: the exact scanned pieces (serialized) or quantities go AVAILABLE → SOLD with FIFO cost. Fails
+    /// with ITEM_NOT_AVAILABLE / INSUFFICIENT_STOCK if anything is no longer available — a piece can never be sold twice (SPEC §33).
+    /// </summary>
+    Task<IReadOnlyList<AllocatedLine>> SellAvailableAsync(Guid branchId, IReadOnlyList<ReservedLine> lines, string referenceType, Guid referenceId, string referenceNumber,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Returns reserved stock to AVAILABLE (payment failed, reservation expired).</summary>
     Task ReleaseReservedAsync(Guid branchId, IReadOnlyList<ReservedLine> lines, string referenceType, Guid referenceId, string referenceNumber, string reason,
         CancellationToken cancellationToken = default);

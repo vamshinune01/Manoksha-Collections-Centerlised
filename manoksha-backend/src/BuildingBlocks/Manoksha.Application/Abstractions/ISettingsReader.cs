@@ -25,4 +25,13 @@ public static class SettingKeys
 
     /// <summary>Minutes a reseller has to complete an online (provider-confirmed) wallet deposit payment (SPEC §17.1).</summary>
     public const string OnlineDepositMinutes = "payments.online_deposit_minutes";
+
+    /// <summary>Largest POS discount (%) a seller with price-override permission may give without approval (Phase 8: 5).</summary>
+    public const string PosStaffMaxDiscountPct = "pos.staff_max_discount_pct";
+
+    /// <summary>Largest POS discount (%) a branch approver may give/approve; above it only the Owner (Phase 8: 15).</summary>
+    public const string PosManagerMaxDiscountPct = "pos.manager_max_discount_pct";
+
+    /// <summary>Comma-separated store payment methods accepted at the POS: CASH, UPI, CARD, OTHER (Phase 8: UPI).</summary>
+    public const string PosPaymentMethods = "pos.payment_methods";
 }

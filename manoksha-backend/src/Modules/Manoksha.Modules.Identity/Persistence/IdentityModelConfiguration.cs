@@ -23,6 +23,7 @@ public sealed class IdentityModelConfiguration : IModuleModelConfiguration
             b.Property(x => x.EmailNormalized).HasMaxLength(254);
             b.Property(x => x.MobileE164).HasMaxLength(20);
             b.Property(x => x.PasswordHash).HasMaxLength(500);
+            b.Property(x => x.ApprovalPinHash).HasMaxLength(500);
             b.Property(x => x.MfaSecretProtected).HasMaxLength(500);
             b.Property(x => x.MfaPendingSecretProtected).HasMaxLength(500);
             b.Property(x => x.SecurityStamp).HasMaxLength(64);

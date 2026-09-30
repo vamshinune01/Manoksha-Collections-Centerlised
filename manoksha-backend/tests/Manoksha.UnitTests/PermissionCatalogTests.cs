@@ -64,6 +64,9 @@ public class PermissionCatalogTests
         manager.Should().NotContain(Permissions.Orders.Cancel, "cancellation needs explicitly configured permission (ADR-001 §8)");
         manager.Should().NotContain(Permissions.Employees.Manage);
         var sales = SystemRoles.Definitions.Single(r => r.Code == SystemRoles.SalesEmployee).DefaultPermissions;
-        sales.Should().NotContain(Permissions.Pos.PriceOverride, "normal sales employees have no unrestricted price change (SPEC §20)");
+        // SPEC §20: no UNRESTRICTED price change for normal sales staff. Phase 8 decision: they may bargain only within
+        // pos.staff_max_discount_pct (enforced by the backend); they can never approve discounts.
+        sales.Should().Contain(Permissions.Pos.PriceOverride);
+        sales.Should().NotContain(Permissions.Pos.PriceOverrideApprove, "sales staff cannot approve discounts (SPEC §20, §26)");
     }
 }

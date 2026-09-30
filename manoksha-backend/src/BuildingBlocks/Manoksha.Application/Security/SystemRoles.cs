@@ -34,7 +34,7 @@ public static class SystemRoles
         new(SalesEmployee, "Sales Employee", RoleScope.Branch,
         [
             P.Attendance.Self, P.Catalog.View, P.Inventory.View, P.Pricing.View,
-            P.Pos.Sell, P.Orders.View, P.Orders.FulfillmentExceptionRaise, P.Notifications.View,
+            P.Pos.Sell, P.Pos.PriceOverride, P.Orders.View, P.Orders.FulfillmentExceptionRaise, P.Notifications.View,
         ]),
         new(InventoryEmployee, "Inventory Employee", RoleScope.Branch,
         [

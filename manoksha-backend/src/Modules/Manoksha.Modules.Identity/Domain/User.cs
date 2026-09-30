@@ -162,6 +162,32 @@ internal sealed class User : Entity
         RotateSecurityStamp();
     }
 
+    /// <summary>Hashed POS approval PIN (managers/Owner approve discounts on the counter device — Phase 8).</summary>
+    public string? ApprovalPinHash { get; private set; }
+
+    public int ApprovalPinFailures { get; private set; }
+
+    public DateTimeOffset? ApprovalPinLockedUntil { get; private set; }
+
+    public void SetApprovalPin(string hash)
+    {
+        ApprovalPinHash = hash;
+        ApprovalPinFailures = 0;
+        ApprovalPinLockedUntil = null;
+    }
+
+    public void RecordApprovalPinFailure(DateTimeOffset now, int maxFailures, TimeSpan lockFor)
+    {
+        ApprovalPinFailures++;
+        if (ApprovalPinFailures >= maxFailures)
+        {
+            ApprovalPinLockedUntil = now.Add(lockFor);
+            ApprovalPinFailures = 0;
+        }
+    }
+
+    public void RecordApprovalPinSuccess() => ApprovalPinFailures = 0;
+
     /// <summary>A customer edits their own name and email (the mobile is the sign-in identity and is not editable here).</summary>
     public void UpdateCustomerProfile(string displayName, string email)
     {

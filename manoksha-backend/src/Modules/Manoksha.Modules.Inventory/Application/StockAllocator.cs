@@ -17,8 +17,16 @@ internal sealed class StockAllocator(ManokshaDbContext db, StockEngine engine, I
         CancellationToken cancellationToken = default) =>
         TryAllocateAsync(branchId, lines, InventoryStatus.Reserved, referenceType, referenceId, referenceNumber, cancellationToken);
 
-    public async Task<IReadOnlyList<AllocatedLine>> CommitReservedAsync(Guid branchId, IReadOnlyList<ReservedLine> lines, string referenceType, Guid referenceId,
-        string referenceNumber, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<AllocatedLine>> CommitReservedAsync(Guid branchId, IReadOnlyList<ReservedLine> lines, string referenceType, Guid referenceId,
+        string referenceNumber, CancellationToken cancellationToken = default) =>
+        SellFromAsync(InventoryStatus.Reserved, branchId, lines, referenceType, referenceId, referenceNumber, cancellationToken);
+
+    public Task<IReadOnlyList<AllocatedLine>> SellAvailableAsync(Guid branchId, IReadOnlyList<ReservedLine> lines, string referenceType, Guid referenceId,
+        string referenceNumber, CancellationToken cancellationToken = default) =>
+        SellFromAsync(InventoryStatus.Available, branchId, lines, referenceType, referenceId, referenceNumber, cancellationToken);
+
+    private async Task<IReadOnlyList<AllocatedLine>> SellFromAsync(InventoryStatus from, Guid branchId, IReadOnlyList<ReservedLine> lines, string referenceType,
+        Guid referenceId, string referenceNumber, CancellationToken cancellationToken)
     {
         var skus = await catalog.FindSkusAsync(lines.Select(l => l.SkuId).ToList(), cancellationToken);
         var ctx = new MovementContext("SALE", referenceType, referenceId, referenceNumber, null);
@@ -27,11 +35,15 @@ internal sealed class StockAllocator(ManokshaDbContext db, StockEngine engine, I
         {
             if (skus[line.SkuId].TrackingMode == "Serialized")
             {
-                await engine.MoveItemsAsync([.. line.ItemIds], line.SkuId, branchId, InventoryStatus.Reserved, InventoryStatus.Sold, ctx, ct: cancellationToken);
+                if (line.ItemIds.Count != line.Quantity)
+                {
+                    throw new BusinessRuleException("ITEMS_REQUIRED", "Scan each piece of individually tracked items.", 400);
+                }
+                await engine.MoveItemsAsync([.. line.ItemIds], line.SkuId, branchId, from, InventoryStatus.Sold, ctx, ct: cancellationToken);
             }
             else
             {
-                await engine.RemoveQuantityAsync(line.SkuId, branchId, InventoryStatus.Reserved, line.Quantity, ctx, recordedToStatus: InventoryStatus.Sold, ct: cancellationToken);
+                await engine.RemoveQuantityAsync(line.SkuId, branchId, from, line.Quantity, ctx, recordedToStatus: InventoryStatus.Sold, ct: cancellationToken);
             }
             var costs = await engine.ConsumeFifoAsync(line.SkuId, branchId, line.Quantity, "SALE", referenceType, referenceId, cancellationToken);
             result.Add(new AllocatedLine(line.SkuId, line.Quantity, line.ItemIds, Money.Round(costs.Sum(c => c.Quantity * c.UnitCost))));

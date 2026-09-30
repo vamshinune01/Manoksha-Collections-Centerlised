@@ -127,6 +127,30 @@ public sealed class OrdersModelConfiguration : IModuleModelConfiguration
             b.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<PosPriceOverride>(b =>
+        {
+            b.ToTable("pos_price_overrides", SchemaName, t => t.HasCheckConstraint("ck_pos_price_overrides_prices",
+                "final_unit_price >= 0 AND final_unit_price < original_unit_price AND discount_per_unit = original_unit_price - final_unit_price"));
+            b.HasKey(x => x.Id);
+            b.Property(x => x.DiscountPct).HasPrecision(7, 4);
+            b.Property(x => x.Reason).HasMaxLength(500);
+            b.Property(x => x.ApprovalLevel).HasMaxLength(10);
+            b.HasIndex(x => x.OrderId);
+            b.HasIndex(x => new { x.BranchId, x.OccurredAt });
+            b.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne<OrderLine>().WithMany().HasForeignKey(x => x.OrderLineId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PosPayment>(b =>
+        {
+            b.ToTable("pos_payments", SchemaName, t => t.HasCheckConstraint("ck_pos_payments_amount", "amount > 0"));
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Method).HasMaxLength(10);
+            b.Property(x => x.Reference).HasMaxLength(100);
+            b.HasIndex(x => x.OrderId);
+            b.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<ResellerCustomer>(b =>
         {
             b.ToTable("reseller_customers", SchemaName);

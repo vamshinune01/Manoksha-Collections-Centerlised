@@ -41,7 +41,21 @@ internal static class SettingDefinitions
             "Minutes a reseller has to complete an online UPI wallet deposit; later payments are still credited once confirmed (SPEC §17.1).",
             SettingValueKind.Integer, "15",
             v => v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var m) && m is >= 5 and <= 60 ? null : "Must be a whole number of minutes between 5 and 60."),
+        new(SettingKeys.PosStaffMaxDiscountPct,
+            "Largest discount (%) a POS seller with price-override permission may give on their own (reason required; audited).",
+            SettingValueKind.Money, "5.00", Percent),
+        new(SettingKeys.PosManagerMaxDiscountPct,
+            "Largest discount (%) a branch manager may give or approve at the POS; above it only the Owner may approve.",
+            SettingValueKind.Money, "15.00", Percent),
+        new(SettingKeys.PosPaymentMethods,
+            "Store payment methods accepted at the POS, comma-separated: CASH, UPI, CARD, OTHER. Split payments are allowed.",
+            SettingValueKind.String, "\"UPI\"",
+            v => v.ValueKind == JsonValueKind.String && v.GetString() is { } m && m.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) is { Length: > 0 } parts
+                 && parts.All(p => p is "CASH" or "UPI" or "CARD" or "OTHER") ? null : "List one or more of CASH, UPI, CARD, OTHER, separated by commas."),
     ];
+
+    private static string? Percent(JsonElement v) =>
+        v.ValueKind == JsonValueKind.Number && v.TryGetDecimal(out var d) && d is >= 0 and <= 100 && Money.HasValidScale(d) ? null : "Must be a percentage between 0 and 100 (up to 2 decimals).";
 
     public static SettingDefinition? Find(string key) => All.FirstOrDefault(d => d.Key == key);
 }
