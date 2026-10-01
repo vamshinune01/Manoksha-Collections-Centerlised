@@ -279,3 +279,6 @@ Engineering decisions for Phase 7 (confirm or correct):
 - **Storage outage** during a deposit upload returns "try again" (503) and records nothing.
 - Infrastructure as code (`infra/terraform`), runbooks (`docs/runbooks`) and the production go-live checklist added; the free
   Supabase tier is not acceptable for production (no backups, pauses when idle) — Owner to choose Supabase Pro or Cloud SQL.
+- **Owner decision (1 Oct 2026): Terraform is used at production go-live** to create the production project (services, buckets,
+  secrets, Worker, migration job, uptime checks and alerts). Staging stays as built by hand until then; the Terraform files are
+  validated (`terraform validate` + `plan`) as part of the go-live work, not before.
