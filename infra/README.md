@@ -16,7 +16,7 @@ Container images: `manoksha-backend/Dockerfile` (API by default, `--build-arg AP
 | API | Cloud Run `manoksha-api` (image `asia-south1-docker.pkg.dev/manokshacenterlised/manoksha/api`), `ASPNETCORE_ENVIRONMENT=Staging`, `Jobs__InProcess=true` (no separate Worker), `Notifications__AdminWebUrl` / `Notifications__CustomerWebUrl` (links in emails), min 0 / max 1 instance, 1 GiB, 300 s timeout (video optimization). |
 | Web | Cloud Run `manoksha-admin-web`, `manoksha-customer-web` (min 0 / max 1), `MANOKSHA_API_URL` = API URL. |
 | Media & files | GCS `manokshacenterlised-private` (originals + deposit proofs, public access prevented, CORS PUT from the admin site) and `manokshacenterlised-media` (public read, optimized renditions only). |
-| Secrets | `manoksha-db-connection`, `manoksha-auth-signing-key`, `manoksha-auth-data-key`, `manoksha-auth-otp-pepper`, `manoksha-payments-sim-secret` — readable only by `manoksha-run`. |
+| Secrets | `manoksha-db-connection`, `manoksha-auth-signing-key`, `manoksha-auth-data-key`, `manoksha-auth-otp-pepper`, `manoksha-payments-sim-secret`, `manoksha-owner-setup-code`, `manoksha-proxy-key` (API `Security__ProxyKey`, web apps `MANOKSHA_PROXY_KEY`) — readable only by `manoksha-run`. |
 | Identity | Service account `manoksha-run`: object admin on the two buckets, secret accessor on the secrets, token creator on itself (signed upload URLs via IAM, no key files). |
 
 Staging still uses the development stand-ins (fake SMS — OTP codes in Cloud Logging, logging email, UPI simulator). Emails are
@@ -24,4 +24,7 @@ recorded in the database and shown to the Owner under *Notifications → Email l
 (email sending, daily low-stock alert and Owner summary) only run while the API is awake; production runs the Worker with
 min 1 instance.
 Images are built locally with `docker buildx build --platform linux/amd64` and pushed to Artifact Registry (no Cloud Build).
+Infrastructure as code for staging and production: `infra/terraform` (see its README for adopting the hand-made staging
+resources). Operations: `docs/runbooks`. Database backups: `infra/scripts/backup-db.sh`.
+
 Moving to Cloud SQL later = new connection string (Cloud SQL socket or TCP) + `--add-cloudsql-instances`; no code change.

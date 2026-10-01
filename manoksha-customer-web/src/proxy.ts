@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { clientIpHeadersFrom } from "./lib/client-ip";
 
 const API_URL = (process.env.MANOKSHA_API_URL ?? "http://localhost:5080").replace(/\/$/, "");
 const SECURE = process.env.NODE_ENV === "production";
@@ -19,7 +20,7 @@ export async function proxy(request: NextRequest) {
   if (refresh) {
     const res = await fetch(`${API_URL}/api/v1/auth/refresh`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...clientIpHeadersFrom(request.headers) },
       body: JSON.stringify({ refreshToken: refresh }),
       cache: "no-store",
     }).catch(() => null);

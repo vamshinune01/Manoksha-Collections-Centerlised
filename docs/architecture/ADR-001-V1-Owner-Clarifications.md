@@ -259,3 +259,23 @@ Engineering decisions for Phase 7 (confirm or correct):
 - Business events moved to each module's `Contracts` namespace so the Notifications module consumes them without touching module
   internals. New events: inventory discrepancy opened, transfer requested, adjustment requested, security alert (lockouts).
 - Unfulfilled checkouts can now be closed after support follow-up (note required, audited).
+
+## Phase 10 — hardening (1 Oct 2026, engineering decisions within the Owner's cost directive §27–30)
+- **No Cloud Armor / external load balancer for now** (≈ USD 20+/month): the API enforces its own limits — per signed-in user
+  600 requests/min, per anonymous client IP 300/min, sign-in 20/min and OTP 10/min per IP (all settings). Add Cloud Armor later if
+  traffic or attacks justify it.
+- **Real client IP behind the web apps:** browsers reach the API through the Next.js servers, so the web apps forward the browser's
+  IP with a shared secret (`Security:ProxyKey` / `MANOKSHA_PROXY_KEY`, Secret Manager). The API trusts the IP only with the key;
+  required in Production. Fixes rate limits shared by all users and login/audit history showing the server's IP.
+- **Authorization sweep test:** every endpoint is checked automatically — only a fixed list may be anonymous, every route is bound
+  to its token audience, every admin route needs a permission (fifteen routes that relied only on in-service checks now also
+  require a permission at the endpoint), and real requests from anonymous, customer, reseller and under-privileged staff callers are
+  refused.
+- **Sign-in and approval-PIN counters are atomic database updates:** simultaneous sign-ins never fail with a conflict (which could
+  also reveal a correct password) and parallel guesses are all counted toward the lockout.
+- **Security headers:** API — no framing, no caching of personal data, HSTS, `default-src 'none'` CSP on JSON; web apps — CSP
+  (own code only, product media from Cloud Storage), HSTS, no framing. Request bodies limited to 10 MB (media goes straight to
+  Cloud Storage).
+- **Storage outage** during a deposit upload returns "try again" (503) and records nothing.
+- Infrastructure as code (`infra/terraform`), runbooks (`docs/runbooks`) and the production go-live checklist added; the free
+  Supabase tier is not acceptable for production (no backups, pauses when idle) — Owner to choose Supabase Pro or Cloud SQL.

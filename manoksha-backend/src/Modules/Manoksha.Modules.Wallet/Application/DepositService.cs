@@ -63,7 +63,15 @@ internal sealed class DepositService(
             StoredObject stored;
             await using (var stream = proof.OpenReadStream())
             {
-                stored = await storage.PutAsync(ProofContainer, $"{reseller.ResellerId:N}/{fileId:N}{extension}", stream, contentType, innerCt);
+                try
+                {
+                    stored = await storage.PutAsync(ProofContainer, $"{reseller.ResellerId:N}/{fileId:N}{extension}", stream, contentType, innerCt);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException and not BusinessRuleException)
+                {
+                    // Nothing is recorded: the deposit request is written in the same transaction, after the upload.
+                    throw new BusinessRuleException("PROOF_UPLOAD_FAILED", "The payment screenshot could not be saved right now. Please try again in a minute.", 503);
+                }
             }
             db.Add(new WalletFile(fileId, stored.ObjectKey, contentType, stored.Size, stored.Sha256, currentUser.UserId, clock.UtcNow));
 

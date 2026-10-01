@@ -56,13 +56,13 @@ internal static class InventoryEndpoints
 
         var admin = endpoints.MapGroup("/api/v1/admin/inventory").WithTags("Inventory").RequireAudience(Audiences.Admin);
         admin.MapGet("/adjustments", (string? status, Guid? branchId, AdjustmentService s, CancellationToken ct) => s.ListAsync(status, branchId, ct))
-            .WithName("ListAdjustments");
+            .RequireAnyPermission(Permissions.Inventory.AdjustRequest, Permissions.Inventory.AdjustApprove).WithName("ListAdjustments");
         admin.MapPost("/adjustments", (CreateAdjustmentRequest r, AdjustmentService s, CancellationToken ct) => s.RequestAsync(r, ct))
             .RequirePermission(Permissions.Inventory.AdjustRequest).WithName("RequestAdjustment");
         admin.MapPost("/adjustments/{id:guid}/approve", (Guid id, ApproveAdjustmentRequest r, AdjustmentService s, CancellationToken ct) => s.ApproveAsync(id, r, ct))
-            .WithName("ApproveAdjustment");
+            .RequirePermission(Permissions.Inventory.AdjustApprove).WithName("ApproveAdjustment");
         admin.MapPost("/adjustments/{id:guid}/reject", (Guid id, InventoryReasonRequest r, AdjustmentService s, CancellationToken ct) => s.RejectAsync(id, r, ct))
-            .WithName("RejectAdjustment");
+            .RequirePermission(Permissions.Inventory.AdjustApprove).WithName("RejectAdjustment");
         admin.MapGet("/discrepancies", (string? status, Guid? branchId, DiscrepancyService s, CancellationToken ct) => s.ListAsync(status, branchId, ct))
             .RequirePermission(Permissions.Inventory.View).WithName("ListDiscrepancies");
         admin.MapGet("/discrepancies/{id:guid}", (Guid id, DiscrepancyService s, CancellationToken ct) => s.GetAsync(id, ct))

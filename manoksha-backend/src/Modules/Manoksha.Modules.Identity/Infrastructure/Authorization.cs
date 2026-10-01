@@ -16,9 +16,10 @@ internal sealed class AudienceRequirement(IReadOnlySet<string> audiences) : IAut
     public IReadOnlySet<string> Audiences { get; } = audiences;
 }
 
-internal sealed class PermissionRequirement(string permission) : IAuthorizationRequirement
+/// <summary>Satisfied by any one of the permissions.</summary>
+internal sealed class PermissionRequirement(IReadOnlyList<string> permissions) : IAuthorizationRequirement
 {
-    public string Permission { get; } = permission;
+    public IReadOnlyList<string> Permissions { get; } = permissions;
 }
 
 internal sealed class AudienceHandler : AuthorizationHandler<AudienceRequirement>
@@ -43,9 +44,13 @@ internal sealed class PermissionHandler(IPermissionService permissions) : Author
         {
             return;
         }
-        if (await permissions.HasPermissionAsync(requirement.Permission))
+        foreach (var permission in requirement.Permissions)
         {
-            context.Succeed(requirement);
+            if (await permissions.HasPermissionAsync(permission))
+            {
+                context.Succeed(requirement);
+                return;
+            }
         }
     }
 }
@@ -57,14 +62,17 @@ internal sealed class ManokshaPolicyProvider(IOptions<AuthorizationOptions> opti
     {
         if (policyName.StartsWith(AuthorizationPolicyNames.PermissionPrefix, StringComparison.Ordinal))
         {
-            var code = policyName[AuthorizationPolicyNames.PermissionPrefix.Length..];
-            if (!Manoksha.Application.Security.Permissions.Exists(code))
+            var codes = policyName[AuthorizationPolicyNames.PermissionPrefix.Length..].Split('|');
+            foreach (var code in codes)
             {
-                throw new InvalidOperationException($"Endpoint requires unknown permission '{code}'.");
+                if (!Manoksha.Application.Security.Permissions.Exists(code))
+                {
+                    throw new InvalidOperationException($"Endpoint requires unknown permission '{code}'.");
+                }
             }
             return new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
                 .RequireAuthenticatedUser()
-                .AddRequirements(new PermissionRequirement(code))
+                .AddRequirements(new PermissionRequirement(codes))
                 .Build();
         }
         if (policyName.StartsWith(AuthorizationPolicyNames.AudiencePrefix, StringComparison.Ordinal))

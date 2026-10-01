@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { serverConfig } from "@/lib/config";
 import { isSameOrigin } from "@/lib/auth-step";
+import { upstreamFetch } from "@/lib/upstream";
 
 /**
  * Development only: forwards a direct media upload (raw bytes) to the API's disk-storage stand-in. Deployed environments upload
@@ -12,7 +13,7 @@ export async function PUT(request: Request, context: { params: Promise<{ path: s
   }
   const path = (await context.params).path.map(encodeURIComponent).join("/");
   const url = new URL(request.url);
-  const upstream = await fetch(`${serverConfig.apiUrl}/api/v1/dev-storage/${path}${url.search}`, {
+  const upstream = await upstreamFetch(`${serverConfig.apiUrl}/api/v1/dev-storage/${path}${url.search}`, {
     method: "PUT",
     headers: { "Content-Type": request.headers.get("content-type") ?? "application/octet-stream" },
     body: await request.arrayBuffer(),

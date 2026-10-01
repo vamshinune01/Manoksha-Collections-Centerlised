@@ -58,7 +58,7 @@ internal sealed class ApprovalService(ManokshaDbContext db, PasswordService pass
         }
         if (_hasher.VerifyHashedPassword(user, user.ApprovalPinHash, pin ?? string.Empty) == PasswordVerificationResult.Failed)
         {
-            if (user.RecordApprovalPinFailure(now, MaxFailures, LockFor))
+            if (await LoginCounters.RecordPinFailureAsync(db, user.Id, MaxFailures, now.Add(LockFor), cancellationToken))
             {
                 outbox.Enqueue(new SecurityAlertRaised("APPROVAL_PIN_LOCKED", user.Id, user.DisplayName,
                     $"Approval PIN locked for {LockFor.TotalMinutes:0} minutes after {MaxFailures} wrong PINs on the POS."));
@@ -72,8 +72,7 @@ internal sealed class ApprovalService(ManokshaDbContext db, PasswordService pass
         {
             throw new ForbiddenException("APPROVER_NOT_AUTHORIZED", ownerOnly ? "Only the Owner can approve this." : $"{user.DisplayName} cannot approve this at this branch.");
         }
-        user.RecordApprovalPinSuccess();
-        await db.SaveChangesAsync(cancellationToken);
+        await LoginCounters.RecordPinSuccessAsync(db, user.Id, cancellationToken);
         return new ApproverInfo(user.Id, user.DisplayName, access.IsOwner);
     }
 

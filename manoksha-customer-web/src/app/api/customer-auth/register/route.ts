@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { CS_REGISTRATION, serverConfig } from "@/lib/config";
 import { isSameOrigin, type TokenPair, writeCustomerSession } from "@/lib/session";
+import { upstreamFetch } from "@/lib/upstream";
 
 /** Completes first-time registration (name + email) using the httpOnly registration cookie set at OTP verification. */
 export async function POST(request: Request) {
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ title: "Your verification expired. Please request a new code.", code: "REGISTRATION_EXPIRED" }, { status: 401 });
   }
   const { fullName, email } = (await request.json()) as { fullName?: string; email?: string };
-  const upstream = await fetch(`${serverConfig.apiUrl}/api/v1/auth/customer/register`, {
+  const upstream = await upstreamFetch(`${serverConfig.apiUrl}/api/v1/auth/customer/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ registrationToken, fullName, email }),

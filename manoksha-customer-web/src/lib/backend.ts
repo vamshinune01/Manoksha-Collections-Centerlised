@@ -3,11 +3,12 @@ import { cache } from "react";
 import { serverConfig } from "./config";
 import { customerToken, resellerToken } from "./session";
 import type { CustomerMe, ResellerMe } from "./types";
+import { upstreamFetch } from "./upstream";
 
 export type Result<T> = { ok: true; data: T } | { ok: false; status: number; title: string; code?: string };
 
 async function apiFetch<T>(url: string, token: string | undefined): Promise<Result<T>> {
-  const response = await fetch(`${serverConfig.apiUrl}${url}`, {
+  const response = await upstreamFetch(`${serverConfig.apiUrl}${url}`, {
     headers: { Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     cache: "no-store",
   });
