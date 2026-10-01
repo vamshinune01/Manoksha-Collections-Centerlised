@@ -4,13 +4,14 @@ import type { ApiProblem } from "@manoksha/api-client";
 import { serverConfig } from "./config";
 import { getAccessToken } from "./session";
 import type { Me } from "./access";
+import { upstreamFetch } from "./upstream";
 
 export type BackendResult<T> = { ok: true; status: number; data: T } | { ok: false; status: number; problem: ApiProblem };
 
 /** Server-side call to manoksha-backend with the caller's access token. */
 export async function backendFetch<T>(path: string, init: { method?: string; body?: unknown; token?: string | null } = {}): Promise<BackendResult<T>> {
   const token = init.token === undefined ? await getAccessToken() : init.token;
-  const response = await fetch(`${serverConfig.apiUrl}/api/v1/${path.replace(/^\//, "")}`, {
+  const response = await upstreamFetch(`${serverConfig.apiUrl}/api/v1/${path.replace(/^\//, "")}`, {
     method: init.method ?? "GET",
     headers: {
       Accept: "application/json",

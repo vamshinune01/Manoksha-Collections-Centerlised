@@ -4,13 +4,14 @@ import { cookies } from "next/headers";
 import { serverConfig } from "./config";
 import { writeSessionCookies } from "./session";
 import type { AuthResponse } from "./tokens";
+import { upstreamFetch } from "./upstream";
 
 /**
  * Forwards one sign-in step to the backend. When the backend returns tokens they are stored in httpOnly cookies and
  * never returned to the browser; challenge tokens (short-lived, single purpose) are returned for the next step.
  */
 export async function forwardAuthStep(backendPath: string, body: unknown): Promise<NextResponse> {
-  const response = await fetch(`${serverConfig.apiUrl}/api/v1/${backendPath}`, {
+  const response = await upstreamFetch(`${serverConfig.apiUrl}/api/v1/${backendPath}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(body),

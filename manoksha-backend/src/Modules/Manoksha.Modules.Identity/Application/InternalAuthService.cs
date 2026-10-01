@@ -29,10 +29,14 @@ internal sealed class InternalAuthService(
 {
     private const string MfaIssuer = "Manoksha Collections";
 
-    private void RecordFailure(User user, DateTimeOffset now)
+    /// <summary>
+    /// Counts a failed attempt atomically in the database (parallel guesses can never lose a count or race into a conflict that would
+    /// reveal anything) and locks the account at the limit.
+    /// </summary>
+    private async Task RecordFailureAsync(User user, DateTimeOffset now, CancellationToken ct)
     {
         var p = options.Value.Password;
-        if (user.RecordFailedLogin(now, p.MaxFailedAttempts, TimeSpan.FromMinutes(p.LockoutMinutes)))
+        if (await LoginCounters.RecordFailureAsync(db, user.Id, p.MaxFailedAttempts, now + TimeSpan.FromMinutes(p.LockoutMinutes), ct))
         {
             outbox.Enqueue(new SecurityAlertRaised("ACCOUNT_LOCKED", user.Id, user.DisplayName,
                 $"Staff sign-in locked for {p.LockoutMinutes} minutes after {p.MaxFailedAttempts} failed attempts (IP {requestContext.IpAddress ?? "unknown"})."));
@@ -56,7 +60,7 @@ internal sealed class InternalAuthService(
         {
             if (user is not null)
             {
-                RecordFailure(user, now);
+                await RecordFailureAsync(user, now, ct);
             }
             await LogAsync(user?.Id, email, client, "FAILED", "INVALID_CREDENTIALS", ct);
             throw InvalidCredentials();
@@ -68,7 +72,7 @@ internal sealed class InternalAuthService(
             throw new ForbiddenException("ACCOUNT_NOT_ACTIVE", "This account is not active. Contact the Owner.");
         }
 
-        user.RecordSuccessfulLogin(now);
+        await LoginCounters.RecordSuccessAsync(db, user.Id, now, ct);
         await LogAsync(user.Id, email, client, "PASSWORD_OK", null, ct);
         return await ContinueAsync(user, client, ct);
     }
@@ -105,7 +109,7 @@ internal sealed class InternalAuthService(
         var step = Totp.Verify(protector.Unprotect(user.MfaSecretProtected!), request.Code ?? string.Empty, now);
         if (step is null || !user.TryConsumeMfaTimeStep(step.Value))
         {
-            RecordFailure(user, now);
+            await RecordFailureAsync(user, now, ct);
             await LogAsync(user.Id, user.EmailNormalized!, client, "FAILED", "INVALID_MFA_CODE", ct);
             throw new BusinessRuleException("MFA_CODE_INVALID", "The authenticator code is incorrect.", 401);
         }

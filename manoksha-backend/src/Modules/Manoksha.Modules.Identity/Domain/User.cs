@@ -110,26 +110,6 @@ internal sealed class User : Entity
         RotateSecurityStamp();
     }
 
-    /// <returns>True when this failure locked the account.</returns>
-    public bool RecordFailedLogin(DateTimeOffset now, int maxAttempts, TimeSpan lockoutDuration)
-    {
-        FailedLoginCount++;
-        if (FailedLoginCount >= maxAttempts)
-        {
-            LockoutUntil = now + lockoutDuration;
-            FailedLoginCount = 0;
-            return true;
-        }
-        return false;
-    }
-
-    public void RecordSuccessfulLogin(DateTimeOffset now)
-    {
-        FailedLoginCount = 0;
-        LockoutUntil = null;
-        LastLoginAt = now;
-    }
-
     public void BeginMfaEnrollment(string protectedSecret) => MfaPendingSecretProtected = protectedSecret;
 
     public void CompleteMfaEnrollment(long usedTimeStep)
@@ -178,21 +158,6 @@ internal sealed class User : Entity
         ApprovalPinFailures = 0;
         ApprovalPinLockedUntil = null;
     }
-
-    /// <returns>True when this failure locked the PIN.</returns>
-    public bool RecordApprovalPinFailure(DateTimeOffset now, int maxFailures, TimeSpan lockFor)
-    {
-        ApprovalPinFailures++;
-        if (ApprovalPinFailures >= maxFailures)
-        {
-            ApprovalPinLockedUntil = now.Add(lockFor);
-            ApprovalPinFailures = 0;
-            return true;
-        }
-        return false;
-    }
-
-    public void RecordApprovalPinSuccess() => ApprovalPinFailures = 0;
 
     /// <summary>A customer edits their own name and email (the mobile is the sign-in identity and is not editable here).</summary>
     public void UpdateCustomerProfile(string displayName, string email)

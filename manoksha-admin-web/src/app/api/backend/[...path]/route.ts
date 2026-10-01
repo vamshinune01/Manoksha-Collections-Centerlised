@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { serverConfig } from "@/lib/config";
 import { getAccessToken } from "@/lib/session";
 import { isSameOrigin } from "@/lib/auth-step";
+import { upstreamFetch } from "@/lib/upstream";
 
 /**
  * Same-origin proxy from browser components to the backend, attaching the httpOnly access token.
@@ -22,7 +23,7 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
   const token = await getAccessToken();
   const url = new URL(request.url);
   const body = request.method === "GET" || request.method === "HEAD" ? undefined : await request.text();
-  const upstream = await fetch(`${serverConfig.apiUrl}/api/v1/${path}${url.search}`, {
+  const upstream = await upstreamFetch(`${serverConfig.apiUrl}/api/v1/${path}${url.search}`, {
     method: request.method,
     headers: {
       Accept: "application/json",

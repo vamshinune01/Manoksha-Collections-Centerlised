@@ -31,6 +31,11 @@ public static class EndpointExtensions
         where TBuilder : IEndpointConventionBuilder =>
         builder.RequireAuthorization(AuthorizationPolicyNames.Permission(permission));
 
+    /// <summary>Requires at least one of the permissions (globally or in a branch); the service still checks the branch.</summary>
+    public static TBuilder RequireAnyPermission<TBuilder>(this TBuilder builder, params string[] permissions)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.RequireAuthorization(AuthorizationPolicyNames.Permission(string.Join('|', permissions)));
+
     /// <summary>Validates the request body with its registered FluentValidation validator.</summary>
     public static RouteHandlerBuilder Validate<TRequest>(this RouteHandlerBuilder builder) =>
         builder.AddEndpointFilter(async (context, next) =>

@@ -2,6 +2,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { serverConfig } from "./config";
 import { isSameOrigin } from "./session";
+import { upstreamFetch } from "./upstream";
 
 /**
  * Same-origin BFF forwarding to one backend area. State-changing calls must be same-origin and carry the custom header (CSRF).
@@ -17,7 +18,7 @@ export async function forward(request: Request, apiPrefix: string, path: string[
   const contentType = request.headers.get("content-type");
   const body = request.method === "GET" ? undefined : await request.arrayBuffer();
   const idempotencyKey = request.headers.get("idempotency-key");
-  const upstream = await fetch(`${serverConfig.apiUrl}${apiPrefix}/${joined}${url.search}`, {
+  const upstream = await upstreamFetch(`${serverConfig.apiUrl}${apiPrefix}/${joined}${url.search}`, {
     method: request.method,
     headers: {
       Accept: "application/json",

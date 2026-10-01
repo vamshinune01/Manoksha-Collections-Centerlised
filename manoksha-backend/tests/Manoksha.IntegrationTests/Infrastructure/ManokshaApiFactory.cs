@@ -31,11 +31,16 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
 
     public const string OwnerSetupCode = "integration-owner-setup-code";
 
+    public const string ProxyKey = "integration-proxy-key-0123456789abcdef";
+
     public const string SimulatorWebhookSecret = "integration-test-simulator-secret";
 
     public TestClock Clock { get; } = new();
 
     public RecordingEmailSender Emails { get; } = new();
+
+    /// <summary>Set to true to simulate a Cloud Storage outage for writes.</summary>
+    public bool FailStorageWrites { get; set; }
 
     public Guid OwnerUserId { get; private set; }
 
@@ -89,6 +94,9 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
         builder.UseSetting("Database:MigrateOnStartup", "true");
         builder.UseSetting("RateLimiting:AuthPermitPerMinute", "100000");
         builder.UseSetting("RateLimiting:OtpPermitPerMinute", "100000");
+        builder.UseSetting("RateLimiting:UserPermitPerMinute", "100000");
+        builder.UseSetting("RateLimiting:AnonymousPermitPerMinute", "100000");
+        builder.UseSetting("Security:ProxyKey", ProxyKey);
         builder.UseSetting("Auth:MfaRequiredRoles:0", MfaTestRole);
         builder.UseSetting("Integrations:Sms:Provider", "Fake");
         builder.UseSetting("Integrations:Sms:Fake:FailNumbers:0", FailingSmsNumber);
@@ -107,6 +115,8 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
             services.AddSingleton<IClock>(Clock);
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+            services.RemoveAll<IFileStorage>();
+            services.AddSingleton<IFileStorage>(sp => new FaultyFileStorage(sp.GetRequiredService<Manoksha.Integrations.Storage.LocalFileStorage>(), () => FailStorageWrites));
         });
     }
 
