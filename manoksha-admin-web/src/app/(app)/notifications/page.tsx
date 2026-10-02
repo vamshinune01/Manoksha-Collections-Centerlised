@@ -3,7 +3,7 @@ import { Alert, Badge, Card, Forbidden, PageHeader, Table, formatDateTime } from
 import { P, can } from "@/lib/access";
 import { backendFetch, getMe } from "@/lib/backend";
 import type { EmailDelivery, Inbox, OperationalAlert, Severity } from "@/lib/types";
-import { MarkAllRead, NotificationLink, RetryEmail } from "./inbox-actions";
+import { MarkAllRead, NotificationLink, RetryEmail, SendTestEmail } from "./inbox-actions";
 
 const TONE: Record<Severity, "red" | "amber" | "slate"> = { CRITICAL: "red", WARNING: "amber", INFO: "slate" };
 
@@ -57,9 +57,10 @@ async function EmailLog({ status }: { status?: string }) {
   return (
     <>
       <Alert tone="info">
-        Until an email provider is connected, emails are recorded here (and in the server log) instead of being delivered. Open one to see exactly what the recipient will get.
+        Every email is recorded here. While no email provider is connected (staging), they are only recorded, not delivered. Open one to see exactly what the recipient gets.
       </Alert>
-      <div className="my-3 flex gap-2 text-xs">
+      <div className="my-3 flex flex-wrap items-center gap-2 text-xs">
+        <SendTestEmail />
         {["", "Pending", "Sent", "Failed"].map((s) => (
           <Link key={s || "all"} href={`/notifications?tab=emails${s ? `&status=${s}` : ""}`}
             className={`rounded-full border px-3 py-1 ${(status ?? "") === s ? "border-brand-600 bg-brand-600 text-white" : "border-slate-300 bg-white"}`}>{s || "All"}</Link>

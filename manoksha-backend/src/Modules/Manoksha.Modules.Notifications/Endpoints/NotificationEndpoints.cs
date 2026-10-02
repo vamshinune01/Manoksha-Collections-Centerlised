@@ -36,6 +36,9 @@ internal static class NotificationEndpoints
         admin.MapPost("/notifications/emails/{id:guid}/retry", (Guid id, NotificationService s, CancellationToken ct) => s.RetryEmailAsync(id, ct))
             .RequirePermission(Permissions.Exceptions.Manage).WithName("RetryEmailDelivery");
 
+        admin.MapPost("/notifications/emails/test", (NotificationService s, CancellationToken ct) => s.SendTestEmailAsync(ct))
+            .RequirePermission(Permissions.Exceptions.Manage).WithName("SendTestEmail");
+
         admin.MapGet("/alerts", (string? status, NotificationService s, CancellationToken ct) => s.AlertsAsync(status, ct))
             .RequirePermission(Permissions.Exceptions.Manage).WithName("ListAlerts");
         admin.MapPost("/alerts/{id:guid}/resolve", (Guid id, ResolveAlertRequest r, NotificationService s, CancellationToken ct) => s.ResolveAlertAsync(id, r, ct))

@@ -4118,6 +4118,26 @@
         }
       }
     },
+    "/api/v1/admin/notifications/emails/test": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "operationId": "SendTestEmail",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDeliveryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/alerts": {
       "get": {
         "tags": [

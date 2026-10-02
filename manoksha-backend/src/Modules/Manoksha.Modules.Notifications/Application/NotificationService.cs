@@ -22,7 +22,8 @@ public sealed record AlertDto(Guid Id, string Kind, string Severity, string Titl
 public sealed record ResolveAlertRequest(string Note);
 
 /// <summary>In-app inbox (the bell) and the Owner's delivery log, failed-email retry and sensitive-alert follow-up.</summary>
-internal sealed class NotificationService(ManokshaDbContext db, IPermissionService permissions, ICurrentUser currentUser, IAuditWriter audit, IClock clock)
+internal sealed class NotificationService(ManokshaDbContext db, IPermissionService permissions, ICurrentUser currentUser, IAuditWriter audit, IClock clock,
+    NotificationPublisher publisher, Manoksha.Modules.Identity.Contracts.IUserDirectory users)
 {
     private static readonly TimeSpan InboxWindow = TimeSpan.FromDays(30);
 
@@ -111,6 +112,25 @@ internal sealed class NotificationService(ManokshaDbContext db, IPermissionServi
         d.Retry(clock.UtcNow);
         await audit.RecordAsync(new AuditRecord("notifications.email.retried", "EmailDelivery", id.ToString(), new { status = "Failed" }, new { status = "Pending", d.ToAddress }), ct);
         await db.SaveChangesAsync(ct);
+        return new EmailDeliveryDto(d.Id, d.EventType, d.Category, d.Reference, d.ToAddress, d.ToName, d.RecipientKind, d.Subject, d.Status.ToString(), d.Attempts,
+            d.NextAttemptAt, d.LastError, d.SentAt, d.CreatedAt);
+    }
+
+    /// <summary>Queues a test email to the signed-in user (checks the email provider end to end; the email job sends it).</summary>
+    public async Task<EmailDeliveryDto> SendTestEmailAsync(CancellationToken ct)
+    {
+        var me = await users.GetContactAsync(currentUser.UserId, ct);
+        if (string.IsNullOrWhiteSpace(me?.Email))
+        {
+            throw new BusinessRuleException("EMAIL_MISSING", "Your account has no email address.", 400);
+        }
+        var key = $"test_email:{currentUser.UserId:N}:{clock.UtcNow:yyyyMMddHHmmss}";
+        await publisher.EmailAsync(key, "notifications.test", Domain.Category.Info, "TEST", me.Email, me.DisplayName, "OWNER",
+            EmailTemplates.Build(publisher.Options.ShopName, "Test email from Manoksha Collections", "Email delivery works",
+                [new Para($"This test was requested from the admin site at {clock.UtcNow.ToOffset(TimeSpan.FromHours(5.5)):dd MMM yyyy, HH:mm} IST. If you can read it, customer and Owner emails will arrive too.")]), ct);
+        await audit.RecordAsync(new AuditRecord("notifications.email.test_requested", "EmailDelivery", key, After: new { to = me.Email }), ct);
+        await db.SaveChangesAsync(ct);
+        var d = await db.Set<EmailDelivery>().AsNoTracking().SingleAsync(x => x.DedupeKey == key, ct);
         return new EmailDeliveryDto(d.Id, d.EventType, d.Category, d.Reference, d.ToAddress, d.ToName, d.RecipientKind, d.Subject, d.Status.ToString(), d.Attempts,
             d.NextAttemptAt, d.LastError, d.SentAt, d.CreatedAt);
     }

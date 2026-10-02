@@ -13,3 +13,19 @@ Each real provider is one adapter class behind an existing interface plus config
 
 Steps once chosen: developer adds the adapter + tests against the provider's sandbox → secrets added (secret-rotation.md) →
 staging switched (`Integrations__<Kind>__Provider`) and tested end to end → production.
+
+## Email: Brevo (chosen 2 Oct 2026)
+
+Brevo is used through its SMTP relay with the existing SMTP adapter (no extra code). Free plan: 300 emails/day.
+
+1. Owner creates the Brevo account, adds a **sender** (Senders, Domains & Dedicated IPs → Senders) and verifies it. With a own
+   domain, also authenticate the domain (DKIM + DMARC DNS records) — much better inbox delivery than a Gmail sender address.
+2. SMTP & API → **SMTP** tab → *Generate a new SMTP key*. Note the **SMTP login** shown there (looks like `xxxx@smtp-brevo.com`).
+3. Store the key (never in chat or code):
+   ```bash
+   read -rs "KEY?Brevo SMTP key: "; printf '%s' "$KEY" | gcloud secrets create manoksha-email-smtp-password --replication-policy=automatic --data-file=-; unset KEY
+   ```
+4. API settings: `Integrations__Email__Provider=Smtp`, `Integrations__Email__Smtp__Host=smtp-relay.brevo.com`,
+   `…__Port=587`, `…__UseTls=true`, `…__Username=<SMTP login>`, `…__FromAddress=<verified sender>`,
+   `…__FromName=Manoksha Collections`, secret `Integrations__Email__Smtp__Password=manoksha-email-smtp-password:latest`.
+5. Admin → Notifications → Email log → **Send me a test email**.

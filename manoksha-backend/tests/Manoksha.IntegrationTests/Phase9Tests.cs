@@ -260,4 +260,15 @@ public class Phase9Tests(ManokshaApiFactory factory)
         mine["walletBalance"]!.GetValue<decimal>().Should().Be(3000m - order["grandTotal"]!.GetValue<decimal>());
         (await other.GetAsync("/api/v1/reseller/dashboard").OkJsonAsync())["ordersAllTime"]!.GetValue<int>().Should().Be(0);
     }
+
+    [Fact]
+    public async Task Owner_can_send_a_test_email_to_check_the_provider()
+    {
+        var owner = await factory.OwnerClientAsync();
+        var queued = await owner.PostAsync("/api/v1/admin/notifications/emails/test", null).OkJsonAsync();
+        queued["toAddress"]!.GetValue<string>().Should().Be(ManokshaApiFactory.OwnerEmail);
+        await factory.SendEmailsAsync();
+        factory.Emails.To(ManokshaApiFactory.OwnerEmail).Should().Contain(m => m.Subject == "Test email from Manoksha Collections");
+        (await (await StaffAsync(SystemRoles.BranchManager, Knr)).PostAsync("/api/v1/admin/notifications/emails/test", null)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }

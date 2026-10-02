@@ -34,3 +34,13 @@ export function RetryEmail({ id }: { id: string }) {
     </span>
   );
 }
+
+export function SendTestEmail() {
+  const { error, busy, run } = useAction();
+  return (
+    <span className="inline-flex items-center gap-2">
+      <Button variant="secondary" disabled={busy} onClick={() => void run(() => callApi("admin/notifications/emails/test", "POST"))}>Send me a test email</Button>
+      {error && <span className="text-xs text-red-600">{error}</span>}
+    </span>
+  );
+}
