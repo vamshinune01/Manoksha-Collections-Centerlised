@@ -9,6 +9,7 @@ internal enum SettingValueKind
     Integer,
     Money,
     String,
+    Boolean,
 }
 
 internal sealed record SettingDefinition(string Key, string Description, SettingValueKind Kind, string DefaultJson, Func<JsonElement, string?> Validate);
@@ -56,6 +57,10 @@ internal static class SettingDefinitions
             "Low stock: a SKU is flagged at a branch when its available quantity is at or below this number (dashboard, daily alert).",
             SettingValueKind.Integer, "2",
             v => v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var n) && n is >= 0 and <= 10000 ? null : "Must be a whole number between 0 and 10000."),
+        new(SettingKeys.StoreSellingEnabled,
+            "Store (POS) selling and branch stock operations — purchasing, inventory, branch fulfillment board. Off while products ship directly from vendors (ADR-001 §48).",
+            SettingValueKind.Boolean, "false",
+            v => v.ValueKind is JsonValueKind.True or JsonValueKind.False ? null : "Must be true or false."),
         new(SettingKeys.DailySummaryHour,
             "Hour of the day (IST, 0–23) when the Owner's daily summary email is sent.",
             SettingValueKind.Integer, "21",

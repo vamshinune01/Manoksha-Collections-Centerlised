@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { Alert, Button, Card, Field, Input, Select } from "@/components/ui";
 import { type CartLine, readCart, writeCart } from "@/lib/cart";
 import { ApiError, rs } from "@/lib/client-api";
-import { type CheckoutResult, type Quote, type SavedCustomer, inr } from "@/lib/types";
+import { type CheckoutResult, type SavedCustomer, inr } from "@/lib/types";
+import { CartTotals, useCartSummary } from "@/components/cart-summary";
 
 function subscribe(cb: () => void) {
   window.addEventListener("manoksha-cart", cb);
@@ -24,30 +25,16 @@ function snapshot() {
 export function CartCheckout({ canOrder, walletBalance, customers }: { canOrder: boolean; walletBalance: number; customers: SavedCustomer[] }) {
   const router = useRouter();
   const cart = useSyncExternalStore(subscribe, snapshot, () => [] as CartLine[]);
-  const [quotes, setQuotes] = useState<Record<string, Quote>>({});
-  const [quoteError, setQuoteError] = useState<string>();
+  const { summary, error: quoteError } = useCartSummary(cart, "reseller");
+  const quotes = Object.fromEntries((summary?.lines ?? []).map((l) => [l.skuId, l]));
   const [customerId, setCustomerId] = useState<string>("");
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<CheckoutResult>();
   // One key per checkout attempt: double clicks and retries create one order and one wallet debit.
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
-  // Display only — the backend applies the authoritative shipping fee at checkout.
-  const [shipping, setShipping] = useState<number | null>(null);
-  useEffect(() => {
-    fetch("/api/store/order-charges").then((r) => r.json()).then((c: { shippingFeePerOrder: number }) => setShipping(c.shippingFeePerOrder)).catch(() => undefined);
-  }, []);
-
-  const skuKey = cart.map((l) => l.skuId).join(",");
-  useEffect(() => {
-    if (!skuKey) return;
-    rs<Quote[]>("price-quote", "POST", { skuIds: skuKey.split(",") })
-      .then((q) => { setQuotes(Object.fromEntries(q.map((x) => [x.skuId, x]))); setQuoteError(undefined); })
-      .catch((e: unknown) => setQuoteError(e instanceof ApiError ? e.message : "Could not price the cart."));
-  }, [skuKey]);
-
-  const merchandise = cart.reduce((sum, l) => sum + (quotes[l.skuId]?.finalUnitPrice ?? 0) * l.quantity, 0);
-  const total = merchandise + (cart.length ? (shipping ?? 0) : 0);
+  // Display only — the backend prices the order and applies each brand's shipping at checkout.
+  const total = summary?.total ?? 0;
 
   if (result?.outcome === "CONFIRMED" && result.order) {
     return (
@@ -79,20 +66,22 @@ export function CartCheckout({ canOrder, walletBalance, customers }: { canOrder:
         <ul className="divide-y divide-slate-100">
           {cart.map((l) => (
             <li key={l.skuId} className="flex flex-wrap items-center gap-3 py-3 text-sm">
-              <span className="flex-1">{l.name}</span>
+              <span className="flex-1">
+                {quotes[l.skuId]?.vendorName && <span className="block text-xs font-semibold uppercase tracking-wide text-brand-700">{quotes[l.skuId]!.vendorName}</span>}
+                {l.name}
+                {quotes[l.skuId]?.message && <span className="block text-xs text-red-700">{quotes[l.skuId]!.message}</span>}
+              </span>
               <Input type="number" min={0} max={1000} value={l.quantity} onChange={(e) => setQty(l.skuId, Number(e.target.value))} className="w-20" aria-label={`Quantity of ${l.name}`} />
-              <span className="w-28 text-right">{inr(quotes[l.skuId]?.finalUnitPrice)}</span>
-              <span className="w-28 text-right font-medium">{quotes[l.skuId] ? inr(quotes[l.skuId]!.finalUnitPrice * l.quantity) : "—"}</span>
+              <span className="w-28 text-right">{inr(quotes[l.skuId]?.unitPrice)}</span>
+              <span className="w-28 text-right font-medium">{quotes[l.skuId]?.unitPrice != null ? inr(quotes[l.skuId]!.unitPrice! * l.quantity) : "—"}</span>
               <button className="text-slate-400 hover:text-red-600" onClick={() => setQty(l.skuId, 0)} aria-label={`Remove ${l.name}`}>✕</button>
             </li>
           ))}
         </ul>
-        <dl className="mt-4 space-y-1 text-right text-sm">
-          <div>Items: {inr(merchandise)}</div>
-          <div>Shipping (per order): {inr(shipping)}</div>
-          <div className="text-base font-semibold">Total to be debited: {inr(total)}</div>
-          <div className={walletBalance < total ? "text-red-600" : "text-slate-500"}>Wallet balance: {inr(walletBalance)}</div>
-        </dl>
+        <div className="mt-4 ml-auto max-w-sm">
+          <CartTotals summary={summary} totalLabel="Total to be debited" />
+          <p className={`mt-1 text-right text-sm ${walletBalance < total ? "text-red-600" : "text-slate-500"}`}>Wallet balance: {inr(walletBalance)}</p>
+        </div>
       </Card>
       <Card title="Delivery details">
         <form className="space-y-3" onSubmit={async (e) => {

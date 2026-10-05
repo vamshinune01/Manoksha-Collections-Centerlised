@@ -282,3 +282,23 @@ Engineering decisions for Phase 7 (confirm or correct):
 - **Owner decision (1 Oct 2026): Terraform is used at production go-live** to create the production project (services, buckets,
   secrets, Worker, migration job, uptime checks and alerts). Staging stays as built by hand until then; the Terraform files are
   validated (`terraform validate` + `plan`) as part of the go-live work, not before.
+
+## Owner decisions (5 Oct 2026): vendor (dropship) selling model
+41. **Vendors.** Products come from vendors (Zara, Raj Kamal, Pooja, … added by the Owner). Every new product belongs to one
+    vendor; customers and resellers see the vendor name on the product.
+42. **Product ID.** Each product gets an automatic, unique, searchable code: vendor code + number (e.g. `ZR-000123`).
+43. **Vendor ships directly; no stock counts.** No inventory is held or reserved for vendor products: a variant is sellable until
+    the Owner marks it **out of stock**. There is no branch routing for vendor products.
+44. **Online customer discount per product** (e.g. 15% off retail), shown to online customers only.
+45. **Reseller price = retail − the reseller's own % for that product's vendor** (set per reseller per vendor at onboarding,
+    e.g. Zara 10%, Pooja 12%, Raj Kamal 15%; versioned with the commercial terms). No % set for a vendor → full retail (0%).
+    The product's online discount and the old per-product reseller discount do not apply to vendor products for resellers.
+46. **Shipping per vendor in the cart:** each vendor has its own fee (default ₹100); an order with Zara + Pooja + Raj Kamal items
+    pays the three fees. **One order, one payment; each vendor's items are a separate parcel** with its own status, courier and
+    tracking. The order is Shipped when every parcel is shipped and Delivered when every parcel is delivered. Cancellation stays
+    whole-order, until a parcel ships.
+47. **Owner margin per vendor** (e.g. Zara gives the Owner 17%): recorded on the vendor (Owner-only); the cost of a sale is
+    snapshotted as retail × (1 − margin) so reports show gross profit.
+48. **Store selling on hold:** POS sales and the branch stock screens (purchasing, inventory, branch fulfillment board) are switched
+    off by the setting `operations.store_selling_enabled` (default off). Data and code are kept; switching it on restores them.
+    These supersede SPEC §11 (branch priority), §18 (₹100 per order) and the single reseller discount of §15 for vendor products.

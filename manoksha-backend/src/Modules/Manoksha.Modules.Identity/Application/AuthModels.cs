@@ -53,6 +53,7 @@ public sealed record MeResponse(
     bool IsOwner,
     IReadOnlyList<MeRole> Roles,
     IReadOnlyList<string> GlobalPermissions,
-    IReadOnlyDictionary<Guid, IReadOnlyList<string>> BranchPermissions);
+    IReadOnlyDictionary<Guid, IReadOnlyList<string>> BranchPermissions,
+    bool StoreSellingEnabled = false);
 
 public sealed record MeRole(string Code, string Name, Guid? BranchId);

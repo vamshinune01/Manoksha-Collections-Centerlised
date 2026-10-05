@@ -8,7 +8,7 @@ import { NavLink } from "./nav-link";
 export function Shell({ me, openReconciliations = 0, openExceptions = 0, openAlerts = 0, openTotal = 0, unread = 0, children }: {
   me: Me; openReconciliations?: number; openExceptions?: number; openAlerts?: number; openTotal?: number; unread?: number; children: ReactNode;
 }) {
-  const items = NAV.filter((item) => canAny(me, item.permission));
+  const items = NAV.filter((item) => canAny(me, item.permission) && (!item.storeOnly || me.storeSellingEnabled));
   const primaryRole = me.isOwner ? "Owner" : me.roles.map((r) => (r.branchId ? `${r.name} · ${shortId(r.branchId)}` : r.name)).join(", ") || "No role assigned";
 
   return (

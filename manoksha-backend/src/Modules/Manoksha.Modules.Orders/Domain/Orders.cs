@@ -29,16 +29,24 @@ internal enum OrderStatus
 
 internal sealed record DeliveryDetails(string Name, string Mobile, string? Email, string AddressLine, string City, string State, string Pin);
 
+/// <summary>How an order is fulfilled: from branch stock (paused, ADR-001 §48) or shipped directly by vendors (ADR-001 §43, §46).</summary>
+internal enum FulfillmentMode
+{
+    Branch = 1,
+    Vendor = 2,
+}
+
 internal sealed class Order : Entity
 {
     private Order()
     {
     }
 
-    public Order(Guid id, string number, OrderChannel channel, Guid? resellerId, Guid? resellerCustomerId, Guid fulfillmentBranchId, DeliveryDetails delivery,
+    public Order(Guid id, string number, OrderChannel channel, Guid? resellerId, Guid? resellerCustomerId, Guid? fulfillmentBranchId, DeliveryDetails delivery,
         decimal merchandiseTotal, decimal shippingFee, Guid placedBy, DateTimeOffset now, Guid? customerUserId = null)
         : base(id)
     {
+        FulfillmentMode = fulfillmentBranchId is null ? FulfillmentMode.Vendor : FulfillmentMode.Branch;
         CustomerUserId = customerUserId;
         Number = number;
         Channel = channel;
@@ -70,7 +78,10 @@ internal sealed class Order : Entity
     /// <summary>The payment attempt that paid an ONLINE order.</summary>
     public Guid? PaymentAttemptId { get; private set; }
 
-    public Guid FulfillmentBranchId { get; private set; }
+    /// <summary>The fulfilling branch; null for vendor orders, which vendors ship directly (ADR-001 §43).</summary>
+    public Guid? FulfillmentBranchId { get; private set; }
+
+    public FulfillmentMode FulfillmentMode { get; private set; }
 
     /// <summary>Delivery snapshot as entered at checkout (ADR-001 §21).</summary>
     public DeliveryDetails Delivery { get; private set; } = default!;
@@ -142,6 +153,45 @@ internal sealed class Order : Entity
         return from;
     }
 
+    /// <summary>Vendor orders: a payment confirms the order even when it arrives late — there is no stock hold to lose (ADR-001 §43).</summary>
+    public OrderStatus ConfirmVendorOnlinePaid(Guid paymentAttemptId, DateTimeOffset now)
+    {
+        var from = Ensure(OrderStatus.PaymentPending, OrderStatus.PaymentExpired, OrderStatus.PaymentFailed);
+        PaymentAttemptId = paymentAttemptId;
+        Status = OrderStatus.Confirmed;
+        ConfirmedAt = now;
+        return from;
+    }
+
+    /// <summary>
+    /// Vendor orders follow their parcels (ADR-001 §46): Processing once any parcel is ordered or shipped, Shipped when every parcel
+    /// has shipped, Delivered when every parcel is delivered. Never moves backwards.
+    /// </summary>
+    public OrderStatus? FollowParcels(IReadOnlyCollection<OrderParcel> parcels)
+    {
+        if (FulfillmentMode != FulfillmentMode.Vendor)
+        {
+            throw new InvalidOperationException("Only vendor orders follow parcels.");
+        }
+        var live = parcels.Where(p => p.Status != ParcelStatus.Cancelled).ToList();
+        var target = live.Count > 0 && live.All(p => p.Status == ParcelStatus.Delivered) ? OrderStatus.Delivered
+            : live.Count > 0 && live.All(p => p.Status is ParcelStatus.Shipped or ParcelStatus.Delivered) ? OrderStatus.Shipped
+            : live.Any(p => p.Status != ParcelStatus.Pending) ? OrderStatus.Processing
+            : OrderStatus.Confirmed;
+        var rank = new Dictionary<OrderStatus, int> { [OrderStatus.Confirmed] = 0, [OrderStatus.Processing] = 1, [OrderStatus.Shipped] = 2, [OrderStatus.Delivered] = 3 };
+        if (!rank.TryGetValue(Status, out var current))
+        {
+            throw new BusinessRuleException("ORDER_STATUS_INVALID", $"The order is {Status}; this step is not possible.", 409);
+        }
+        if (rank[target] <= current)
+        {
+            return null;
+        }
+        var from = Status;
+        Status = target;
+        return from;
+    }
+
     // ---- Fulfillment (SPEC §19, §22, §27.1) ----
 
     public OrderStatus StartProcessing() => Move(OrderStatus.Processing, OrderStatus.Confirmed);
@@ -202,6 +252,118 @@ internal sealed class Order : Entity
 /// Immutable price snapshot (SPEC §15): retail/base price, applicable discount source and %, final unit price. Later price or
 /// discount changes never touch it (the table is append-only in the database).
 /// </summary>
+internal enum ParcelStatus
+{
+    /// <summary>Waiting to be passed on to the vendor.</summary>
+    Pending = 1,
+
+    /// <summary>The Owner placed it with the vendor.</summary>
+    OrderedFromVendor = 2,
+
+    Shipped = 3,
+    Delivered = 4,
+    Cancelled = 5,
+}
+
+/// <summary>One vendor's part of an order, shipped by that vendor with its own courier and tracking (ADR-001 §46).</summary>
+internal sealed class OrderParcel : Entity
+{
+    private OrderParcel()
+    {
+    }
+
+    public OrderParcel(Guid orderId, Guid vendorId, string vendorCode, string vendorName, decimal shippingFee, DateTimeOffset now)
+    {
+        OrderId = orderId;
+        VendorId = vendorId;
+        VendorCode = vendorCode;
+        VendorName = vendorName;
+        ShippingFee = shippingFee;
+        Status = ParcelStatus.Pending;
+        UpdatedAt = now;
+    }
+
+    public Guid OrderId { get; private set; }
+
+    public Guid VendorId { get; private set; }
+
+    public string VendorCode { get; private set; } = default!;
+
+    public string VendorName { get; private set; } = default!;
+
+    /// <summary>The vendor's shipping fee at checkout (snapshot).</summary>
+    public decimal ShippingFee { get; private set; }
+
+    public ParcelStatus Status { get; private set; }
+
+    /// <summary>The vendor's own order/invoice number, if any.</summary>
+    public string? VendorReference { get; private set; }
+
+    public string? Courier { get; private set; }
+
+    public string? CourierName { get; private set; }
+
+    public string? TrackingNumber { get; private set; }
+
+    public DateTimeOffset? ShippedAt { get; private set; }
+
+    public DateOnly? DeliveredOn { get; private set; }
+
+    public string? Note { get; private set; }
+
+    public DateTimeOffset UpdatedAt { get; private set; }
+
+    public uint RowVersion { get; private set; }
+
+    public void MarkOrderedFromVendor(string? vendorReference, string? note, DateTimeOffset now)
+    {
+        Require(ParcelStatus.Pending);
+        Status = ParcelStatus.OrderedFromVendor;
+        VendorReference = vendorReference;
+        Note = note;
+        UpdatedAt = now;
+    }
+
+    public void MarkShipped(string courier, string? courierName, string? tracking, string? note, DateTimeOffset now)
+    {
+        Require(ParcelStatus.Pending, ParcelStatus.OrderedFromVendor);
+        Status = ParcelStatus.Shipped;
+        Courier = courier;
+        CourierName = courierName;
+        TrackingNumber = tracking;
+        ShippedAt = now;
+        Note = note ?? Note;
+        UpdatedAt = now;
+    }
+
+    public void MarkDelivered(DateOnly on, string? note, DateTimeOffset now)
+    {
+        Require(ParcelStatus.Shipped);
+        Status = ParcelStatus.Delivered;
+        DeliveredOn = on;
+        Note = note ?? Note;
+        UpdatedAt = now;
+    }
+
+    public void Cancel(DateTimeOffset now)
+    {
+        if (Status is ParcelStatus.Shipped or ParcelStatus.Delivered)
+        {
+            throw new BusinessRuleException("PARCEL_ALREADY_SHIPPED", $"The {VendorName} parcel has already shipped; the order can no longer be cancelled.", 409);
+        }
+        Status = ParcelStatus.Cancelled;
+        UpdatedAt = now;
+    }
+
+    private void Require(params ParcelStatus[] allowed)
+    {
+        if (!allowed.Contains(Status))
+        {
+            throw new BusinessRuleException("PARCEL_STATUS_INVALID", $"The {VendorName} parcel is {Status}; this step is not possible.", 409);
+        }
+    }
+}
+
 internal sealed class OrderLine : Entity
 {
     private OrderLine()
@@ -271,6 +433,23 @@ internal sealed class OrderLine : Entity
     public decimal? CostAmount { get; private set; }
 
     public Guid[] ItemIds { get; private set; } = [];
+
+    /// <summary>Vendor products: the vendor and its parcel in this order (ADR-001 §46).</summary>
+    public Guid? VendorId { get; private set; }
+
+    public Guid? ParcelId { get; private set; }
+
+    /// <summary>The product's public ID at sale time, e.g. ZR-000123 (snapshot).</summary>
+    public string? ProductCode { get; private set; }
+
+    /// <summary>Vendor products ship from the vendor's parcel. Cost is the vendor price: retail × (1 − Owner margin) (ADR-001 §47).</summary>
+    public void PlaceInParcel(Guid parcelId, Guid vendorId, string? productCode, decimal? costAmount)
+    {
+        ParcelId = parcelId;
+        VendorId = vendorId;
+        ProductCode = productCode;
+        CostAmount = costAmount;
+    }
 }
 
 internal sealed class OrderStatusChange : Entity

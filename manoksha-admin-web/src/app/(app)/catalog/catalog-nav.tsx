@@ -1,8 +1,9 @@
 import Link from "next/link";
 
-export function CatalogNav({ active }: { active: "products" | "categories" | "attributes" }) {
+export function CatalogNav({ active }: { active: "products" | "vendors" | "categories" | "attributes" }) {
   const items = [
     { key: "products", href: "/catalog", label: "Products" },
+    { key: "vendors", href: "/catalog/vendors", label: "Vendors" },
     { key: "categories", href: "/catalog/categories", label: "Categories" },
     { key: "attributes", href: "/catalog/attributes", label: "Variant attributes" },
   ] as const;

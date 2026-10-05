@@ -26,12 +26,18 @@ internal static class PricingEndpoints
             .RequirePermission(Permissions.Pricing.Manage).WithName("SetProductResellerDiscount");
         admin.MapPost("/products/{productId:guid}/reseller-discount/clear", (Guid productId, PricingReasonRequest r, PricingService s, CancellationToken ct) => s.ClearProductDiscountAsync(productId, r, ct))
             .RequirePermission(Permissions.Pricing.Manage).WithName("ClearProductResellerDiscount");
+        admin.MapGet("/products/{productId:guid}/online-discount", (Guid productId, PricingService s, CancellationToken ct) => s.GetOnlineDiscountAsync(productId, ct))
+            .RequirePermission(Permissions.Pricing.View).WithName("GetProductOnlineDiscount");
+        admin.MapPut("/products/{productId:guid}/online-discount", (Guid productId, SetProductDiscountRequest r, PricingService s, CancellationToken ct) => s.SetOnlineDiscountAsync(productId, r, ct))
+            .RequirePermission(Permissions.Pricing.Manage).WithName("SetProductOnlineDiscount");
+        admin.MapPost("/products/{productId:guid}/online-discount/clear", (Guid productId, PricingReasonRequest r, PricingService s, CancellationToken ct) => s.ClearOnlineDiscountAsync(productId, r, ct))
+            .RequirePermission(Permissions.Pricing.Manage).WithName("ClearProductOnlineDiscount");
         admin.MapGet("/preview", (Guid resellerId, Guid skuId, PricingService s, CancellationToken ct) => s.PreviewAsync(resellerId, skuId, ct))
             .RequirePermission(Permissions.Resellers.View).WithName("PreviewResellerPrice");
 
         var reseller = endpoints.MapGroup("/api/v1/reseller").WithTags("Reseller portal").RequireAudience(Audiences.Reseller);
-        reseller.MapGet("/catalog", (string? q, Guid? categoryId, int? page, int? pageSize, ResellerCatalogService s, CancellationToken ct) =>
-            s.CatalogAsync(q, categoryId, page, pageSize, ct)).WithName("ResellerCatalog");
+        reseller.MapGet("/catalog", (string? q, Guid? categoryId, Guid? vendorId, int? page, int? pageSize, ResellerCatalogService s, CancellationToken ct) =>
+            s.CatalogAsync(q, categoryId, vendorId, page, pageSize, ct)).WithName("ResellerCatalog");
         reseller.MapPost("/price-quote", (QuoteRequest r, ResellerCatalogService s, CancellationToken ct) => s.QuoteAsync(r, ct)).WithName("ResellerPriceQuote");
     }
 }

@@ -102,6 +102,52 @@ internal sealed class PricingService(
         }, ct);
     }
 
+    public async Task<ProductDiscountDto> GetOnlineDiscountAsync(Guid productId, CancellationToken ct)
+    {
+        var history = await db.Set<ProductOnlineDiscount>().AsNoTracking().Where(d => d.ProductId == productId).OrderByDescending(d => d.EffectiveFrom)
+            .Select(d => new ProductDiscountHistoryDto(d.Id, d.DiscountPct, d.EffectiveFrom, d.EffectiveTo, d.SetBy, d.Reason, d.EndReason)).ToListAsync(ct);
+        return new ProductDiscountDto(productId, history.FirstOrDefault(h => h.EffectiveTo is null)?.DiscountPct, history);
+    }
+
+    /// <summary>Sets the online customer discount for a product (ADR-001 §44); applies to new online orders only.</summary>
+    public Task<ProductDiscountDto> SetOnlineDiscountAsync(Guid productId, SetProductDiscountRequest r, CancellationToken ct)
+    {
+        RequireReason(r.Reason);
+        return unitOfWork.ExecuteInTransactionAsync(async innerCt =>
+        {
+            await EnsureProductAsync(productId, innerCt);
+            var current = await LockCurrentOnlineDiscountAsync(productId, innerCt);
+            var now = clock.UtcNow;
+            current?.End(now, "Replaced");
+            await db.SaveChangesAsync(innerCt);
+            db.Add(new ProductOnlineDiscount(productId, r.DiscountPct, currentUser.UserId, r.Reason.Trim(), now));
+            await audit.RecordAsync(new AuditRecord("pricing.product_online_discount.changed", "Product", productId.ToString(),
+                Before: current is null ? null : new { discountPct = current.DiscountPct }, After: new { discountPct = r.DiscountPct }, Reason: r.Reason), innerCt);
+            await db.SaveChangesAsync(innerCt);
+            return await GetOnlineDiscountAsync(productId, innerCt);
+        }, ct);
+    }
+
+    public Task<ProductDiscountDto> ClearOnlineDiscountAsync(Guid productId, PricingReasonRequest r, CancellationToken ct)
+    {
+        RequireReason(r.Reason);
+        return unitOfWork.ExecuteInTransactionAsync(async innerCt =>
+        {
+            var current = await LockCurrentOnlineDiscountAsync(productId, innerCt)
+                ?? throw new BusinessRuleException("PRODUCT_DISCOUNT_NOT_SET", "This product has no online discount to remove.", 400);
+            current.End(clock.UtcNow, r.Reason.Trim());
+            await audit.RecordAsync(new AuditRecord("pricing.product_online_discount.removed", "Product", productId.ToString(),
+                Before: new { discountPct = current.DiscountPct }, After: new { discountPct = (decimal?)null }, Reason: r.Reason), innerCt);
+            await db.SaveChangesAsync(innerCt);
+            return await GetOnlineDiscountAsync(productId, innerCt);
+        }, ct);
+    }
+
+    private async Task<ProductOnlineDiscount?> LockCurrentOnlineDiscountAsync(Guid productId, CancellationToken ct) =>
+        await db.Set<ProductOnlineDiscount>()
+            .FromSqlInterpolated($"SELECT * FROM pricing.product_online_discounts WHERE product_id = {productId} AND effective_to IS NULL FOR UPDATE")
+            .SingleOrDefaultAsync(ct);
+
     /// <summary>Owner preview of the calculation for one reseller and SKU.</summary>
     public async Task<PricePreviewDto> PreviewAsync(Guid resellerId, Guid skuId, CancellationToken ct)
     {

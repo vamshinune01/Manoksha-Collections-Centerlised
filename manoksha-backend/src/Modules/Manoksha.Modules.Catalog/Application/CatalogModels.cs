@@ -26,7 +26,10 @@ public sealed record CreateProductRequest(
     IReadOnlyList<Guid>? VariantAttributeIds,
     bool AvailableForRetail,
     bool AvailableForReseller,
-    string Reason);
+    string Reason,
+    Guid? VendorId = null);
+
+public sealed record SetOutOfStockRequest(bool OutOfStock, string? Reason);
 
 public sealed record UpdateProductRequest(
     Guid CategoryId,
@@ -52,7 +55,10 @@ public sealed record ProductSummaryDto(
     bool AvailableForRetail,
     bool AvailableForReseller,
     int VariantCount,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    Guid? VendorId = null,
+    string? VendorName = null,
+    string? ProductCode = null);
 
 public sealed record ProductPage(IReadOnlyList<ProductSummaryDto> Items, int Total, int Page, int PageSize);
 
@@ -60,7 +66,8 @@ public sealed record VariantValueDto(Guid AttributeId, string AttributeName, Gui
 
 public sealed record BarcodeDto(Guid Id, string Code, string Kind, string Status, Guid? InventoryItemId, DateTimeOffset CreatedAt, int PrintCount, DateTimeOffset? LastPrintedAt, string? RetireReason);
 
-public sealed record VariantDto(Guid Id, string Name, string Status, IReadOnlyList<VariantValueDto> Values, Guid SkuId, string SkuCode, IReadOnlyList<BarcodeDto> Barcodes);
+public sealed record VariantDto(Guid Id, string Name, string Status, IReadOnlyList<VariantValueDto> Values, Guid SkuId, string SkuCode, IReadOnlyList<BarcodeDto> Barcodes,
+    bool OutOfStock = false);
 
 public sealed record ProductDetailDto(
     Guid Id,
@@ -75,7 +82,11 @@ public sealed record ProductDetailDto(
     bool AvailableForReseller,
     IReadOnlyList<AttributeDto> VariantAttributes,
     IReadOnlyList<VariantDto> Variants,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    Guid? VendorId = null,
+    string? VendorCode = null,
+    string? VendorName = null,
+    string? ProductCode = null);
 
 public sealed record RegisterBarcodeRequest(string Code, string Reason);
 

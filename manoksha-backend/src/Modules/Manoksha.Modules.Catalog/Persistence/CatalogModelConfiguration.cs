@@ -57,6 +57,10 @@ public sealed class CatalogModelConfiguration : IModuleModelConfiguration
             b.HasIndex(x => x.Slug).IsUnique();
             b.HasIndex(x => x.CategoryId);
             b.HasIndex(x => x.Name);
+            b.Property(x => x.ProductCode).HasMaxLength(20);
+            b.HasIndex(x => x.ProductCode).IsUnique().HasFilter("product_code IS NOT NULL");
+            b.HasIndex(x => x.VendorId);
+            b.HasOne<Vendor>().WithMany().HasForeignKey(x => x.VendorId).OnDelete(DeleteBehavior.Restrict);
             b.HasOne<Category>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
             b.Ignore(x => x.VariantAttributes);
             b.HasMany<ProductVariantAttribute>("_variantAttributes").WithOne().HasForeignKey(a => a.ProductId).OnDelete(DeleteBehavior.Restrict);
@@ -99,6 +103,23 @@ public sealed class CatalogModelConfiguration : IModuleModelConfiguration
             b.HasIndex(x => x.ProductId);
             b.HasOne<Variant>().WithMany().HasForeignKey(x => x.VariantId).OnDelete(DeleteBehavior.Restrict);
             b.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Vendor>(b =>
+        {
+            b.ToTable("vendors", SchemaName, t =>
+            {
+                t.HasCheckConstraint("ck_vendors_shipping_fee", "shipping_fee >= 0");
+                t.HasCheckConstraint("ck_vendors_owner_margin", "owner_margin_pct IS NULL OR (owner_margin_pct >= 0 AND owner_margin_pct < 100)");
+                t.HasCheckConstraint("ck_vendors_code", "code ~ '^[A-Z]{2,4}$'");
+            });
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Code).HasMaxLength(4);
+            b.Property(x => x.Name).HasMaxLength(100);
+            b.Property(x => x.OwnerMarginPct).HasPrecision(7, 4);
+            b.Property(x => x.RowVersion).IsRowVersion();
+            b.HasIndex(x => x.Code).IsUnique();
+            b.HasIndex(x => x.Name).IsUnique();
         });
 
         modelBuilder.Entity<Barcode>(b =>

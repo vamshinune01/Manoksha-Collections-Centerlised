@@ -4,7 +4,8 @@ namespace Manoksha.Modules.Resellers.Contracts;
 public sealed record ResellerInfo(Guid ResellerId, string ResellerNumber, Guid UserId, string Status, string ContactName, string? BusinessName, bool CanTransact);
 
 /// <param name="TermId">Immutable commercial-term version id — snapshotted on order lines.</param>
-public sealed record ResellerTerms(Guid ResellerId, Guid TermId, int Version, decimal DiscountPct);
+/// <param name="VendorDiscounts">The reseller's % per vendor (ADR-001 §45); a vendor that is absent means 0%.</param>
+public sealed record ResellerTerms(Guid ResellerId, Guid TermId, int Version, decimal DiscountPct, IReadOnlyDictionary<Guid, decimal>? VendorDiscounts = null);
 
 public interface IResellerDirectory
 {

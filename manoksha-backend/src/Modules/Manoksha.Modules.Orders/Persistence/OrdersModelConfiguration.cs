@@ -23,6 +23,7 @@ public sealed class OrdersModelConfiguration : IModuleModelConfiguration
             b.Property(x => x.Number).HasMaxLength(30);
             b.Property(x => x.Channel).HasConversion<string>().HasMaxLength(20);
             b.Property(x => x.Status).HasConversion<string>().HasMaxLength(30);
+            b.Property(x => x.FulfillmentMode).HasConversion<string>().HasMaxLength(10).HasDefaultValue(FulfillmentMode.Branch);
             b.Property(x => x.RowVersion).IsRowVersion();
             b.HasIndex(x => x.Number).IsUnique();
             b.HasIndex(x => new { x.ResellerId, x.CreatedAt });
@@ -33,12 +34,34 @@ public sealed class OrdersModelConfiguration : IModuleModelConfiguration
             b.Navigation(x => x.Delivery).IsRequired();
         });
 
+        modelBuilder.Entity<OrderParcel>(b =>
+        {
+            b.ToTable("order_parcels", SchemaName, t => t.HasCheckConstraint("ck_order_parcels_shipping", "shipping_fee >= 0"));
+            b.HasKey(x => x.Id);
+            b.Property(x => x.VendorCode).HasMaxLength(4);
+            b.Property(x => x.VendorName).HasMaxLength(100);
+            b.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+            b.Property(x => x.VendorReference).HasMaxLength(100);
+            b.Property(x => x.Courier).HasMaxLength(20);
+            b.Property(x => x.CourierName).HasMaxLength(100);
+            b.Property(x => x.TrackingNumber).HasMaxLength(100);
+            b.Property(x => x.Note).HasMaxLength(1000);
+            b.Property(x => x.RowVersion).IsRowVersion();
+            b.HasIndex(x => new { x.OrderId, x.VendorId }).IsUnique();
+            b.HasIndex(x => new { x.VendorId, x.Status });
+            b.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<OrderLine>(b =>
         {
             b.ToTable("order_lines", SchemaName, t => t.HasCheckConstraint("ck_order_lines_amounts",
                 "quantity > 0 AND final_unit_price >= 0 AND final_unit_price <= retail_unit_price AND line_total = final_unit_price * quantity"));
             b.HasKey(x => x.Id);
             b.Property(x => x.SkuCode).HasMaxLength(40);
+            b.Property(x => x.ProductCode).HasMaxLength(20);
+            b.HasIndex(x => x.ParcelId);
+            b.HasIndex(x => x.VendorId);
+            b.HasOne<OrderParcel>().WithMany().HasForeignKey(x => x.ParcelId).OnDelete(DeleteBehavior.Restrict);
             b.Property(x => x.ProductName).HasMaxLength(200);
             b.Property(x => x.VariantName).HasMaxLength(200);
             b.Property(x => x.DiscountSource).HasMaxLength(30);

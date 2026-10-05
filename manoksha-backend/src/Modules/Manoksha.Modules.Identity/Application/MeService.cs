@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Manoksha.Modules.Identity.Application;
 
-internal sealed class MeService(ManokshaDbContext db, ICurrentUser currentUser, IPermissionService permissions)
+internal sealed class MeService(ManokshaDbContext db, ICurrentUser currentUser, IPermissionService permissions, Manoksha.Application.Abstractions.ISettingsReader settings)
 {
     public async Task<MeResponse> GetAsync(CancellationToken ct)
     {
@@ -22,6 +22,7 @@ internal sealed class MeService(ManokshaDbContext db, ICurrentUser currentUser, 
             access.IsOwner,
             access.Roles.Select(r => new MeRole(r.RoleCode, r.RoleName, r.BranchId)).ToList(),
             access.GlobalPermissions.Order(StringComparer.Ordinal).ToList(),
-            access.BranchPermissions.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value.Order(StringComparer.Ordinal).ToList()));
+            access.BranchPermissions.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value.Order(StringComparer.Ordinal).ToList()),
+            await settings.GetAsync<bool>(Manoksha.Application.Abstractions.SettingKeys.StoreSellingEnabled, ct));
     }
 }

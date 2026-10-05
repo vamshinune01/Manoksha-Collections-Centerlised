@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Manoksha.SharedKernel;
 
 namespace Manoksha.Modules.Orders.Endpoints;
 
@@ -18,6 +20,7 @@ internal static class OrderEndpoints
         var reseller = endpoints.MapGroup("/api/v1/reseller").WithTags("Reseller portal").RequireAudience(Audiences.Reseller);
         reseller.MapPost("/checkout", (ResellerCheckoutRequest r, HttpRequest http, ResellerCheckoutService s, CancellationToken ct) =>
             s.CheckoutAsync(r, http.GetRequiredIdempotencyKey(), ct)).WithName("ResellerCheckout");
+        reseller.MapPost("/cart-summary", (CartSummaryRequest r, StorefrontService s, CancellationToken ct) => s.CartSummaryAsync(r, true, ct)).WithName("ResellerCartSummary");
         reseller.MapGet("/orders", (OrderQueryService s, CancellationToken ct) => s.ListMineAsync(ct)).WithName("ResellerOrders");
         reseller.MapGet("/orders/{id:guid}", (Guid id, OrderQueryService s, CancellationToken ct) => s.GetMineAsync(id, ct)).WithName("ResellerOrder");
         reseller.MapGet("/customers", (string? q, ResellerCustomerService s, CancellationToken ct) => s.ListAsync(q, ct)).WithName("ResellerCustomers");
@@ -27,8 +30,9 @@ internal static class OrderEndpoints
 
         // Public storefront: anonymous browsing (ADR-001 §10). Prices shown here are display-only.
         var store = endpoints.MapGroup("/api/v1/catalog").WithTags("Storefront").AllowAnonymous();
-        store.MapGet("/products", (string? q, Guid? categoryId, int? page, int? pageSize, StorefrontService s, CancellationToken ct) =>
-            s.ListAsync(q, categoryId, page, pageSize, ct)).WithName("StorefrontProducts");
+        store.MapGet("/products", (string? q, Guid? categoryId, Guid? vendorId, int? page, int? pageSize, StorefrontService s, CancellationToken ct) =>
+            s.ListAsync(q, categoryId, vendorId, page, pageSize, ct)).WithName("StorefrontProducts");
+        store.MapPost("/cart-summary", (CartSummaryRequest r, StorefrontService s, CancellationToken ct) => s.CartSummaryAsync(r, false, ct)).WithName("StorefrontCartSummary");
         store.MapGet("/products/{productId:guid}", (Guid productId, StorefrontService s, CancellationToken ct) => s.ProductAsync(productId, ct)).WithName("StorefrontProduct");
         store.MapGet("/order-charges", async (ISettingsReader settings, CancellationToken ct) =>
             new OrderChargesDto(await settings.GetAsync<decimal>(SettingKeys.ShippingFeePerOrder, ct))).WithName("StorefrontOrderCharges");
@@ -45,7 +49,17 @@ internal static class OrderEndpoints
             .Produces<DeliveryDto>().WithName("CustomerDeliveryDefaults");
 
         // POS store sales (Phase 8). Branch permissions are checked in the service for the requested branch.
-        var pos = endpoints.MapGroup("/api/v1/pos").WithTags("POS").RequireAudience(Audiences.Pos);
+        var pos = endpoints.MapGroup("/api/v1/pos").WithTags("POS").RequireAudience(Audiences.Pos)
+            .AddEndpointFilter(async (context, next) =>
+            {
+                // Store selling is on hold while products ship from vendors (ADR-001 §48).
+                var settings = context.HttpContext.RequestServices.GetRequiredService<ISettingsReader>();
+                if (!await settings.GetAsync<bool>(SettingKeys.StoreSellingEnabled, context.HttpContext.RequestAborted))
+                {
+                    throw new ForbiddenException("STORE_SELLING_PAUSED", "Store selling is switched off. The Owner can turn it on in Business settings.");
+                }
+                return await next(context);
+            });
         pos.MapGet("/context", (PosSaleService s, CancellationToken ct) => s.ContextAsync(ct)).WithName("PosContext");
         pos.MapGet("/items", (Guid branchId, string? q, PosSaleService s, CancellationToken ct) => s.SearchAsync(branchId, q, ct)).WithName("PosSearchItems");
         pos.MapPost("/sales/quote", (PosSaleRequest r, PosSaleService s, CancellationToken ct) => s.QuoteAsync(r, ct)).WithName("PosQuote");
@@ -77,6 +91,13 @@ internal static class OrderEndpoints
             s.ResolveInPlaceAsync(id, r, ct)).RequirePermission(Permissions.Orders.Reroute).WithName("ResolveFulfillmentException");
         admin.MapGet("/orders/{id:guid}/reroute-options", (Guid id, FulfillmentService s, CancellationToken ct) => s.RerouteOptionsAsync(id, ct)).RequirePermission(Permissions.Orders.Reroute).WithName("RerouteOptions");
         admin.MapPost("/orders/{id:guid}/reroute", (Guid id, RerouteRequest r, FulfillmentService s, CancellationToken ct) => s.RerouteAsync(id, r, ct)).RequirePermission(Permissions.Orders.Reroute).WithName("RerouteOrder");
+        // Vendor orders (ADR-001 §46): each vendor's parcel moves on its own; the order follows.
+        admin.MapPost("/orders/{id:guid}/parcels/{parcelId:guid}/ordered", (Guid id, Guid parcelId, ParcelOrderedRequest r, ParcelService s, CancellationToken ct) =>
+            s.MarkOrderedAsync(id, parcelId, r, ct)).RequirePermission(Permissions.Orders.Fulfill).WithName("MarkParcelOrdered");
+        admin.MapPost("/orders/{id:guid}/parcels/{parcelId:guid}/shipped", (Guid id, Guid parcelId, ShipOrderRequest r, ParcelService s, CancellationToken ct) =>
+            s.MarkShippedAsync(id, parcelId, r, ct)).RequirePermission(Permissions.Orders.Fulfill).WithName("MarkParcelShipped");
+        admin.MapPost("/orders/{id:guid}/parcels/{parcelId:guid}/delivered", (Guid id, Guid parcelId, DeliverOrderRequest r, ParcelService s, CancellationToken ct) =>
+            s.MarkDeliveredAsync(id, parcelId, r, ct)).RequirePermission(Permissions.Orders.Fulfill).WithName("MarkParcelDelivered");
         admin.MapPost("/orders/{id:guid}/cancel", (Guid id, CancelOrderRequest r, FulfillmentService s, CancellationToken ct) => s.CancelAsync(id, r, ct)).RequirePermission(Permissions.Orders.Cancel).WithName("CancelOrder");
         admin.MapGet("/fulfillment-exceptions", (string? status, FulfillmentService s, CancellationToken ct) => s.ListExceptionsAsync(status, ct))
             .RequirePermission(Permissions.Exceptions.View).WithName("ListFulfillmentExceptions");

@@ -16,7 +16,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
           <form action="/" className="min-w-0 flex-1">
             <input
               name="q"
-              placeholder="Search sarees, jewellery, kids wear…"
+              placeholder="Search products or a product ID (e.g. ZR-000123)…"
               className="w-full rounded-full border border-slate-300 bg-slate-50 px-4 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </form>

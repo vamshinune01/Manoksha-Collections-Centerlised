@@ -189,14 +189,15 @@ internal sealed class PosSaleService(
         var order = await db.Set<Order>().AsNoTracking().SingleOrDefaultAsync(o => o.Id == orderId && o.Channel == OrderChannel.Store, ct)
                     ?? throw new NotFoundException("SALE_NOT_FOUND", "Sale not found.");
         var access = await permissions.GetEffectiveAccessAsync(ct);
-        if (!access.HasForBranch(P.Pos.Sell, order.FulfillmentBranchId) && !access.HasForBranch(P.Orders.View, order.FulfillmentBranchId))
+        var branchId = order.FulfillmentBranchId ?? throw new NotFoundException("SALE_NOT_FOUND", "Store sale not found.");
+        if (!access.HasForBranch(P.Pos.Sell, branchId) && !access.HasForBranch(P.Orders.View, branchId))
         {
             throw new NotFoundException("SALE_NOT_FOUND", "Sale not found.");
         }
         var lines = await db.Set<OrderLine>().AsNoTracking().Where(l => l.OrderId == orderId).OrderBy(l => l.SkuCode).ToListAsync(ct);
         var pays = await db.Set<PosPayment>().AsNoTracking().Where(p => p.OrderId == orderId).OrderBy(p => p.RecordedAt).ToListAsync(ct);
         var approverId = await db.Set<PosPriceOverride>().AsNoTracking().Where(o => o.OrderId == orderId && o.ApproverUserId != null).Select(o => o.ApproverUserId).FirstOrDefaultAsync(ct);
-        var branch = await branches.FindAsync(order.FulfillmentBranchId, ct);
+        var branch = await branches.FindAsync(branchId, ct);
         var retailTotal = lines.Sum(l => l.RetailUnitPrice * l.Quantity);
         var walkIn = order.Delivery.Name == "Walk-in customer";
         return new PosReceiptDto(order.Id, order.Number, ShopName, branch?.Name ?? "?", order.ConfirmedAt ?? order.CreatedAt, await approvals.DisplayNameAsync(order.PlacedBy, ct),
@@ -214,7 +215,7 @@ internal sealed class PosSaleService(
         {
             return [];
         }
-        var page = await catalog.ListSellableSkusAsync(SalesChannel.Retail, q, null, 1, 30, ct);
+        var page = await catalog.ListSellableSkusAsync(SalesChannel.Retail, q, null, 1, 30, cancellationToken: ct);
         var ids = page.Items.Select(i => i.Sku.SkuId).ToList();
         var retail = await prices.GetRetailPricesAsync(ids, ct);
         var here = await orderStock.AvailableAtBranchAsync(branchId, ids, ct);
@@ -277,18 +278,18 @@ internal sealed class PosSaleService(
                 throw new BusinessRuleException("ITEMS_NOT_ALLOWED", $"{sku.ProductName} is sold by quantity.", 400);
             }
             var r = retail[l.SkuId];
-            var final = l.UnitPrice ?? r.Price;
-            if (final < 0 || final > r.Price || !Money.HasValidScale(final))
+            var final = l.UnitPrice ?? r.RetailPrice;
+            if (final < 0 || final > r.RetailPrice || !Money.HasValidScale(final))
             {
-                throw new BusinessRuleException("PRICE_INVALID", $"{sku.ProductName}: the price must be between ₹0 and the retail price ₹{r.Price:N2}.", 400);
+                throw new BusinessRuleException("PRICE_INVALID", $"{sku.ProductName}: the price must be between ₹0 and the retail price ₹{r.RetailPrice:N2}.", 400);
             }
-            var pct = r.Price == 0 ? 0 : Math.Round((r.Price - final) / r.Price * 100m, 4, MidpointRounding.AwayFromZero);
+            var pct = r.RetailPrice == 0 ? 0 : Math.Round((r.RetailPrice - final) / r.RetailPrice * 100m, 4, MidpointRounding.AwayFromZero);
             var reason = l.PriceReason?.Trim();
-            if (final < r.Price && reason is not { Length: >= 3 })
+            if (final < r.RetailPrice && reason is not { Length: >= 3 })
             {
                 throw new BusinessRuleException("PRICE_REASON_REQUIRED", $"{sku.ProductName}: give a reason for the discount.", 400);
             }
-            evaluated.Add(new EvaluatedLine(sku, l.Quantity, items, r.RetailPriceId, r.Price, final, pct, final < r.Price ? reason : null));
+            evaluated.Add(new EvaluatedLine(sku, l.Quantity, items, r.RetailPriceId, r.RetailPrice, final, pct, final < r.RetailPrice ? reason : null));
         }
 
         var access = await permissions.GetEffectiveAccessAsync(ct);

@@ -38,6 +38,9 @@ public static class SettingKeys
     /// <summary>A SKU is low on stock at a branch when its available quantity is at or below this number (ADR-001 §38: one global threshold).</summary>
     public const string LowStockThreshold = "inventory.low_stock_threshold";
 
+    /// <summary>POS selling and branch stock screens on/off (ADR-001 §48; default off while vendors ship directly).</summary>
+    public const string StoreSellingEnabled = "operations.store_selling_enabled";
+
     /// <summary>Hour of the day (IST, 0–23) when the Owner's daily summary email is sent (ADR-001 §39).</summary>
     public const string DailySummaryHour = "notifications.daily_summary_hour";
 }

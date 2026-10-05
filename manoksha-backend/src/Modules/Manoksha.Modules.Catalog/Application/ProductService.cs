@@ -14,6 +14,8 @@ internal sealed partial class ProductService(
     ManokshaDbContext db,
     IUnitOfWork unitOfWork,
     IAuditWriter audit,
+    VendorService vendors,
+    ISettingsReader settings,
     IClock clock) : ICatalogLookup
 {
     public async Task<ProductPage> SearchAsync(string? q, Guid? categoryId, string? status, int? page, int? pageSize, CancellationToken ct)
@@ -28,7 +30,7 @@ internal sealed partial class ProductService(
             var skuTerm = term.ToUpperInvariant();
             var bySku = db.Set<Sku>().Where(s => s.Code == skuTerm).Select(s => s.ProductId);
             var byBarcode = from b in db.Set<Barcode>() join s in db.Set<Sku>() on b.SkuId equals s.Id where b.Code == term select s.ProductId;
-            products = products.Where(p => EF.Functions.ILike(p.Name, pattern) || bySku.Contains(p.Id) || byBarcode.Contains(p.Id));
+            products = products.Where(p => EF.Functions.ILike(p.Name, pattern) || bySku.Contains(p.Id) || byBarcode.Contains(p.Id) || p.ProductCode == skuTerm);
         }
         if (categoryId is { } c)
         {
@@ -43,17 +45,20 @@ internal sealed partial class ProductService(
         var rows = await (
             from p in products
             join cat in db.Set<Category>() on p.CategoryId equals cat.Id
+            join vd in db.Set<Vendor>() on p.VendorId equals vd.Id into vds
+            from vd in vds.DefaultIfEmpty()
             orderby p.CreatedAt descending
             select new
             {
                 p.Id, p.Name, p.Slug, p.CategoryId, CategoryName = cat.Name, p.TrackingMode, p.Status, p.AvailableForRetail, p.AvailableForReseller, p.CreatedAt,
+                p.VendorId, VendorName = vd == null ? null : vd.Name, p.ProductCode,
                 VariantCount = db.Set<Variant>().Count(v => v.ProductId == p.Id),
             })
             .Skip((number - 1) * size).Take(size).ToListAsync(ct);
 
         return new ProductPage(
             rows.Select(r => new ProductSummaryDto(r.Id, r.Name, r.Slug, r.CategoryId, r.CategoryName, r.TrackingMode.ToString(), r.Status.ToString(),
-                r.AvailableForRetail, r.AvailableForReseller, r.VariantCount, r.CreatedAt)).ToList(),
+                r.AvailableForRetail, r.AvailableForReseller, r.VariantCount, r.CreatedAt, r.VendorId, r.VendorName, r.ProductCode)).ToList(),
             total, number, size);
     }
 
@@ -61,6 +66,7 @@ internal sealed partial class ProductService(
     {
         var p = await db.Set<Product>().AsNoTracking().Include("_variantAttributes").SingleOrDefaultAsync(x => x.Id == id, ct) ?? throw NotFound();
         var category = await db.Set<Category>().AsNoTracking().SingleAsync(c => c.Id == p.CategoryId, ct);
+        var vendor = p.VendorId is { } vid ? await db.Set<Vendor>().AsNoTracking().SingleAsync(v => v.Id == vid, ct) : null;
         var attributeIds = p.VariantAttributes.Select(a => a.AttributeId).ToList();
         var attributes = await db.Set<AttributeDefinition>().AsNoTracking().Include(a => a.Options).Where(a => attributeIds.Contains(a.Id)).ToDictionaryAsync(a => a.Id, ct);
         var variants = await db.Set<Variant>().AsNoTracking().Include(v => v.Values).Where(v => v.ProductId == id).OrderBy(v => v.CreatedAt).ToListAsync(ct);
@@ -83,9 +89,10 @@ internal sealed partial class ProductService(
                     v.Values.Select(x => new VariantValueDto(x.AttributeId, optionLookup[x.OptionId].a.Name, x.OptionId, optionLookup[x.OptionId].o.Value)).ToList(),
                     sku.Id, sku.Code,
                     barcodes.Where(b => b.SkuId == sku.Id).Select(b => new BarcodeDto(b.Id, b.Code, b.Kind.ToString(), b.Status.ToString(), b.InventoryItemId, b.CreatedAt,
-                        prints.TryGetValue(b.Id, out var pr) ? pr.Count : 0, prints.TryGetValue(b.Id, out var pr2) ? pr2.Last : null, b.RetireReason)).ToList());
+                        prints.TryGetValue(b.Id, out var pr) ? pr.Count : 0, prints.TryGetValue(b.Id, out var pr2) ? pr2.Last : null, b.RetireReason)).ToList(),
+                    sku.OutOfStock);
             }).ToList(),
-            p.CreatedAt);
+            p.CreatedAt, p.VendorId, vendor?.Code, vendor?.Name, p.ProductCode);
     }
 
     public Task<ProductDetailDto> CreateAsync(CreateProductRequest r, CancellationToken ct)
@@ -103,13 +110,41 @@ internal sealed partial class ProductService(
                 throw new BusinessRuleException("VARIANT_ATTRIBUTE_INVALID", "Every variant attribute must exist and be active.", 400);
             }
             var product = new Product(r.CategoryId, r.Name, r.Description, mode, attributeIds, r.AvailableForRetail, r.AvailableForReseller, clock.UtcNow);
+            if (r.VendorId is { } vendorId)
+            {
+                var (_, code) = await vendors.NextProductCodeAsync(vendorId, innerCt);
+                product.AssignVendor(vendorId, code);
+            }
+            else if (!await settings.GetAsync<bool>(SettingKeys.StoreSellingEnabled, innerCt))
+            {
+                // While products ship directly from vendors, every new product belongs to a vendor (ADR-001 §41).
+                throw new BusinessRuleException("VENDOR_REQUIRED", "Choose the vendor this product comes from.", 400);
+            }
             db.Add(product);
             await audit.RecordAsync(new AuditRecord("catalog.product.created", "Product", product.Id.ToString(),
-                After: new { product.Name, product.CategoryId, trackingMode = mode.ToString(), attributeIds, product.AvailableForRetail, product.AvailableForReseller },
+                After: new { product.Name, product.CategoryId, trackingMode = mode.ToString(), attributeIds, product.AvailableForRetail, product.AvailableForReseller, product.VendorId, product.ProductCode },
                 Reason: r.Reason), innerCt);
             await db.SaveChangesAsync(innerCt);
             return await GetAsync(product.Id, innerCt);
         }, ct);
+    }
+
+    /// <summary>Marks one variant (skuId) or every variant of a product out of stock / back in stock (ADR-001 §43).</summary>
+    public async Task<ProductDetailDto> SetOutOfStockAsync(Guid? skuId, Guid? productId, SetOutOfStockRequest r, CancellationToken ct)
+    {
+        var skus = await db.Set<Sku>().Where(s => (skuId != null && s.Id == skuId) || (productId != null && s.ProductId == productId)).ToListAsync(ct);
+        if (skus.Count == 0)
+        {
+            throw NotFound();
+        }
+        foreach (var sku in skus)
+        {
+            sku.SetOutOfStock(r.OutOfStock);
+        }
+        await audit.RecordAsync(new AuditRecord(r.OutOfStock ? "catalog.sku.out_of_stock" : "catalog.sku.back_in_stock", "Product", skus[0].ProductId.ToString(),
+            After: new { skus = skus.Select(s => s.Code), r.OutOfStock }, Reason: r.Reason), ct);
+        await db.SaveChangesAsync(ct);
+        return await GetAsync(skus[0].ProductId, ct);
     }
 
     public Task<ProductDetailDto> UpdateAsync(Guid id, UpdateProductRequest r, CancellationToken ct)
@@ -238,14 +273,16 @@ internal sealed partial class ProductService(
             var pattern = $"%{term.Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal)}%";
             var byBarcode = db.Set<Barcode>().Where(b => b.Code == term).Select(b => b.SkuId);
             var byName = db.Set<Product>().Where(p => EF.Functions.ILike(p.Name, pattern)).Select(p => p.Id);
-            skus = skus.Where(s => s.Code.StartsWith(upper) || byBarcode.Contains(s.Id) || byName.Contains(s.ProductId));
+            var byProductCode = db.Set<Product>().Where(p => p.ProductCode == upper).Select(p => p.Id);
+            skus = skus.Where(s => s.Code.StartsWith(upper) || byBarcode.Contains(s.Id) || byName.Contains(s.ProductId) || byProductCode.Contains(s.ProductId));
         }
         var ids = await skus.OrderBy(s => s.Code).Take(take).Select(s => s.Id).ToListAsync(ct);
         var found = await FindSkusAsync(ids, ct);
         return ids.Where(found.ContainsKey).Select(id => found[id]).ToList();
     }
 
-    public async Task<SellableSkuPage> ListSellableSkusAsync(SalesChannel channel, string? query, Guid? categoryId, int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<SellableSkuPage> ListSellableSkusAsync(SalesChannel channel, string? query, Guid? categoryId, int page, int pageSize, Guid? vendorId = null,
+        CancellationToken cancellationToken = default)
     {
         var size = Math.Clamp(pageSize, 1, 100);
         var number = Math.Max(1, page);
@@ -253,24 +290,34 @@ internal sealed partial class ProductService(
                    join v in db.Set<Variant>() on s.VariantId equals v.Id
                    join p in db.Set<Product>() on s.ProductId equals p.Id
                    join c in db.Set<Category>() on p.CategoryId equals c.Id
+                   join vd in db.Set<Vendor>() on p.VendorId equals vd.Id into vds
+                   from vd in vds.DefaultIfEmpty()
                    where p.Status == ProductStatus.Active && v.Status == RecordStatus.Active
                          && (channel == SalesChannel.Reseller ? p.AvailableForReseller : p.AvailableForRetail)
-                   select new { s, v, p, c };
+                         && (vd == null || vd.IsActive)
+                   select new { s, v, p, c, vd };
         if (categoryId is { } cat)
         {
             rows = rows.Where(x => x.p.CategoryId == cat);
+        }
+        if (vendorId is { } vendor)
+        {
+            rows = rows.Where(x => x.p.VendorId == vendor);
         }
         if (!string.IsNullOrWhiteSpace(query))
         {
             var term = query.Trim();
             var upper = term.ToUpperInvariant();
             var pattern = $"%{term.Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal)}%";
-            rows = rows.Where(x => EF.Functions.ILike(x.p.Name, pattern) || x.s.Code == upper);
+            // Name, SKU code, or the product ID (exact, or just the number: "ZR-000123" / "123").
+            rows = rows.Where(x => EF.Functions.ILike(x.p.Name, pattern) || x.s.Code == upper || x.p.ProductCode == upper
+                                   || (x.p.ProductCode != null && x.p.ProductCode.EndsWith("-" + upper.PadLeft(6, '0'))));
         }
         var total = await rows.CountAsync(cancellationToken);
         var items = await rows.OrderBy(x => x.p.Name).ThenBy(x => x.v.Name).Skip((number - 1) * size).Take(size).AsNoTracking()
             .Select(x => new SellableSku(
-                new SkuInfo(x.s.Id, x.s.Code, x.v.Id, x.v.Name, true, x.p.Id, x.p.Name, x.p.TrackingMode.ToString(), x.p.Status.ToString(), x.p.AvailableForRetail, x.p.AvailableForReseller),
+                new SkuInfo(x.s.Id, x.s.Code, x.v.Id, x.v.Name, true, x.p.Id, x.p.Name, x.p.TrackingMode.ToString(), x.p.Status.ToString(), x.p.AvailableForRetail, x.p.AvailableForReseller,
+                    x.p.VendorId, x.vd == null ? null : x.vd.Code, x.vd == null ? null : x.vd.Name, x.p.ProductCode, x.s.OutOfStock),
                 x.c.Id, x.c.Name))
             .ToListAsync(cancellationToken);
         return new SellableSkuPage(items, total, number, size);
@@ -286,10 +333,20 @@ internal sealed partial class ProductService(
         await (from s in db.Set<Sku>()
                join v in db.Set<Variant>() on s.VariantId equals v.Id
                join p in db.Set<Product>() on s.ProductId equals p.Id
+               join vd in db.Set<Vendor>() on p.VendorId equals vd.Id into vds
+               from vd in vds.DefaultIfEmpty()
                where skuIds.Contains(s.Id)
                select new SkuInfo(s.Id, s.Code, v.Id, v.Name, v.Status == RecordStatus.Active, p.Id, p.Name, p.TrackingMode.ToString(), p.Status.ToString(),
-                   p.AvailableForRetail, p.AvailableForReseller))
+                   p.AvailableForRetail, p.AvailableForReseller, p.VendorId, vd == null ? null : vd.Code, vd == null ? null : vd.Name, p.ProductCode, s.OutOfStock))
             .AsNoTracking().ToDictionaryAsync(x => x.SkuId, cancellationToken);
+
+    public async Task<IReadOnlyDictionary<Guid, VendorInfo>> GetVendorsAsync(IReadOnlyCollection<Guid> vendorIds, CancellationToken cancellationToken = default) =>
+        await db.Set<Vendor>().AsNoTracking().Where(v => vendorIds.Contains(v.Id))
+            .ToDictionaryAsync(v => v.Id, v => new VendorInfo(v.Id, v.Code, v.Name, v.ShippingFee, v.OwnerMarginPct, v.IsActive), cancellationToken);
+
+    public async Task<IReadOnlyList<VendorInfo>> ListVendorsAsync(bool activeOnly, CancellationToken cancellationToken = default) =>
+        await db.Set<Vendor>().AsNoTracking().Where(v => !activeOnly || v.IsActive).OrderBy(v => v.Name)
+            .Select(v => new VendorInfo(v.Id, v.Code, v.Name, v.ShippingFee, v.OwnerMarginPct, v.IsActive)).ToListAsync(cancellationToken);
 
     private async Task<string> ResolveSkuCodeAsync(string? requested, CancellationToken ct)
     {

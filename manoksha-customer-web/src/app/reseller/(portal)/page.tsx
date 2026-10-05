@@ -15,8 +15,13 @@ export default async function Dashboard() {
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         <Card title="Wallet balance"><p className="text-2xl font-semibold">{inr(me.walletBalance)}</p><Link className="text-sm text-brand-700" href="/reseller/wallet">Add money →</Link></Card>
-        <Card title="Your reseller discount"><p className="text-2xl font-semibold">{me.resellerDiscountPct}%</p><p className="text-xs text-slate-500">Terms version {me.termsVersion}. Some products carry their own reseller discount instead.</p></Card>
-        <Card title="Shipping"><p className="text-2xl font-semibold">₹100</p><p className="text-xs text-slate-500">per order, included in the wallet debit.</p></Card>
+        <Card title="Your discounts">
+          {(me.vendorDiscounts ?? []).length === 0 ? <p className="text-sm text-slate-600">None yet — retail prices apply.</p> : (
+            <ul className="space-y-1 text-sm">{(me.vendorDiscounts ?? []).map((v) => <li key={v.vendorId} className="flex justify-between"><span>{v.vendorName}</span><strong>{v.discountPct}%</strong></li>)}</ul>
+          )}
+          <Link className="mt-2 inline-block text-xs text-brand-700" href="/reseller/terms">Terms version {me.termsVersion} →</Link>
+        </Card>
+        <Card title="Shipping"><p className="text-sm text-slate-700">Each brand ships its own parcel: shipping is charged once per brand in an order and included in the wallet debit.</p></Card>
       </div>
       {stats.ok && (
         <div className="grid gap-4 md:grid-cols-3">

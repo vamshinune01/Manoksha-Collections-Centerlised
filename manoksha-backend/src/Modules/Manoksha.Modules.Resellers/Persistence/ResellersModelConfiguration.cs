@@ -61,5 +61,13 @@ public sealed class ResellersModelConfiguration : IModuleModelConfiguration
             b.HasIndex(x => new { x.ResellerId, x.Version }).IsUnique();
             b.HasOne<Reseller>().WithMany().HasForeignKey(x => x.ResellerId).OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<CommercialTermVendorDiscount>(b =>
+        {
+            b.ToTable("commercial_term_vendor_discounts", SchemaName, t => t.HasCheckConstraint("ck_term_vendor_discount_range", "discount_pct >= 0 AND discount_pct <= 100"));
+            b.HasKey(x => new { x.TermId, x.VendorId });
+            b.Property(x => x.DiscountPct).HasPrecision(7, 4);
+            b.HasOne<CommercialTerm>().WithMany().HasForeignKey(x => x.TermId).OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }

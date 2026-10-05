@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { storeCart } from "@/lib/cart";
-import { ApiError, cs, store } from "@/lib/client-api";
-import { inr, type CartQuoteLine, type CustomerCheckoutResult, type Delivery } from "@/lib/types";
+import { ApiError, cs } from "@/lib/client-api";
+import { inr, type CustomerCheckoutResult, type Delivery } from "@/lib/types";
+import { CartTotals, useCartSummary } from "@/components/cart-summary";
 import { useStoreCart } from "@/components/store-client";
 import { Alert, Button, Card, Field, Input, PageHeader } from "@/components/ui";
 
@@ -12,25 +13,17 @@ import { Alert, Button, Card, Field, Input, PageHeader } from "@/components/ui";
  * Online checkout (SPEC §19.1). The backend prices the order, finds one branch that can fulfil the complete basket, reserves it for
  * the payment window and starts the UPI payment. The Idempotency-Key makes repeated clicks one order (SPEC §32).
  */
-export function CheckoutForm({ defaults, shippingFee }: { defaults: Delivery; shippingFee: number | null }) {
+export function CheckoutForm({ defaults }: { defaults: Delivery }) {
   const lines = useStoreCart();
   const [delivery, setDelivery] = useState<Delivery>(defaults);
-  const [quotes, setQuotes] = useState<Record<string, CartQuoteLine>>({});
+  const { summary } = useCartSummary(lines, "shopper");
+  const quotes = Object.fromEntries((summary?.lines ?? []).map((l) => [l.skuId, l]));
   const [key, setKey] = useState(() => crypto.randomUUID());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CustomerCheckoutResult | null>(null);
 
-  const skuKey = lines.map((l) => l.skuId).join(",");
-  useEffect(() => {
-    if (!skuKey) return;
-    store<CartQuoteLine[]>("cart-quote", "POST", { skuIds: skuKey.split(",") })
-      .then((q) => setQuotes(Object.fromEntries(q.map((x) => [x.skuId, x]))))
-      .catch(() => undefined);
-  }, [skuKey]);
-
   const set = (field: keyof Delivery) => (e: React.ChangeEvent<HTMLInputElement>) => setDelivery({ ...delivery, [field]: e.target.value });
-  const items = lines.reduce((sum, l) => sum + (quotes[l.skuId]?.price ?? 0) * l.quantity, 0);
 
   const placeOrder = async () => {
     setBusy(true);
@@ -120,13 +113,11 @@ export function CheckoutForm({ defaults, shippingFee }: { defaults: Delivery; sh
             {lines.map((l) => (
               <li key={l.skuId} className="flex justify-between gap-2">
                 <span className="text-slate-700">{l.name} × {l.quantity}</span>
-                <span>{quotes[l.skuId]?.price != null ? inr(quotes[l.skuId]!.price! * l.quantity) : "—"}</span>
+                <span>{quotes[l.skuId]?.unitPrice != null ? inr(quotes[l.skuId]!.unitPrice! * l.quantity) : "—"}</span>
               </li>
             ))}
           </ul>
-          <div className="flex justify-between border-t border-slate-100 pt-2 text-sm"><span>Items</span><span>{inr(items)}</span></div>
-          <div className="flex justify-between text-sm"><span>Shipping (per order)</span><span>{inr(shippingFee)}</span></div>
-          <div className="flex justify-between border-t border-slate-100 pt-2 font-semibold"><span>Total to pay</span><span>{shippingFee == null ? "—" : inr(items + shippingFee)}</span></div>
+          <div className="border-t border-slate-100 pt-2"><CartTotals summary={summary} totalLabel="Total to pay" /></div>
           <p className="text-xs text-slate-500">Prices are confirmed when you place the order; that amount is what you pay.</p>
         </aside>
       </div>

@@ -2,17 +2,18 @@ import Link from "next/link";
 import { Alert, Badge, Card, PageHeader, formatDateTime } from "@/components/ui";
 import { P, can, inr } from "@/lib/access";
 import { backendFetch, getMe } from "@/lib/backend";
-import type { LedgerPage, ResellerCustomer, ResellerDetail } from "@/lib/types";
+import type { LedgerPage, ResellerCustomer, ResellerDetail, Vendor } from "@/lib/types";
 import { RESELLER_TONE } from "../reseller-status";
 import { PricePreview, ResellerStatusActions, TermsForm, WalletAdjustment } from "./reseller-actions";
 
 export default async function ResellerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const me = (await getMe())!;
-  const [reseller, ledger, customers] = await Promise.all([
+  const [reseller, ledger, customers, vendors] = await Promise.all([
     backendFetch<ResellerDetail>(`admin/resellers/${id}`),
     can(me, P.walletView) ? backendFetch<LedgerPage>(`admin/wallet/resellers/${id}/ledger?limit=20`) : Promise.resolve(null),
     backendFetch<ResellerCustomer[]>(`admin/resellers/${id}/customers`),
+    backendFetch<Vendor[]>("admin/catalog/vendors"),
   ]);
   if (!reseller.ok) return <Alert>{reseller.problem.title}</Alert>;
   const r = reseller.data;
@@ -28,15 +29,23 @@ export default async function ResellerPage({ params }: { params: Promise<{ id: s
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
         <Card title="Commercial terms" className="lg:col-span-2">
-          <p className="text-3xl font-semibold text-slate-900">{r.currentTerms.discountPct}% <span className="text-sm font-normal text-slate-500">reseller discount · version {r.currentTerms.version}</span></p>
+          <p className="text-sm text-slate-500">Version {r.currentTerms.version} · from {formatDateTime(r.currentTerms.effectiveFrom)}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {(r.currentTerms.vendorDiscounts ?? []).length === 0 && <span className="text-sm text-slate-600">No vendor discounts — this reseller pays retail on vendor products.</span>}
+            {(r.currentTerms.vendorDiscounts ?? []).map((v) => (
+              <span key={v.vendorId} className="rounded-full bg-brand-50 px-3 py-1 text-sm text-brand-900">{v.vendorName} <strong>{v.discountPct}%</strong></span>
+            ))}
+            {r.currentTerms.discountPct > 0 && <span className="rounded-full bg-slate-100 px-3 py-1 text-sm">Own stock <strong>{r.currentTerms.discountPct}%</strong></span>}
+          </div>
           <ol className="mt-4 space-y-2 text-sm">
             {r.termsHistory.map((t) => (
               <li key={t.id} className={t.isCurrent ? "font-medium" : "text-slate-600"}>
-                v{t.version}: {t.discountPct}% from {formatDateTime(t.effectiveFrom)} — {t.reason}{t.notes ? ` (${t.notes})` : ""}
+                v{t.version} from {formatDateTime(t.effectiveFrom)}: {(t.vendorDiscounts ?? []).map((v) => `${v.vendorName} ${v.discountPct}%`).join(", ") || "no vendor discounts"}
+                {t.discountPct > 0 ? `; own stock ${t.discountPct}%` : ""} — {t.reason}{t.notes ? ` (${t.notes})` : ""}
               </li>
             ))}
           </ol>
-          {manage && r.status !== "Closed" && <TermsForm reseller={r} />}
+          {manage && r.status !== "Closed" && <TermsForm reseller={r} vendors={vendors?.ok ? vendors.data.filter((v) => v.isActive) : []} />}
         </Card>
         <div className="space-y-6">
           <Card title="Wallet">

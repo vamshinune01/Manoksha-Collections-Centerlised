@@ -7,6 +7,7 @@ using Manoksha.Persistence;
 using Manoksha.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Manoksha.Modules.Catalog.Contracts;
 
 namespace Manoksha.Modules.Resellers.Application;
 
@@ -22,6 +23,7 @@ internal sealed class ResellerService(
     IResellerBalanceView balances,
     IAuditWriter audit,
     IOutbox outbox,
+    ICatalogLookup catalog,
     ICurrentUser currentUser,
     IClock clock) : IResellerDirectory, IResellerLoginGate
 {
@@ -75,6 +77,7 @@ internal sealed class ResellerService(
             db.Add(new ResellerStatusChange(reseller.Id, null, ResellerStatus.Pending, currentUser.UserId, req.Reason, now));
             var term = new CommercialTerm(reseller.Id, 1, req.ResellerDiscountPct, req.Notes?.Trim(), "Initial commercial terms", currentUser.UserId, now);
             db.Add(term);
+            await AddVendorDiscountsAsync(term.Id, req.VendorDiscounts ?? [], innerCt);
             foreach (var participant in participants)
             {
                 await participant.OnResellerCreatedAsync(reseller.Id, innerCt);
@@ -154,9 +157,12 @@ internal sealed class ResellerService(
             var current = await db.Set<CommercialTerm>().Where(t => t.ResellerId == id).OrderByDescending(t => t.Version).FirstAsync(innerCt);
             var term = new CommercialTerm(id, current.Version + 1, req.ResellerDiscountPct, req.Notes?.Trim(), req.Reason, currentUser.UserId, clock.UtcNow);
             db.Add(term);
+            var previousVendors = await db.Set<CommercialTermVendorDiscount>().AsNoTracking().Where(v => v.TermId == current.Id).ToListAsync(innerCt);
+            var vendors = req.VendorDiscounts ?? previousVendors.Select(v => new VendorDiscountInput(v.VendorId, v.DiscountPct)).ToList();
+            await AddVendorDiscountsAsync(term.Id, vendors, innerCt);
             await audit.RecordAsync(new AuditRecord("resellers.commercial_terms.changed", "Reseller", id.ToString(),
-                new { version = current.Version, discountPct = current.DiscountPct, current.Notes },
-                new { version = term.Version, discountPct = term.DiscountPct, term.Notes }, req.Reason), innerCt);
+                new { version = current.Version, discountPct = current.DiscountPct, current.Notes, vendors = previousVendors.Select(v => new { v.VendorId, v.DiscountPct }) },
+                new { version = term.Version, discountPct = term.DiscountPct, term.Notes, vendors = vendors.Select(v => new { v.VendorId, v.DiscountPct }) }, req.Reason), innerCt);
             outbox.Enqueue(new CommercialTermsChanged(id, term.Version, term.DiscountPct, term.EffectiveFrom, term.Notes));
             await db.SaveChangesAsync(innerCt);
             return await ToDetailAsync(r, innerCt);
@@ -170,14 +176,16 @@ internal sealed class ResellerService(
         var r = await LoadSelfAsync(ct);
         var terms = await GetCurrentTermsAsync(r.Id, ct);
         return new ResellerSelfDto(r.ResellerNumber, r.Profile.ContactName, r.Profile.BusinessName, r.MobileE164, r.Profile.Email, r.Status.ToString(),
-            r.Status == ResellerStatus.Active, terms.DiscountPct, terms.Version, await balances.GetBalanceAsync(r.Id, ct) ?? 0m);
+            r.Status == ResellerStatus.Active, terms.DiscountPct, terms.Version, await balances.GetBalanceAsync(r.Id, ct) ?? 0m,
+            (await VendorDiscountsAsync([terms.TermId], ct)).GetValueOrDefault(terms.TermId, []));
     }
 
     public async Task<IReadOnlyList<ResellerTermDto>> GetSelfTermsAsync(CancellationToken ct)
     {
         var r = await LoadSelfAsync(ct);
         var terms = await db.Set<CommercialTerm>().AsNoTracking().Where(t => t.ResellerId == r.Id).OrderByDescending(t => t.Version).ToListAsync(ct);
-        return terms.Select((t, i) => new ResellerTermDto(t.Version, t.DiscountPct, t.Notes, t.EffectiveFrom, i == 0)).ToList();
+        var vendors = await VendorDiscountsAsync(terms.Select(t => t.Id).ToList(), ct);
+        return terms.Select((t, i) => new ResellerTermDto(t.Version, t.DiscountPct, t.Notes, t.EffectiveFrom, i == 0, vendors.GetValueOrDefault(t.Id, []))).ToList();
     }
 
     private async Task<Reseller> LoadSelfAsync(CancellationToken ct) =>
@@ -201,7 +209,34 @@ internal sealed class ResellerService(
     {
         var t = await db.Set<CommercialTerm>().AsNoTracking().Where(x => x.ResellerId == resellerId).OrderByDescending(x => x.Version).FirstOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException("RESELLER_TERMS_NOT_FOUND", "The reseller has no commercial terms.");
-        return new ResellerTerms(resellerId, t.Id, t.Version, t.DiscountPct);
+        var vendors = await db.Set<CommercialTermVendorDiscount>().AsNoTracking().Where(v => v.TermId == t.Id).ToDictionaryAsync(v => v.VendorId, v => v.DiscountPct, cancellationToken);
+        return new ResellerTerms(resellerId, t.Id, t.Version, t.DiscountPct, vendors);
+    }
+
+    private async Task AddVendorDiscountsAsync(Guid termId, IReadOnlyList<VendorDiscountInput> input, CancellationToken ct)
+    {
+        if (input.Select(v => v.VendorId).Distinct().Count() != input.Count)
+        {
+            throw new BusinessRuleException("VENDOR_DISCOUNT_DUPLICATE", "Give each vendor only one percentage.", 400);
+        }
+        var known = await catalog.GetVendorsAsync(input.Select(v => v.VendorId).ToList(), ct);
+        foreach (var v in input)
+        {
+            if (!known.ContainsKey(v.VendorId))
+            {
+                throw new BusinessRuleException("VENDOR_NOT_FOUND", "One of the vendors does not exist.", 400);
+            }
+            db.Add(new CommercialTermVendorDiscount(termId, v.VendorId, v.DiscountPct));
+        }
+    }
+
+    private async Task<Dictionary<Guid, List<VendorDiscountDto>>> VendorDiscountsAsync(IReadOnlyCollection<Guid> termIds, CancellationToken ct)
+    {
+        var rows = await db.Set<CommercialTermVendorDiscount>().AsNoTracking().Where(v => termIds.Contains(v.TermId)).ToListAsync(ct);
+        var vendors = await catalog.GetVendorsAsync(rows.Select(r => r.VendorId).Distinct().ToList(), ct);
+        return rows.GroupBy(r => r.TermId).ToDictionary(g => g.Key, g => g
+            .Select(r => vendors.TryGetValue(r.VendorId, out var v) ? new VendorDiscountDto(r.VendorId, v.Code, v.Name, r.DiscountPct) : new VendorDiscountDto(r.VendorId, "?", "?", r.DiscountPct))
+            .OrderBy(v => v.VendorName).ToList());
     }
 
     /// <summary>
@@ -250,7 +285,9 @@ internal sealed class ResellerService(
         var terms = await db.Set<CommercialTerm>().AsNoTracking().Where(t => t.ResellerId == r.Id).OrderByDescending(t => t.Version).ToListAsync(ct);
         var history = await db.Set<ResellerStatusChange>().AsNoTracking().Where(s => s.ResellerId == r.Id).OrderByDescending(s => s.OccurredAt).ToListAsync(ct);
         var balance = await balances.GetBalanceAsync(r.Id, ct) ?? 0m;
-        var termDtos = terms.Select((t, i) => new CommercialTermDto(t.Id, t.Version, t.DiscountPct, t.Notes, t.Reason, t.EffectiveFrom, i == 0)).ToList();
+        var vendorDiscounts = await VendorDiscountsAsync(terms.Select(t => t.Id).ToList(), ct);
+        var termDtos = terms.Select((t, i) => new CommercialTermDto(t.Id, t.Version, t.DiscountPct, t.Notes, t.Reason, t.EffectiveFrom, i == 0,
+            vendorDiscounts.GetValueOrDefault(t.Id, []))).ToList();
         var p = r.Profile;
         return new ResellerDetailDto(r.Id, r.ResellerNumber, r.UserId, r.MobileE164, r.Status.ToString(),
             new ResellerProfileDto(p.ContactName, p.BusinessName, p.Email, p.AddressLine, p.City, p.State, p.Pin, p.Notes),

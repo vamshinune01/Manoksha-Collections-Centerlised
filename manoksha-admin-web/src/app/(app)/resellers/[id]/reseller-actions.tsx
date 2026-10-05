@@ -7,6 +7,8 @@ import { inr } from "@/lib/access";
 import { ApiError, callApi } from "@/lib/client-api";
 import type { PricePreview as Preview, ResellerDetail, SkuInfo } from "@/lib/types";
 import { useAction } from "@/lib/use-action";
+import type { Vendor } from "@/lib/types";
+import { VendorPercentages, readVendorPercentages } from "../vendor-percentages";
 
 const NEXT: Record<string, { to: string; label: string; tone: "primary" | "secondary" | "danger" }[]> = {
   Pending: [{ to: "Closed", label: "Close", tone: "danger" }],
@@ -31,20 +33,21 @@ export function ResellerStatusActions({ reseller }: { reseller: ResellerDetail }
   );
 }
 
-export function TermsForm({ reseller }: { reseller: ResellerDetail }) {
+export function TermsForm({ reseller, vendors }: { reseller: ResellerDetail; vendors: Vendor[] }) {
   const { error, busy, run } = useAction();
   return (
     <form className="mt-5 grid gap-3 border-t border-slate-100 pt-4 md:grid-cols-4" onSubmit={async (e) => {
       e.preventDefault();
       const f = new FormData(e.currentTarget);
-      const ok = await run(() => callApi(`admin/resellers/${reseller.id}/commercial-terms`, "POST", {
-        resellerDiscountPct: Number(f.get("pct")), notes: f.get("notes") || null, reason: f.get("reason"),
+      await run(() => callApi(`admin/resellers/${reseller.id}/commercial-terms`, "POST", {
+        resellerDiscountPct: Number(f.get("pct") || 0), notes: f.get("notes") || null, reason: f.get("reason"),
+        vendorDiscounts: readVendorPercentages(f),
       }));
-      if (ok) (e.target as HTMLFormElement).reset();
     }}>
       <p className="text-sm font-medium text-slate-700 md:col-span-4">New terms version (applies to future orders only)</p>
       {error && <div className="md:col-span-4"><Alert>{error}</Alert></div>}
-      <Field label="Discount %"><Input name="pct" type="number" min={0} max={100} step="0.01" required defaultValue={reseller.currentTerms.discountPct} /></Field>
+      <div className="md:col-span-4"><VendorPercentages vendors={vendors} current={reseller.currentTerms.vendorDiscounts} /></div>
+      <Field label="Own-stock products %"><Input name="pct" type="number" min={0} max={100} step="0.01" defaultValue={reseller.currentTerms.discountPct} /></Field>
       <Field label="Notes"><Input name="notes" /></Field>
       <Field label="Reason"><Input name="reason" required /></Field>
       <div className="flex items-end"><Button type="submit" disabled={busy}>Save new version</Button></div>
