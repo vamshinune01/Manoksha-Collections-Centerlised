@@ -4,10 +4,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Alert, Button, Card, Field, Input, Select, Textarea } from "@/components/ui";
 import { callApi } from "@/lib/client-api";
-import type { Attribute, Category } from "@/lib/types";
+import type { Attribute, Category, Vendor } from "@/lib/types";
 import { useAction } from "@/lib/use-action";
 
-export function CreateProductForm({ categories, attributes }: { categories: Category[]; attributes: Attribute[] }) {
+export function CreateProductForm({ categories, attributes, vendors, vendorRequired }: {
+  categories: Category[]; attributes: Attribute[]; vendors: Vendor[]; vendorRequired: boolean;
+}) {
   const router = useRouter();
   const { error, busy, run } = useAction();
   const [open, setOpen] = useState(false);
@@ -15,6 +17,7 @@ export function CreateProductForm({ categories, attributes }: { categories: Cate
 
   if (!open) return <div className="mb-4 flex justify-end"><Button onClick={() => setOpen(true)}>Add product</Button></div>;
   if (categories.length === 0) return <Alert tone="info">Create a category first (Catalog → Categories).</Alert>;
+  if (vendorRequired && vendors.length === 0) return <Alert tone="info">Add a vendor first (Catalog → Vendors): every product comes from a vendor.</Alert>;
 
   return (
     <Card title="New product" className="mb-6" actions={<Button variant="ghost" onClick={() => setOpen(false)}>Close</Button>}>
@@ -26,6 +29,7 @@ export function CreateProductForm({ categories, attributes }: { categories: Cate
           const p = await run(() =>
             callApi<{ id: string }>("admin/catalog/products", "POST", {
               categoryId: f.get("categoryId"),
+              vendorId: f.get("vendorId") || null,
               name: f.get("name"),
               description: f.get("description") || null,
               trackingMode: f.get("trackingMode"),
@@ -39,10 +43,16 @@ export function CreateProductForm({ categories, attributes }: { categories: Cate
         }}
       >
         {error && <div className="md:col-span-2"><Alert>{error}</Alert></div>}
+        <Field label="Vendor" hint="Who supplies and ships it. The product ID (e.g. ZR-000123) is created from the vendor code and cannot change.">
+          <Select name="vendorId" required={vendorRequired} defaultValue={vendors[0]?.id ?? ""}>
+            {!vendorRequired && <option value="">None — own stock</option>}
+            {vendors.map((v) => <option key={v.id} value={v.id}>{v.name} ({v.code})</option>)}
+          </Select>
+        </Field>
         <Field label="Name"><Input name="name" required /></Field>
         <Field label="Category"><Select name="categoryId">{categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Select></Field>
         <Field label="Inventory tracking" hint="Per piece for unique/high-value items; by quantity for high-volume items. Fixed once activated.">
-          <Select name="trackingMode"><option value="Serialized">Per piece (serialized)</option><option value="Quantity">By quantity</option></Select>
+          <Select name="trackingMode" defaultValue="Quantity"><option value="Quantity">By quantity</option><option value="Serialized">Per piece (serialized)</option></Select>
         </Field>
         <Field label="Variant attributes" hint="Each variant picks one option per attribute. Leave empty for a single standard variant.">
           <div className="flex flex-wrap gap-2 rounded-md border border-slate-200 p-2">

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Alert, Badge, Button, Forbidden, Input, PageHeader, Select, Table, formatDateTime } from "@/components/ui";
 import { P, can, inr } from "@/lib/access";
 import { backendFetch, getMe } from "@/lib/backend";
-import type { ResellerSummary } from "@/lib/types";
+import type { ResellerSummary, Vendor } from "@/lib/types";
 import { CreateResellerForm } from "./create-reseller-form";
 import { RESELLER_TONE } from "./reseller-status";
 
@@ -14,12 +14,15 @@ export default async function ResellersPage({ searchParams }: { searchParams: Pr
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q : "";
   const status = typeof sp.status === "string" ? sp.status : "";
-  const list = await backendFetch<ResellerSummary[]>(`admin/resellers?${new URLSearchParams({ ...(q && { q }), ...(status && { status }) })}`);
+  const [list, vendors] = await Promise.all([
+    backendFetch<ResellerSummary[]>(`admin/resellers?${new URLSearchParams({ ...(q && { q }), ...(status && { status }) })}`),
+    backendFetch<Vendor[]>("admin/catalog/vendors"),
+  ]);
   if (!list.ok) return <Alert>{list.problem.title}</Alert>;
   return (
     <>
       <PageHeader title="Resellers" description="Only the Owner onboards resellers. New resellers start Pending and become Active after verifying their mobile number by OTP." />
-      {can(me, P.resellersManage) && <CreateResellerForm />}
+      {can(me, P.resellersManage) && <CreateResellerForm vendors={vendors.ok ? vendors.data.filter((v) => v.isActive) : []} />}
       <form method="get" className="mb-4 flex gap-2">
         <Input name="q" placeholder="Name, shop, RS number or mobile" defaultValue={q} className="max-w-sm" />
         <Select name="status" defaultValue={status} className="max-w-xs">

@@ -165,6 +165,21 @@ export interface ProductSummary {
   availableForReseller: boolean;
   variantCount: number;
   createdAt: string;
+  vendorId?: string | null;
+  vendorName?: string | null;
+  productCode?: string | null;
+}
+
+/** A vendor that ships its products directly (ADR-001 §41). ownerMarginPct is only sent to the Owner. */
+export interface Vendor {
+  id: string;
+  code: string;
+  name: string;
+  shippingFee: number;
+  ownerMarginPct: number | null;
+  isActive: boolean;
+  productCount: number;
+  createdAt: string;
 }
 
 export interface BarcodeInfo {
@@ -187,6 +202,7 @@ export interface VariantInfo {
   skuId: string;
   skuCode: string;
   barcodes: BarcodeInfo[];
+  outOfStock?: boolean;
 }
 
 export interface ProductDetail {
@@ -203,7 +219,30 @@ export interface ProductDetail {
   variantAttributes: Attribute[];
   variants: VariantInfo[];
   createdAt: string;
+  vendorId?: string | null;
+  vendorCode?: string | null;
+  vendorName?: string | null;
+  productCode?: string | null;
 }
+
+/** One vendor's parcel of an order (ADR-001 §46). */
+export interface Parcel {
+  id: string;
+  vendorId: string;
+  vendorCode: string;
+  vendorName: string;
+  shippingFee: number;
+  status: "Pending" | "OrderedFromVendor" | "Shipped" | "Delivered" | "Cancelled";
+  vendorReference: string | null;
+  courier: string | null;
+  courierLabel: string | null;
+  trackingNumber: string | null;
+  shippedAt: string | null;
+  deliveredOn: string | null;
+  note: string | null;
+}
+
+export interface VendorDiscount { vendorId: string; vendorCode: string; vendorName: string; discountPct: number }
 
 export interface Label {
   barcodeId: string;
@@ -454,6 +493,7 @@ export interface CommercialTerm {
   reason: string;
   effectiveFrom: string;
   isCurrent: boolean;
+  vendorDiscounts?: VendorDiscount[];
 }
 
 export interface ResellerDetail {
@@ -560,6 +600,8 @@ export interface OrderLine {
   finalUnitPrice: number;
   lineTotal: number;
   commercialTermVersion: number | null;
+  parcelId?: string | null;
+  productCode?: string | null;
 }
 
 export interface Order {
@@ -568,7 +610,7 @@ export interface Order {
   channel: string;
   status: string;
   resellerId: string | null;
-  fulfillmentBranchId: string;
+  fulfillmentBranchId: string | null;
   fulfillmentBranchName: string;
   delivery: { name: string; mobile: string; email: string | null; addressLine: string; city: string; state: string; pin: string };
   merchandiseTotal: number;
@@ -583,6 +625,8 @@ export interface Order {
   shipment: Shipment | null;
   openException: FulfillmentExceptionInfo | null;
   posSale?: PosSaleDetail | null;
+  fulfillmentMode?: "Branch" | "Vendor";
+  parcels?: Parcel[] | null;
 }
 
 export interface Shipment {

@@ -13,6 +13,8 @@ export interface Me {
   roles: { code: string; name: string; branchId: string | null }[];
   globalPermissions: string[];
   branchPermissions: Record<string, string[]>;
+  /** Store (POS) selling and branch stock screens; off while vendors ship directly (ADR-001 §48). */
+  storeSellingEnabled?: boolean;
 }
 
 export function can(me: Me, permission: string): boolean {
@@ -77,6 +79,8 @@ export interface NavItem {
   label: string;
   /** Shown when the user holds ANY of these permissions (or always when omitted). */
   permission?: string | string[];
+  /** Branch-stock / store-selling screens, hidden while store selling is off. */
+  storeOnly?: boolean;
 }
 
 /** Admin sections; each is shown only to users who hold one of its permissions. */
@@ -92,11 +96,11 @@ export const NAV: NavItem[] = [
   { href: "/pricing", label: "Pricing", permission: P.pricingView },
   { href: "/resellers", label: "Resellers", permission: P.resellersView },
   { href: "/wallet-deposits", label: "Wallet deposits", permission: P.walletView },
-  { href: "/fulfillment", label: "Fulfillment", permission: P.ordersView },
+  { href: "/fulfillment", label: "Fulfillment", permission: P.ordersView, storeOnly: true },
   { href: "/orders", label: "Orders", permission: P.ordersView },
   { href: "/payments", label: "Online payments", permission: P.exceptionsView },
-  { href: "/purchasing", label: "Purchasing", permission: [P.purchasingView, P.goodsReceipt] },
-  { href: "/inventory", label: "Inventory", permission: [P.inventoryView, P.inventoryCount] },
+  { href: "/purchasing", label: "Purchasing", permission: [P.purchasingView, P.goodsReceipt], storeOnly: true },
+  { href: "/inventory", label: "Inventory", permission: [P.inventoryView, P.inventoryCount], storeOnly: true },
   { href: "/users", label: "Users", permission: P.usersView },
   { href: "/roles", label: "Roles & permissions", permission: P.rolesView },
   { href: "/settings", label: "Business settings", permission: P.settingsView },

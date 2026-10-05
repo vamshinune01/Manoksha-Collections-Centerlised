@@ -115,8 +115,15 @@ export function VariantsTable({ product, canManage, canPrint }: { product: Produ
               <span className="font-medium text-slate-800">{v.name}</span>
               <span className="font-mono text-xs text-slate-500">{v.skuCode}</span>
               {v.status !== "Active" && <Badge tone="red">Inactive</Badge>}
+              {product.vendorId && (v.outOfStock ? <Badge tone="red">Out of stock</Badge> : <Badge tone="green">In stock</Badge>)}
               {canManage && (
                 <span className="ml-auto flex gap-1">
+                  {product.vendorId && (
+                    <Button variant="ghost" disabled={busy} onClick={() => run(() => callApi(`admin/catalog/skus/${v.skuId}/out-of-stock`, "POST",
+                      { outOfStock: !v.outOfStock, reason: v.outOfStock ? "Vendor has stock again" : "Vendor out of stock" }))}>
+                      {v.outOfStock ? "Back in stock" : "Out of stock"}
+                    </Button>
+                  )}
                   <Button variant="ghost" disabled={busy} onClick={() => run(() => callApi(`admin/catalog/skus/${v.skuId}/barcodes`, "POST", { reason: "Additional label barcode" }))}>+ Barcode</Button>
                   <Button variant="ghost" disabled={busy} onClick={() => {
                     const code = window.prompt("Supplier/manufacturer barcode (scan or type):");
@@ -162,5 +169,44 @@ export function VariantsTable({ product, canManage, canPrint }: { product: Produ
         </div>
       )}
     </div>
+  );
+}
+
+/** Vendor products: no stock counts — switch the whole product out of / back in stock (ADR-001 §43). */
+export function ProductStockSwitch({ product }: { product: ProductDetail }) {
+  const { error, busy, run } = useAction();
+  const allOut = product.variants.length > 0 && product.variants.every((v) => v.outOfStock);
+  return (
+    <span className="inline-flex flex-col">
+      <Button variant="secondary" disabled={busy || product.variants.length === 0} onClick={() => run(() => callApi(`admin/catalog/products/${product.id}/out-of-stock`, "POST",
+        { outOfStock: !allOut, reason: allOut ? "Vendor has stock again" : "Vendor out of stock" }))}>
+        {allOut ? "Mark all in stock" : "Mark all out of stock"}
+      </Button>
+      {error && <span className="text-xs text-red-600">{error}</span>}
+    </span>
+  );
+}
+
+/** Online customer discount (ADR-001 §44): shoppers pay retail less this %; resellers get their own vendor % instead. */
+export function OnlineDiscountEditor({ productId, current }: { productId: string; current: number | null }) {
+  const { error, busy, run } = useAction();
+  return (
+    <form className="space-y-3" onSubmit={async (e) => {
+      e.preventDefault();
+      const f = new FormData(e.currentTarget);
+      const pct = String(f.get("pct") ?? "").trim();
+      await run(() => pct === "" || Number(pct) === 0
+        ? callApi(`admin/pricing/products/${productId}/online-discount/clear`, "POST", { reason: f.get("reason") })
+        : callApi(`admin/pricing/products/${productId}/online-discount`, "PUT", { discountPct: Number(pct), reason: f.get("reason") }));
+    }}>
+      {error && <Alert>{error}</Alert>}
+      <p className="text-sm text-slate-600">{current ? `Online customers get ${current}% off retail.` : "No online discount: customers pay the retail price."}</p>
+      <div className="flex flex-wrap items-end gap-2">
+        <Field label="Discount %"><Input name="pct" type="number" min="0" max="99.99" step="0.01" defaultValue={current ?? ""} className="w-28" /></Field>
+        <Field label="Reason"><Input name="reason" required defaultValue={current ? "" : "Online offer"} className="w-48" /></Field>
+        <Button type="submit" disabled={busy}>Save</Button>
+      </div>
+      <p className="text-xs text-slate-500">Leave empty (or 0) to remove. Resellers always get their own % for this vendor.</p>
+    </form>
   );
 }

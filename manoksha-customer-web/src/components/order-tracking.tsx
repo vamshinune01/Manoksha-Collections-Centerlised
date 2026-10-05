@@ -2,6 +2,15 @@ import { formatDateTime } from "./ui";
 import { ORDER_STATUS_LABEL, type Order } from "@/lib/types";
 
 const STEPS = ["Confirmed", "Processing", "Packed", "Shipped", "Delivered"];
+const VENDOR_STEPS = ["Confirmed", "Processing", "Shipped", "Delivered"];
+
+const PARCEL_LABEL: Record<string, string> = {
+  Pending: "Being prepared",
+  OrderedFromVendor: "Being prepared",
+  Shipped: "Shipped",
+  Delivered: "Delivered",
+  Cancelled: "Cancelled",
+};
 
 /** Order progress and courier details for customers and resellers (no internal notes are ever shown). */
 export function OrderTracking({ order }: { order: Order }) {
@@ -15,10 +24,12 @@ export function OrderTracking({ order }: { order: Order }) {
   }
   const reached = (step: string) => order.history.some((h) => h.toStatus === step);
   if (!reached("Confirmed")) return null;
+  const vendor = order.fulfillmentMode === "Vendor";
+  const steps = vendor ? VENDOR_STEPS : STEPS;
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <ol className="grid grid-cols-5 gap-2 text-center text-xs">
-        {STEPS.map((step) => {
+      <ol className={`grid gap-2 text-center text-xs ${vendor ? "grid-cols-4" : "grid-cols-5"}`}>
+        {steps.map((step) => {
           const at = order.history.filter((h) => h.toStatus === step).at(-1)?.occurredAt;
           return (
             <li key={step} className="space-y-1">
@@ -31,6 +42,22 @@ export function OrderTracking({ order }: { order: Order }) {
       </ol>
       {order.status === "FulfillmentException" && (
         <p className="mt-3 text-sm text-amber-800">We are sorting out an item in your order; it may be sent from another of our stores. No action is needed from you.</p>
+      )}
+      {vendor && order.parcels && order.parcels.length > 0 && (
+        <div className="mt-4 space-y-2">
+          <p className="text-xs text-slate-500">Items from different brands ship separately:</p>
+          {order.parcels.map((p) => (
+            <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-slate-50 px-3 py-2 text-sm">
+              <span className="font-medium text-slate-900">{p.vendorName}</span>
+              <span className="text-slate-700">
+                {PARCEL_LABEL[p.status] ?? p.status}
+                {p.courierLabel && <> · {p.courierLabel}</>}
+                {p.trackingNumber && <> · <span className="font-mono">{p.trackingNumber}</span></>}
+                {p.deliveredOn && <> · {p.deliveredOn}</>}
+              </span>
+            </div>
+          ))}
+        </div>
       )}
       {order.shipment && (
         <p className="mt-3 text-sm text-slate-700">

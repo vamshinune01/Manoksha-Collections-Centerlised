@@ -9,7 +9,13 @@ export interface ResellerMe {
   resellerDiscountPct: number;
   termsVersion: number;
   walletBalance: number;
+  vendorDiscounts?: VendorDiscount[];
 }
+
+/** The reseller's % for one vendor's products (ADR-001 §45). */
+export interface VendorDiscount { vendorId: string; vendorCode: string; vendorName: string; discountPct: number }
+
+export interface StoreVendor { id: string; code: string; name: string }
 
 export interface CatalogItem {
   skuId: string;
@@ -19,10 +25,14 @@ export interface CatalogItem {
   variantName: string;
   categoryName: string;
   retailPrice: number;
-  discountSource: "RESELLER" | "PRODUCT_RESELLER";
+  discountSource: "RESELLER" | "PRODUCT_RESELLER" | "RESELLER_VENDOR" | "NONE";
   discountPct: number;
   resellerPrice: number;
   image?: ImageUrls | null;
+  vendorId?: string | null;
+  vendorName?: string | null;
+  productCode?: string | null;
+  outOfStock?: boolean;
 }
 
 export interface CatalogPage {
@@ -61,6 +71,20 @@ export interface OrderLine {
   discountPct: number;
   finalUnitPrice: number;
   lineTotal: number;
+  parcelId?: string | null;
+  productCode?: string | null;
+}
+
+/** One vendor's parcel of an order: shipped separately with its own courier and tracking (ADR-001 §46). */
+export interface Parcel {
+  id: string;
+  vendorName: string;
+  shippingFee: number;
+  status: "Pending" | "OrderedFromVendor" | "Shipped" | "Delivered" | "Cancelled";
+  courierLabel: string | null;
+  trackingNumber: string | null;
+  shippedAt: string | null;
+  deliveredOn: string | null;
 }
 
 export interface Order {
@@ -78,6 +102,8 @@ export interface Order {
   history: { toStatus: string; note: string | null; occurredAt: string }[];
   helpWhatsAppUrl: string;
   shipment?: Shipment | null;
+  fulfillmentMode?: "Branch" | "Vendor";
+  parcels?: Parcel[] | null;
 }
 
 export interface Shipment {
@@ -128,6 +154,7 @@ export interface Term {
   notes: string | null;
   effectiveFrom: string;
   isCurrent: boolean;
+  vendorDiscounts?: VendorDiscount[];
 }
 
 // ---- Storefront & online orders (Phase 6) ----
@@ -181,6 +208,11 @@ export interface StoreItem {
   price: number;
   inStock: boolean;
   image: ImageUrls | null;
+  retailPrice?: number | null;
+  discountPct?: number;
+  vendorId?: string | null;
+  vendorName?: string | null;
+  productCode?: string | null;
 }
 
 export interface StorePage {
@@ -200,8 +232,22 @@ export interface StoreCategory {
 export interface StoreProduct {
   productId: string;
   productName: string;
-  variants: { skuId: string; skuCode: string; variantName: string; price: number; inStock: boolean }[];
+  variants: { skuId: string; skuCode: string; variantName: string; price: number; inStock: boolean; retailPrice?: number | null; discountPct?: number }[];
   media: PublicMedia[];
+  vendorName?: string | null;
+  productCode?: string | null;
+}
+
+/** Display totals for a cart: lines grouped by vendor, each vendor's shipping (ADR-001 §46). Checkout re-prices. */
+export interface CartSummary {
+  lines: {
+    skuId: string; quantity: number; sellable: boolean; inStock: boolean; productName: string | null; variantName: string | null; productCode: string | null;
+    vendorId: string | null; vendorName: string | null; retailPrice: number | null; discountPct: number; unitPrice: number | null; lineTotal: number; message: string | null;
+  }[];
+  groups: { vendorId: string | null; vendorName: string; itemsTotal: number; shippingFee: number }[];
+  merchandise: number;
+  shipping: number;
+  total: number;
 }
 
 export interface CartQuoteLine {

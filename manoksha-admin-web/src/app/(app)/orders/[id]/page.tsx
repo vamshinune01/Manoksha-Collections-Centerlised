@@ -4,6 +4,7 @@ import { P, can, canAt, inr } from "@/lib/access";
 import { backendFetch, getMe } from "@/lib/backend";
 import { PAYMENT_TONE, orderStatusTone, type Order, type PaymentAttempt } from "@/lib/types";
 import { FulfillmentPanel } from "./fulfillment-panel";
+import { ParcelsPanel } from "./parcels-panel";
 
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,7 +15,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const payments = o.channel === "Online" && can(me, P.exceptionsView) ? await backendFetch<PaymentAttempt[]>(`admin/payments?referenceId=${o.id}`) : null;
   return (
     <>
-      <PageHeader title={o.number} description={`${o.channel} order · fulfilled by ${o.fulfillmentBranchName}`}
+      <PageHeader title={o.number} description={o.fulfillmentMode === "Vendor" ? `${o.channel} order · shipped by vendors` : `${o.channel} order · fulfilled by ${o.fulfillmentBranchName}`}
         actions={<Link href="/orders" className="text-sm text-brand-700 hover:underline">← Orders</Link>} />
       <div className="grid gap-6 lg:grid-cols-3">
         <Card title="Items (prices as charged — never recalculated)" className="lg:col-span-2">
@@ -38,13 +39,18 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           </dl>
         </Card>
         <div className="space-y-6">
-          <Card title="Fulfillment">
-            <FulfillmentPanel orderId={o.id} status={o.status} lines={o.lines} rights={{
-              fulfill: canAt(me, P.ordersFulfill, o.fulfillmentBranchId),
-              raise: canAt(me, P.ordersExceptionRaise, o.fulfillmentBranchId),
-              reroute: canAt(me, P.ordersReroute, o.fulfillmentBranchId),
-              cancel: canAt(me, P.ordersCancel, o.fulfillmentBranchId),
-            }} />
+          <Card title={o.fulfillmentMode === "Vendor" ? "Vendor parcels" : "Fulfillment"}>
+            {o.fulfillmentMode === "Vendor" || !o.fulfillmentBranchId ? (
+              <ParcelsPanel orderId={o.id} status={o.status} parcels={o.parcels ?? []} lines={o.lines}
+                canFulfill={me.globalPermissions.includes(P.ordersFulfill)} canCancel={me.globalPermissions.includes(P.ordersCancel)} />
+            ) : (
+              <FulfillmentPanel orderId={o.id} status={o.status} lines={o.lines} rights={{
+                fulfill: canAt(me, P.ordersFulfill, o.fulfillmentBranchId),
+                raise: canAt(me, P.ordersExceptionRaise, o.fulfillmentBranchId),
+                reroute: canAt(me, P.ordersReroute, o.fulfillmentBranchId),
+                cancel: canAt(me, P.ordersCancel, o.fulfillmentBranchId),
+              }} />
+            )}
             {o.openException && (
               <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm">
                 <p className="font-medium text-amber-900">{o.openException.reason.replaceAll("_", " ")} · {o.openException.branchName}</p>
