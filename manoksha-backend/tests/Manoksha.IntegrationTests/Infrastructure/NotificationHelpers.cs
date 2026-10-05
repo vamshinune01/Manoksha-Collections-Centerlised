@@ -29,6 +29,17 @@ public sealed class RecordingEmailSender : IEmailSender
 
 public static class NotificationHelpers
 {
+    /// <summary>Sets a business setting directly (test setup; the admin API is covered by SettingsTests).</summary>
+    public static async Task SetSettingAsync(this ManokshaApiFactory factory, string key, string json)
+    {
+        await using var c = new Npgsql.NpgsqlConnection(factory.ConnectionString);
+        await c.OpenAsync();
+        await using var cmd = new Npgsql.NpgsqlCommand("UPDATE settings.system_settings SET value = @v::jsonb WHERE key = @k", c);
+        cmd.Parameters.AddWithValue("v", json);
+        cmd.Parameters.AddWithValue("k", key);
+        (await cmd.ExecuteNonQueryAsync()).Should().Be(1, $"setting {key} exists");
+    }
+
     /// <summary>Runs the outbox dispatcher (what the worker does continuously) until nothing is due.</summary>
     public static async Task DispatchOutboxAsync(this ManokshaApiFactory factory)
     {

@@ -13,15 +13,23 @@ public sealed record CreateResellerRequest(
     string Pin,
     decimal ResellerDiscountPct,
     string? Notes,
-    string Reason);
+    string Reason,
+    IReadOnlyList<VendorDiscountInput>? VendorDiscounts = null);
+
+/// <summary>The reseller's % for one vendor's products (ADR-001 §45).</summary>
+public sealed record VendorDiscountInput(Guid VendorId, decimal DiscountPct);
+
+public sealed record VendorDiscountDto(Guid VendorId, string VendorCode, string VendorName, decimal DiscountPct);
 
 public sealed record UpdateResellerRequest(string ContactName, string? BusinessName, string Email, string AddressLine, string City, string State, string Pin, string? Notes, string Reason);
 
 public sealed record ChangeResellerStatusRequest(string Status, string Reason);
 
-public sealed record ChangeTermsRequest(decimal ResellerDiscountPct, string? Notes, string Reason);
+/// <param name="VendorDiscounts">The complete set of vendor %s for the new version; null keeps the current set unchanged.</param>
+public sealed record ChangeTermsRequest(decimal ResellerDiscountPct, string? Notes, string Reason, IReadOnlyList<VendorDiscountInput>? VendorDiscounts = null);
 
-public sealed record CommercialTermDto(Guid Id, int Version, decimal DiscountPct, string? Notes, string Reason, DateTimeOffset EffectiveFrom, bool IsCurrent);
+public sealed record CommercialTermDto(Guid Id, int Version, decimal DiscountPct, string? Notes, string Reason, DateTimeOffset EffectiveFrom, bool IsCurrent,
+    IReadOnlyList<VendorDiscountDto>? VendorDiscounts = null);
 
 public sealed record StatusChangeDto(string? FromStatus, string ToStatus, string Reason, Guid? ActorUserId, DateTimeOffset OccurredAt);
 
@@ -53,6 +61,7 @@ public sealed record ResellerSelfDto(
     bool CanPlaceOrders,
     decimal ResellerDiscountPct,
     int TermsVersion,
-    decimal WalletBalance);
+    decimal WalletBalance,
+    IReadOnlyList<VendorDiscountDto>? VendorDiscounts = null);
 
-public sealed record ResellerTermDto(int Version, decimal DiscountPct, string? Notes, DateTimeOffset EffectiveFrom, bool IsCurrent);
+public sealed record ResellerTermDto(int Version, decimal DiscountPct, string? Notes, DateTimeOffset EffectiveFrom, bool IsCurrent, IReadOnlyList<VendorDiscountDto>? VendorDiscounts = null);

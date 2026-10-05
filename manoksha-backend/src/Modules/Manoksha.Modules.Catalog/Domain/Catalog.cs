@@ -187,7 +187,23 @@ internal sealed class Product : Entity
 
     public uint RowVersion { get; private set; }
 
+    /// <summary>The vendor that supplies and ships this product (ADR-001 §41). Null only for products from before vendors existed.</summary>
+    public Guid? VendorId { get; private set; }
+
+    /// <summary>Unique public product ID, vendor code + number (e.g. ZR-000123, ADR-001 §42). Fixed once assigned.</summary>
+    public string? ProductCode { get; private set; }
+
     public IReadOnlyList<ProductVariantAttribute> VariantAttributes => _variantAttributes.OrderBy(a => a.Position).ToList();
+
+    public void AssignVendor(Guid vendorId, string productCode)
+    {
+        if (VendorId is not null)
+        {
+            throw new BusinessRuleException("PRODUCT_VENDOR_FIXED", "A product's vendor and product ID cannot change.", 409);
+        }
+        VendorId = vendorId;
+        ProductCode = productCode;
+    }
 
     public void Update(Guid categoryId, string name, string? description, bool availableForRetail, bool availableForReseller)
     {
@@ -322,6 +338,57 @@ internal sealed class Sku : Entity
     public string Code { get; private set; } = default!;
 
     public DateTimeOffset CreatedAt { get; private set; }
+
+    /// <summary>Vendor products have no stock counts: a variant sells until the Owner marks it out of stock (ADR-001 §43).</summary>
+    public bool OutOfStock { get; private set; }
+
+    public void SetOutOfStock(bool outOfStock) => OutOfStock = outOfStock;
+}
+
+/// <summary>A vendor that supplies products and ships them directly to buyers (ADR-001 §41–47).</summary>
+internal sealed class Vendor : Entity
+{
+    private Vendor()
+    {
+    }
+
+    public Vendor(string code, string name, decimal shippingFee, decimal? ownerMarginPct, DateTimeOffset now)
+    {
+        Code = code;
+        Name = name;
+        ShippingFee = shippingFee;
+        OwnerMarginPct = ownerMarginPct;
+        IsActive = true;
+        NextProductNumber = 1;
+        CreatedAt = now;
+    }
+
+    /// <summary>2–4 capital letters, used as the product ID prefix. Fixed once created.</summary>
+    public string Code { get; private set; } = default!;
+
+    public string Name { get; private set; } = default!;
+
+    /// <summary>Charged once per order that contains this vendor's items (ADR-001 §46).</summary>
+    public decimal ShippingFee { get; private set; }
+
+    /// <summary>What the vendor gives the Owner off retail (e.g. 17%) — the cost basis for profit reports. Owner-only.</summary>
+    public decimal? OwnerMarginPct { get; private set; }
+
+    public bool IsActive { get; private set; }
+
+    public int NextProductNumber { get; private set; }
+
+    public DateTimeOffset CreatedAt { get; private set; }
+
+    public uint RowVersion { get; private set; }
+
+    public void Update(string name, decimal shippingFee, decimal? ownerMarginPct, bool isActive)
+    {
+        Name = name;
+        ShippingFee = shippingFee;
+        OwnerMarginPct = ownerMarginPct;
+        IsActive = isActive;
+    }
 }
 
 internal enum BarcodeKind

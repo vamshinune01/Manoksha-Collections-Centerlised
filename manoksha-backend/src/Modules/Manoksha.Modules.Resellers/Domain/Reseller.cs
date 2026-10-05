@@ -150,6 +150,31 @@ internal sealed class CommercialTerm : Entity
     public DateTimeOffset EffectiveFrom { get; private set; }
 }
 
+/// <summary>
+/// The reseller's discount for one vendor's products within a commercial-term version (ADR-001 §45), e.g. Zara 10%. Immutable:
+/// changing any vendor % creates a new term version, so every order keeps the terms it was priced with. No row = 0%.
+/// </summary>
+internal sealed class CommercialTermVendorDiscount
+{
+    private CommercialTermVendorDiscount()
+    {
+    }
+
+    public CommercialTermVendorDiscount(Guid termId, Guid vendorId, decimal discountPct)
+    {
+        Percent.Validate(discountPct);
+        TermId = termId;
+        VendorId = vendorId;
+        DiscountPct = discountPct;
+    }
+
+    public Guid TermId { get; private set; }
+
+    public Guid VendorId { get; private set; }
+
+    public decimal DiscountPct { get; private set; }
+}
+
 internal static class Percent
 {
     public static void Validate(decimal pct)

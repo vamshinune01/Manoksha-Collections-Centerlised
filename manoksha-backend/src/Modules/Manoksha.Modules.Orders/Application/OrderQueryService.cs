@@ -76,7 +76,7 @@ internal sealed class OrderQueryService(
         var q = db.Set<Order>().AsNoTracking().Where(o => o.Status != OrderStatus.CheckoutAttempt);
         if (visible is not null)
         {
-            q = q.Where(o => visible.Contains(o.FulfillmentBranchId));
+            q = q.Where(o => o.FulfillmentBranchId != null && visible.Contains(o.FulfillmentBranchId.Value));
         }
         if (!string.IsNullOrWhiteSpace(channel) && Enum.TryParse<OrderChannel>(channel, true, out var c))
         {
@@ -105,7 +105,14 @@ internal sealed class OrderQueryService(
         {
             return await GetMineAsync(id, ct);
         }
-        await permissions.EnsurePermissionForBranchAsync(P.Orders.View, order.FulfillmentBranchId, ct);
+        if (order.FulfillmentBranchId is { } branchId)
+        {
+            await permissions.EnsurePermissionForBranchAsync(P.Orders.View, branchId, ct);
+        }
+        else if (!(await permissions.GetEffectiveAccessAsync(ct)).GlobalPermissions.Contains(P.Orders.View))
+        {
+            throw NotFound(); // vendor orders are managed by the Owner (no branch)
+        }
         var dto = (await ToDtosAsync([id], includeCost: (await permissions.GetEffectiveAccessAsync(ct)).IsOwner, ct))[0];
         return order.Channel == OrderChannel.Store ? dto with { PosSale = await PosSaleDetailAsync(order, ct) } : dto;
     }
@@ -152,20 +159,25 @@ internal sealed class OrderQueryService(
                 .Select(x => (x.OrderId, x.ReservationId, x.CreatedAt, x.CostAmount)).ToList();
         }
         var names = (await branches.ListAsync(ct)).ToDictionary(b => b.Id, b => b.Name);
+        var parcels = (await db.Set<OrderParcel>().AsNoTracking().Where(p => ids.Contains(p.OrderId)).OrderBy(p => p.VendorName).ToListAsync(ct))
+            .ToLookup(p => p.OrderId);
         var result = new List<OrderDto>();
         foreach (var id in ids)
         {
             var o = orders[id];
             var own = lines.Where(l => l.OrderId == id).OrderBy(l => l.SkuCode).ToList();
-            result.Add(new OrderDto(o.Id, o.Number, o.Channel.ToString(), o.Status.ToString(), o.ResellerId, o.FulfillmentBranchId, names.GetValueOrDefault(o.FulfillmentBranchId, "?"),
+            result.Add(new OrderDto(o.Id, o.Number, o.Channel.ToString(), o.Status.ToString(), o.ResellerId, o.FulfillmentBranchId,
+                o.FulfillmentBranchId is { } b ? names.GetValueOrDefault(b, "?") : "Vendor shipping",
                 ResellerCustomerService.ToDto(o.Delivery), o.MerchandiseTotal, o.ShippingFee, o.GrandTotal, o.CreatedAt, o.ConfirmedAt,
                 own.Select(l => new OrderLineDto(l.Id, l.SkuId, l.SkuCode, l.ProductName, l.VariantName, l.Quantity, l.RetailUnitPrice, l.DiscountSource, l.DiscountPct,
-                    l.DiscountAmountPerUnit, l.FinalUnitPrice, l.LineTotal, l.CommercialTermVersion)).ToList(),
+                    l.DiscountAmountPerUnit, l.FinalUnitPrice, l.LineTotal, l.CommercialTermVersion, l.ParcelId, l.ProductCode)).ToList(),
                 history.Where(h => h.OrderId == id).Select(h => new OrderStatusChangeDto(h.FromStatus?.ToString(), h.ToStatus.ToString(), external ? null : h.Note, h.OccurredAt)).ToList(),
                 await whatsApp.OrderHelpUrlAsync(o.Number, ct),
                 includeCost ? CostOf(o, own, soldCosts.Where(c => c.OrderId == id).ToList()) : null,
                 shipments.TryGetValue(id, out var sh) ? new ShipmentDto(sh.Courier, CourierLabel(sh), sh.TrackingNumber, sh.ShippedAt, sh.DeliveredOn) : null,
-                openExceptions.FirstOrDefault(e => e.OrderId == id)));
+                openExceptions.FirstOrDefault(e => e.OrderId == id),
+                FulfillmentMode: o.FulfillmentMode.ToString(),
+                Parcels: o.FulfillmentMode == FulfillmentMode.Vendor ? parcels[id].Select(p => ToDto(p, external)).ToList() : null));
         }
         return result;
     }
@@ -183,6 +195,11 @@ internal sealed class OrderQueryService(
         }
         return lines.Any(l => l.CostAmount is not null) ? lines.Sum(l => l.CostAmount ?? 0m) : null;
     }
+
+    private static ParcelDto ToDto(OrderParcel p, bool external) =>
+        new(p.Id, p.VendorId, p.VendorCode, p.VendorName, p.ShippingFee, p.Status.ToString(), external ? null : p.VendorReference, p.Courier,
+            p.Courier is null ? null : p.CourierName ?? p.Courier switch { "XPRESSBEES" => "Xpressbees", "DELHIVERY" => "Delhivery", _ => p.Courier },
+            p.TrackingNumber, p.ShippedAt, p.DeliveredOn, external ? null : p.Note);
 
     internal static string CourierLabel(Shipment s) => s.Courier switch
     {
@@ -222,7 +239,7 @@ internal sealed class OrderQueryService(
         var q = db.Set<Order>().AsNoTracking().Where(o => active.Contains(o.Status));
         if (visible is not null)
         {
-            q = q.Where(o => visible.Contains(o.FulfillmentBranchId));
+            q = q.Where(o => o.FulfillmentBranchId != null && visible.Contains(o.FulfillmentBranchId.Value));
         }
         if (branchId is { } b)
         {

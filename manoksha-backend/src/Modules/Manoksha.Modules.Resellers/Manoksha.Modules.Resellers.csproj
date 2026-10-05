@@ -5,6 +5,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\Manoksha.Persistence\Manoksha.Persistence.csproj" />
     <ProjectReference Include="..\Manoksha.Modules.Identity\Manoksha.Modules.Identity.csproj" />
+    <ProjectReference Include="..\Manoksha.Modules.Catalog\Manoksha.Modules.Catalog.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Manoksha.UnitTests" />

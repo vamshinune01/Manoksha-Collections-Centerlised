@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Alert, Button, Card, Input, formatDateTime } from "@/components/ui";
+import { Alert, Button, Card, Input, Select, formatDateTime } from "@/components/ui";
 import { ApiError, callApi } from "@/lib/client-api";
 import type { Setting } from "@/lib/types";
 
@@ -13,7 +13,7 @@ export function SettingRow({ setting, editable }: { setting: Setting; editable: 
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string>();
 
-  const display = setting.kind === "Money" ? `₹${Number(setting.value).toFixed(2)}` : String(setting.value);
+  const display = setting.kind === "Money" ? `₹${Number(setting.value).toFixed(2)}` : setting.kind === "Boolean" ? (setting.value ? "On" : "Off") : String(setting.value);
 
   return (
     <Card>
@@ -35,7 +35,7 @@ export function SettingRow({ setting, editable }: { setting: Setting; editable: 
               e.preventDefault();
               setError(undefined);
               try {
-                const parsed = setting.kind === "String" ? value.trim() : Number(value);
+                const parsed = setting.kind === "String" ? value.trim() : setting.kind === "Boolean" ? ["on", "true", "yes", "1"].includes(value.trim().toLowerCase()) : Number(value);
                 await callApi(`admin/settings/${setting.key}`, "PUT", { value: parsed, expectedVersion: setting.version, reason });
                 setEditing(false);
                 setReason("");
@@ -45,7 +45,14 @@ export function SettingRow({ setting, editable }: { setting: Setting; editable: 
               }
             }}
           >
-            <Input className="w-40" value={value} onChange={(e) => setValue(e.target.value)} inputMode={setting.kind === "String" ? "text" : "decimal"} required />
+            {setting.kind === "Boolean" ? (
+              <Select className="w-40" value={["on", "true", "yes", "1"].includes(value.toLowerCase()) ? "true" : "false"} onChange={(e) => setValue(e.target.value)}>
+                <option value="true">On</option>
+                <option value="false">Off</option>
+              </Select>
+            ) : (
+              <Input className="w-40" value={value} onChange={(e) => setValue(e.target.value)} inputMode={setting.kind === "String" ? "text" : "decimal"} required />
+            )}
             <Input className="w-64" placeholder="Reason (required)" value={reason} onChange={(e) => setReason(e.target.value)} required />
             <Button type="submit">Save</Button>
             <Button type="button" variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>

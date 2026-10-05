@@ -24,7 +24,13 @@ public sealed record OrderLineDto(
     decimal DiscountAmountPerUnit,
     decimal FinalUnitPrice,
     decimal LineTotal,
-    int? CommercialTermVersion);
+    int? CommercialTermVersion,
+    Guid? ParcelId = null,
+    string? ProductCode = null);
+
+/// <summary>One vendor's parcel (ADR-001 §46). VendorReference and Note are internal (null for customers and resellers).</summary>
+public sealed record ParcelDto(Guid Id, Guid VendorId, string VendorCode, string VendorName, decimal ShippingFee, string Status, string? VendorReference,
+    string? Courier, string? CourierLabel, string? TrackingNumber, DateTimeOffset? ShippedAt, DateOnly? DeliveredOn, string? Note);
 
 public sealed record OrderStatusChangeDto(string? FromStatus, string ToStatus, string? Note, DateTimeOffset OccurredAt);
 
@@ -34,7 +40,7 @@ public sealed record OrderDto(
     string Channel,
     string Status,
     Guid? ResellerId,
-    Guid FulfillmentBranchId,
+    Guid? FulfillmentBranchId,
     string FulfillmentBranchName,
     DeliveryDto Delivery,
     decimal MerchandiseTotal,
@@ -48,7 +54,9 @@ public sealed record OrderDto(
     decimal? CostOfGoods,
     ShipmentDto? Shipment = null,
     FulfillmentExceptionDto? OpenException = null,
-    PosSaleDetailDto? PosSale = null);
+    PosSaleDetailDto? PosSale = null,
+    string FulfillmentMode = "Branch",
+    IReadOnlyList<ParcelDto>? Parcels = null);
 
 /// <summary>Store (POS) sale details for staff: who sold it, how it was paid and every authorized price change.</summary>
 public sealed record PosSaleDetailDto(string Cashier, string? CustomerName, string? CustomerMobile, IReadOnlyList<PosPaymentDto> Payments, IReadOnlyList<PosOverrideDto> PriceOverrides);
@@ -83,16 +91,29 @@ public sealed record OrderPaymentStatusDto(Guid OrderId, string OrderNumber, str
 
 // ---- Public storefront (anonymous browsing, SPEC §19.1) ----
 
-/// <param name="InStock">Hint only: some branch has AVAILABLE units now. Checkout decides per branch for the complete basket.</param>
+/// <param name="Price">What the shopper pays: retail less the product's online discount (ADR-001 §44).</param>
+/// <param name="InStock">Vendor products: not marked out of stock. Branch products: some branch has units now (hint only).</param>
 public sealed record StorefrontItemDto(Guid SkuId, string SkuCode, Guid ProductId, string ProductName, string VariantName, string CategoryName, decimal Price, bool InStock,
-    Manoksha.Modules.Catalog.Contracts.ImageUrls? Image = null);
+    Manoksha.Modules.Catalog.Contracts.ImageUrls? Image = null, decimal? RetailPrice = null, decimal DiscountPct = 0, Guid? VendorId = null, string? VendorName = null,
+    string? ProductCode = null);
 
 public sealed record StorefrontPage(IReadOnlyList<StorefrontItemDto> Items, int Total, int Page, int PageSize);
 
-public sealed record StorefrontVariantDto(Guid SkuId, string SkuCode, string VariantName, decimal Price, bool InStock);
+public sealed record StorefrontVariantDto(Guid SkuId, string SkuCode, string VariantName, decimal Price, bool InStock, decimal? RetailPrice = null, decimal DiscountPct = 0);
 
 public sealed record StorefrontProductDto(Guid ProductId, string ProductName, IReadOnlyList<StorefrontVariantDto> Variants,
-    IReadOnlyList<Manoksha.Modules.Catalog.Contracts.PublicMedia> Media);
+    IReadOnlyList<Manoksha.Modules.Catalog.Contracts.PublicMedia> Media, string? VendorName = null, string? ProductCode = null);
+
+public sealed record CartSummaryRequest(IReadOnlyList<CheckoutLineRequest> Lines);
+
+/// <param name="UnitPrice">Display price for this buyer (online price, or the reseller's price); checkout re-prices authoritatively.</param>
+public sealed record CartSummaryLineDto(Guid SkuId, int Quantity, bool Sellable, bool InStock, string? ProductName, string? VariantName, string? ProductCode,
+    Guid? VendorId, string? VendorName, decimal? RetailPrice, decimal DiscountPct, decimal? UnitPrice, decimal LineTotal, string? Message);
+
+/// <summary>One vendor's part of the cart and its shipping fee (ADR-001 §46). VendorId null = branch-stock items (one fee per order).</summary>
+public sealed record CartVendorGroupDto(Guid? VendorId, string VendorName, decimal ItemsTotal, decimal ShippingFee);
+
+public sealed record CartSummaryDto(IReadOnlyList<CartSummaryLineDto> Lines, IReadOnlyList<CartVendorGroupDto> Groups, decimal Merchandise, decimal Shipping, decimal Total);
 
 public sealed record CartQuoteRequest(IReadOnlyList<Guid> SkuIds);
 

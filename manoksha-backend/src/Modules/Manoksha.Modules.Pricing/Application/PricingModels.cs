@@ -36,7 +36,11 @@ public sealed record ResellerCatalogItemDto(
     string DiscountSource,
     decimal DiscountPct,
     decimal ResellerPrice,
-    Manoksha.Modules.Catalog.Contracts.ImageUrls? Image = null);
+    Manoksha.Modules.Catalog.Contracts.ImageUrls? Image = null,
+    Guid? VendorId = null,
+    string? VendorName = null,
+    string? ProductCode = null,
+    bool OutOfStock = false);
 
 public sealed record ResellerCatalogPage(IReadOnlyList<ResellerCatalogItemDto> Items, int Total, int Page, int PageSize);
 

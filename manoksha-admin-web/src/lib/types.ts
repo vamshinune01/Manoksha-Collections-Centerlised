@@ -31,7 +31,7 @@ export interface PermissionInfo {
 export interface Setting {
   key: string;
   description: string;
-  kind: "Integer" | "Money" | "String";
+  kind: "Integer" | "Money" | "String" | "Boolean";
   value: unknown;
   version: number;
   updatedAt: string;

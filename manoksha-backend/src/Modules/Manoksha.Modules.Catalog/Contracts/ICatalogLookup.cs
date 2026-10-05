@@ -11,7 +11,15 @@ public sealed record SkuInfo(
     string TrackingMode,
     string ProductStatus,
     bool AvailableForRetail,
-    bool AvailableForReseller);
+    bool AvailableForReseller,
+    Guid? VendorId = null,
+    string? VendorCode = null,
+    string? VendorName = null,
+    string? ProductCode = null,
+    bool OutOfStock = false);
+
+/// <param name="OwnerMarginPct">What the vendor gives the Owner off retail (cost basis). Owner-only — never send to other callers.</param>
+public sealed record VendorInfo(Guid Id, string Code, string Name, decimal ShippingFee, decimal? OwnerMarginPct, bool IsActive);
 
 /// <summary>Catalog facts other modules need (inventory, pricing, orders).</summary>
 public interface ICatalogLookup
@@ -29,7 +37,12 @@ public interface ICatalogLookup
     /// Sellable SKUs for a channel: active product, active variant, and available for resellers (reseller channel) or for
     /// retail (retail channel). Paged, optionally filtered by name / SKU code / category.
     /// </summary>
-    Task<SellableSkuPage> ListSellableSkusAsync(SalesChannel channel, string? query, Guid? categoryId, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<SellableSkuPage> ListSellableSkusAsync(SalesChannel channel, string? query, Guid? categoryId, int page, int pageSize, Guid? vendorId = null,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyDictionary<Guid, VendorInfo>> GetVendorsAsync(IReadOnlyCollection<Guid> vendorIds, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<VendorInfo>> ListVendorsAsync(bool activeOnly, CancellationToken cancellationToken = default);
 }
 
 public enum SalesChannel

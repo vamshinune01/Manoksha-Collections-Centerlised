@@ -26,6 +26,7 @@ public sealed class NotificationsModule : IModule
 
         services.AddScoped<IOutboxEventHandler, OrderConfirmedHandler>();
         services.AddScoped<IOutboxEventHandler, OrderStatusChangedHandler>();
+        services.AddScoped<IOutboxEventHandler, ParcelShippedHandler>();
         services.AddScoped<IOutboxEventHandler, FulfillmentExceptionHandler>();
         services.AddScoped<IOutboxEventHandler, FulfillmentInquiryHandler>();
         services.AddScoped<IOutboxEventHandler, ReconciliationRequiredHandler>();

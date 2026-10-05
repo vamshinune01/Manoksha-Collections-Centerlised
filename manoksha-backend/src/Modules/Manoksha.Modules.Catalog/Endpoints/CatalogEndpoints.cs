@@ -15,6 +15,8 @@ internal static class CatalogEndpoints
         endpoints.MapGet("/api/v1/catalog/categories", async (CatalogSetupService s, CancellationToken ct) =>
                 (await s.ListCategoriesAsync(ct)).Where(c => c.IsActive).Select(c => new PublicCategoryDto(c.Id, c.ParentId, c.Name, c.Slug)).ToList())
             .AllowAnonymous().WithTags("Storefront").WithName("StorefrontCategories");
+        endpoints.MapGet("/api/v1/catalog/vendors", (VendorService s, CancellationToken ct) => s.ListPublicAsync(ct))
+            .AllowAnonymous().WithTags("Storefront").WithName("StorefrontVendors");
 
         var admin = endpoints.MapGroup("/api/v1/admin/catalog").WithTags("Catalog").RequireAudience(Audiences.Admin);
         var view = Permissions.Catalog.View;
@@ -73,5 +75,21 @@ internal static class CatalogEndpoints
 
         admin.MapGet("/skus", (string? q, int? limit, ProductService s, CancellationToken ct) => s.SearchSkusAsync(q, limit, ct))
             .RequirePermission(view).WithName("SearchSkus");
+
+        // Vendors (ADR-001 §41–47): shipping fee and the Owner's margin are pricing decisions, so only the Owner manages them.
+        admin.MapGet("/vendors", (VendorService s, CancellationToken ct) => s.ListAsync(ct)).RequirePermission(view).WithName("ListVendors");
+        admin.MapPost("/vendors", async (CreateVendorRequest r, VendorService s, CancellationToken ct) =>
+        {
+            var v = await s.CreateAsync(r, ct);
+            return Results.Created($"/api/v1/admin/catalog/vendors/{v.Id}", v);
+        }).RequirePermission(Permissions.Pricing.Manage).WithName("CreateVendor");
+        admin.MapPut("/vendors/{id:guid}", (Guid id, UpdateVendorRequest r, VendorService s, CancellationToken ct) => s.UpdateAsync(id, r, ct))
+            .RequirePermission(Permissions.Pricing.Manage).WithName("UpdateVendor");
+
+        // Vendor products have no stock counts: the Owner switches a variant (or the whole product) out of stock (ADR-001 §43).
+        admin.MapPost("/skus/{skuId:guid}/out-of-stock", (Guid skuId, SetOutOfStockRequest r, ProductService s, CancellationToken ct) => s.SetOutOfStockAsync(skuId, null, r, ct))
+            .RequirePermission(manage).WithName("SetSkuOutOfStock");
+        admin.MapPost("/products/{id:guid}/out-of-stock", (Guid id, SetOutOfStockRequest r, ProductService s, CancellationToken ct) => s.SetOutOfStockAsync(null, id, r, ct))
+            .RequirePermission(manage).WithName("SetProductOutOfStock");
     }
 }

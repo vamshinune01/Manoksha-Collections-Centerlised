@@ -39,7 +39,7 @@ internal static class OrderLocking
             return new CurrentAllocation(record.BranchId, record, lines.Select(l => new AllocationLine(l.SkuId, l.Quantity, l.ItemIds, l.CostAmount)).ToList());
         }
         var orderLines = await db.Set<OrderLine>().AsNoTracking().Where(l => l.OrderId == order.Id).ToListAsync(ct);
-        return new CurrentAllocation(order.FulfillmentBranchId, null, orderLines.Select(l => new AllocationLine(l.SkuId, l.Quantity, l.ItemIds, l.CostAmount)).ToList());
+        return new CurrentAllocation(order.FulfillmentBranchId ?? throw FulfillmentService.VendorOrder(), null, orderLines.Select(l => new AllocationLine(l.SkuId, l.Quantity, l.ItemIds, l.CostAmount)).ToList());
     }
 }
 
@@ -76,7 +76,8 @@ internal sealed class FulfillmentService(
     public Task<OrderDto> MarkPackedAsync(Guid id, FulfillmentStepRequest r, CancellationToken ct) =>
         StepAsync(id, P.Orders.Fulfill, "orders.order.packed", r.Note, o => o.MarkPacked(), ct);
 
-    public Task<OrderDto> MarkShippedAsync(Guid id, ShipOrderRequest r, CancellationToken ct)
+    /// <summary>Courier is required (Xpressbees, Delhivery or Other + name); tracking is optional (ADR-001 §23).</summary>
+    internal static (string Courier, string? CourierName, string? Tracking) ValidateShipment(ShipOrderRequest r)
     {
         var courier = (r.Courier ?? string.Empty).Trim().ToUpperInvariant();
         if (!Couriers.Contains(courier))
@@ -93,10 +94,16 @@ internal sealed class FulfillmentService(
         {
             throw new BusinessRuleException("SHIPMENT_INVALID", "Courier name and tracking number must be at most 100 characters.", 400);
         }
+        return (courier, courier == "OTHER" ? courierName : null, tracking);
+    }
+
+    public Task<OrderDto> MarkShippedAsync(Guid id, ShipOrderRequest r, CancellationToken ct)
+    {
+        var (courier, courierName, tracking) = ValidateShipment(r);
         return StepAsync(id, P.Orders.Fulfill, "orders.order.shipped", r.Note, o =>
         {
             var from = o.MarkShipped();
-            db.Add(new Shipment(o.Id, o.FulfillmentBranchId, courier, courier == "OTHER" ? courierName : null, tracking, currentUser.UserId, clock.UtcNow));
+            db.Add(new Shipment(o.Id, BranchOf(o), courier, courierName, tracking, currentUser.UserId, clock.UtcNow));
             return from;
         }, ct, new { courier, courierName, tracking });
     }
@@ -123,7 +130,7 @@ internal sealed class FulfillmentService(
         unitOfWork.ExecuteInTransactionAsync(async innerCt =>
         {
             var order = await OrderLocking.LockAsync(db, id, innerCt);
-            await permissions.EnsurePermissionForBranchAsync(permission, order.FulfillmentBranchId, innerCt);
+            await permissions.EnsurePermissionForBranchAsync(permission, BranchOf(order), innerCt);
             var from = step(order);
             await FinishAsync(order, from, action, note?.Trim(), details, innerCt);
             return await orders.GetAsync(id, innerCt);
@@ -142,17 +149,17 @@ internal sealed class FulfillmentService(
         return unitOfWork.ExecuteInTransactionAsync(async innerCt =>
         {
             var order = await OrderLocking.LockAsync(db, id, innerCt);
-            await permissions.EnsurePermissionForBranchAsync(P.Orders.FulfillmentExceptionRaise, order.FulfillmentBranchId, innerCt);
+            await permissions.EnsurePermissionForBranchAsync(P.Orders.FulfillmentExceptionRaise, BranchOf(order), innerCt);
             var allocation = await OrderLocking.CurrentAllocationAsync(db, order, innerCt);
             var issues = await ResolveIssuesAsync(allocation, r.Lines, innerCt);
             var from = order.RaiseFulfillmentException();
-            var ex = new FulfillmentException(order.Id, order.FulfillmentBranchId, reason, notes, currentUser.UserId, clock.UtcNow);
+            var ex = new FulfillmentException(order.Id, BranchOf(order), reason, notes, currentUser.UserId, clock.UtcNow);
             db.Add(ex);
             foreach (var i in issues.Where(i => i.MissingQty + i.DamagedQty > 0))
             {
                 db.Add(new FulfillmentExceptionLine(ex.Id, i.SkuId, i.MissingQty, i.DamagedQty, [.. i.MissingItemIds], [.. i.DamagedItemIds]));
             }
-            outbox.Enqueue(new FulfillmentExceptionRaised(ex.Id, order.Id, order.Number, order.FulfillmentBranchId, reason));
+            outbox.Enqueue(new FulfillmentExceptionRaised(ex.Id, order.Id, order.Number, BranchOf(order), reason));
             await FinishAsync(order, from, "orders.fulfillment_exception.raised", $"{reason}: {notes}",
                 new { exceptionId = ex.Id, reason, lines = issues.Select(i => new { i.SkuId, i.MissingQty, i.DamagedQty }) }, innerCt);
             return await orders.GetAsync(id, innerCt);
@@ -166,7 +173,7 @@ internal sealed class FulfillmentService(
         return unitOfWork.ExecuteInTransactionAsync(async innerCt =>
         {
             var order = await OrderLocking.LockAsync(db, id, innerCt);
-            await permissions.EnsurePermissionForBranchAsync(P.Orders.Reroute, order.FulfillmentBranchId, innerCt);
+            await permissions.EnsurePermissionForBranchAsync(P.Orders.Reroute, BranchOf(order), innerCt);
             var ex = await OpenExceptionAsync(order.Id, innerCt) ?? throw new BusinessRuleException("EXCEPTION_NOT_OPEN", "This order has no open fulfillment exception.", 409);
             var from = order.ResumeAfterException();
             ex.Close(FulfillmentExceptionStatus.ResolvedInPlace, note, currentUser.UserId, clock.UtcNow);
@@ -179,7 +186,7 @@ internal sealed class FulfillmentService(
     public async Task<IReadOnlyList<RerouteOptionDto>> RerouteOptionsAsync(Guid id, CancellationToken ct)
     {
         var order = await db.Set<Order>().AsNoTracking().SingleOrDefaultAsync(o => o.Id == id, ct) ?? throw new NotFoundException("ORDER_NOT_FOUND", "Order not found.");
-        await permissions.EnsurePermissionForBranchAsync(P.Orders.Reroute, order.FulfillmentBranchId, ct);
+        await permissions.EnsurePermissionForBranchAsync(P.Orders.Reroute, BranchOf(order), ct);
         var lines = await db.Set<OrderLine>().AsNoTracking().Where(l => l.OrderId == id).ToListAsync(ct);
         var (_, entries) = await priority.GetCurrentAsync(ct);
         var result = new List<RerouteOptionDto>();
@@ -203,7 +210,7 @@ internal sealed class FulfillmentService(
         return unitOfWork.ExecuteInTransactionAsync(async innerCt =>
         {
             var order = await OrderLocking.LockAsync(db, id, innerCt);
-            await permissions.EnsurePermissionForBranchAsync(P.Orders.Reroute, order.FulfillmentBranchId, innerCt);
+            await permissions.EnsurePermissionForBranchAsync(P.Orders.Reroute, BranchOf(order), innerCt);
             if (order.Status != OrderStatus.FulfillmentException)
             {
                 throw new BusinessRuleException("REROUTE_NEEDS_EXCEPTION", "Only an order with an open fulfillment exception can be rerouted.", 409);
@@ -241,7 +248,7 @@ internal sealed class FulfillmentService(
             var from = order.Reroute(target.Id);
             ex.Close(FulfillmentExceptionStatus.Rerouted, $"Rerouted to {target.Name}: {reason}", currentUser.UserId, now);
             var effects = new { returnedAt = fromBranch, returned.Lines, returned.DiscrepancyNumbers, soldAt = target.Id, sold = sold.Lines.Select(l => new { l.SkuId, l.Quantity, l.CostAmount }) };
-            db.Add(new OrderReroute(order.Id, fromBranch, target.Id, reason, ex.Id, JsonSerializer.Serialize(effects, JsonDefaults.Options), currentUser.UserId, now));
+            db.Add(new OrderReroute(order.Id, fromBranch!.Value, target.Id, reason, ex.Id, JsonSerializer.Serialize(effects, JsonDefaults.Options), currentUser.UserId, now));
             await FinishAsync(order, from, "orders.order.rerouted", $"Rerouted to {target.Name}: {reason}",
                 new { fromBranchId = fromBranch, toBranchId = target.Id, exceptionId = ex.Id, effects }, innerCt);
             return await orders.GetAsync(id, innerCt);
@@ -256,8 +263,12 @@ internal sealed class FulfillmentService(
         return unitOfWork.ExecuteInTransactionAsync(async innerCt =>
         {
             var order = await OrderLocking.LockAsync(db, id, innerCt);
-            await permissions.EnsurePermissionForBranchAsync(P.Orders.Cancel, order.FulfillmentBranchId, innerCt);
+            await EnsureOrderPermissionAsync(P.Orders.Cancel, order, innerCt);
             var from = order.Cancel();
+            if (order.FulfillmentMode == FulfillmentMode.Vendor)
+            {
+                return await CancelVendorOrderAsync(order, from, reason, innerCt);
+            }
 
             // Stock: everything returns to AVAILABLE except units reported damaged or missing (Phase 7 decision).
             var current = await OrderLocking.CurrentAllocationAsync(db, order, innerCt);
@@ -289,6 +300,31 @@ internal sealed class FulfillmentService(
         }, ct);
     }
 
+    /// <summary>Vendor orders: no stock to return; every parcel is cancelled (only while none has shipped); money as for branch orders.</summary>
+    private async Task<CancelOrderResult> CancelVendorOrderAsync(Order order, OrderStatus from, string reason, CancellationToken ct)
+    {
+        var parcels = await db.Set<OrderParcel>().Where(p => p.OrderId == order.Id).ToListAsync(ct);
+        foreach (var parcel in parcels)
+        {
+            parcel.Cancel(clock.UtcNow);
+        }
+        decimal? refunded = null;
+        string? caseNumber = null;
+        if (order.Channel == OrderChannel.Reseller)
+        {
+            var reversal = await wallets.ReverseOrderDebitAsync(order.Id, $"Order {order.Number} cancelled: {reason}", ct);
+            refunded = reversal.BalanceAfter - reversal.BalanceBefore;
+        }
+        else if (order.Channel == OrderChannel.Online)
+        {
+            caseNumber = await payments.OpenReconciliationAsync(PaymentPurposes.Order, order.Id, "ORDER_CANCELLED_AFTER_PAYMENT",
+                $"Order {order.Number} was cancelled after payment: {reason}", ct);
+        }
+        await FinishAsync(order, from, "orders.order.cancelled", $"Cancelled: {reason}",
+            new { parcels = parcels.Select(p => p.VendorName), walletRefunded = refunded, reconciliationCase = caseNumber }, ct);
+        return new CancelOrderResult(await orders.GetAsync(order.Id, ct), refunded, caseNumber, []);
+    }
+
     // ---- Queues ----
 
     public async Task<IReadOnlyList<FulfillmentExceptionDto>> ListExceptionsAsync(string? status, CancellationToken ct)
@@ -309,12 +345,32 @@ internal sealed class FulfillmentService(
 
     // ---- helpers ----
 
+    private static Guid BranchOf(Order order) => order.FulfillmentBranchId ?? throw VendorOrder();
+
+    internal static BusinessRuleException VendorOrder() =>
+        new("VENDOR_ORDER", "This order ships directly from vendors — update each vendor's parcel instead.", 409);
+
+    /// <summary>Branch orders: the permission at the order's branch. Vendor orders have no branch: a global grant (the Owner) is needed.</summary>
+    internal async Task EnsureOrderPermissionAsync(string permission, Order order, CancellationToken ct)
+    {
+        if (order.FulfillmentBranchId is { } branchId)
+        {
+            await permissions.EnsurePermissionForBranchAsync(permission, branchId, ct);
+            return;
+        }
+        var access = await permissions.GetEffectiveAccessAsync(ct);
+        if (!access.GlobalPermissions.Contains(permission))
+        {
+            throw new ForbiddenException(ErrorCodes.Forbidden, "Only the Owner can manage vendor orders.");
+        }
+    }
+
     private async Task FinishAsync(Order order, OrderStatus from, string action, string? note, object? details, CancellationToken ct)
     {
         db.Add(new OrderStatusChange(order.Id, from, order.Status, currentUser.UserId, note, clock.UtcNow));
         await audit.RecordAsync(new AuditRecord(action, "Order", order.Id.ToString(), Before: new { status = from.ToString() },
             After: new { order.Number, status = order.Status.ToString(), branchId = order.FulfillmentBranchId, details }, Reason: note, BranchId: order.FulfillmentBranchId), ct);
-        outbox.Enqueue(new OrderStatusChanged(order.Id, order.Number, order.Channel.ToString(), order.Status.ToString(), order.FulfillmentBranchId));
+        outbox.Enqueue(new OrderStatusChanged(order.Id, order.Number, order.Channel.ToString(), order.Status.ToString(), order.FulfillmentBranchId, order.FulfillmentMode.ToString()));
         await db.SaveChangesAsync(ct);
     }
 

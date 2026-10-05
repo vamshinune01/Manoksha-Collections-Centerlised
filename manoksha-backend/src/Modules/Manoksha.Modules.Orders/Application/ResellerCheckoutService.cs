@@ -67,11 +67,12 @@ internal sealed class ResellerCheckoutService(
             }
         }
 
-        // Authoritative prices (never from the client) and the ₹100 per-order shipping fee.
+        // Authoritative prices (never from the client). Shipping: each vendor's fee once (ADR-001 §46); branch stock: ₹100 per order.
         var quote = (await prices.QuoteForResellerAsync(reseller.ResellerId, lines.Select(l => l.SkuId).ToList(), ct)).ToDictionary(q => q.SkuId);
         var skus = await catalog.FindSkusAsync(lines.Select(l => l.SkuId).ToList(), ct);
         var merchandise = lines.Sum(l => quote[l.SkuId].FinalUnitPrice * l.Quantity);
-        var shipping = await settings.GetAsync<decimal>(SettingKeys.ShippingFeePerOrder, ct);
+        var vendorBasket = await VendorCheckout.GroupAsync(lines, skus, catalog, ct);
+        var shipping = vendorBasket?.Shipping ?? await settings.GetAsync<decimal>(SettingKeys.ShippingFeePerOrder, ct);
         var total = merchandise + shipping;
 
         // Fast, friendly check (the authoritative check is the locked debit below).
@@ -87,6 +88,10 @@ internal sealed class ResellerCheckoutService(
 
         var orderId = Uuid7.NewGuid();
         var orderNumber = await CheckoutRules.NextOrderNumberAsync(db, ct);
+        if (vendorBasket is not null)
+        {
+            return await ConfirmVendorOrderAsync(orderId, orderNumber, reseller, customerId, delivery, lines, quote, skus, vendorBasket, merchandise, shipping, ct);
+        }
 
         // Owner priority: first ACTIVE branch that can fulfil the complete basket wins (SPEC §11).
         var basket = lines.Select(l => new BasketLine(l.SkuId, l.Quantity)).ToList();
@@ -128,6 +133,50 @@ internal sealed class ResellerCheckoutService(
         outbox.Enqueue(new OrderConfirmed(order.Id, order.Number, order.Channel.ToString(), branchId));
         await db.SaveChangesAsync(ct);
 
+        return new CheckoutResult("CONFIRMED", await orders.GetAsync(order.Id, ct), debit.BalanceAfter, null);
+    }
+
+    /// <summary>
+    /// Vendor products (ADR-001 §43, §46): no stock to commit and no branch — the wallet is debited, the order confirmed, and each
+    /// vendor's items become a parcel the vendor ships directly. Atomic with the debit (SPEC §16, §32).
+    /// </summary>
+    private async Task<CheckoutResult> ConfirmVendorOrderAsync(Guid orderId, string orderNumber, ResellerInfo reseller, Guid? customerId, DeliveryDetails delivery,
+        IReadOnlyList<CheckoutLineRequest> lines, IReadOnlyDictionary<Guid, ResellerPriceLine> quote, IReadOnlyDictionary<Guid, SkuInfo> skus, VendorBasket basket,
+        decimal merchandise, decimal shipping, CancellationToken ct)
+    {
+        var now = clock.UtcNow;
+        var order = new Order(orderId, orderNumber, OrderChannel.Reseller, reseller.ResellerId, customerId, null, delivery, merchandise, shipping, currentUser.UserId, now);
+        db.Add(order);
+        await db.SaveChangesAsync(ct);
+        var debit = await wallets.DebitForOrderAsync(reseller.ResellerId, order.GrandTotal, order.Id, order.Number, ct);
+        var orderLines = new Dictionary<Guid, OrderLine>();
+        foreach (var l in lines)
+        {
+            var q = quote[l.SkuId];
+            var sku = skus[l.SkuId];
+            var line = new OrderLine(order.Id, l.SkuId, sku.SkuCode, sku.ProductName, sku.VariantName, l.Quantity, q.RetailPriceId, q.RetailPrice, q.DiscountSource, q.DiscountPct,
+                q.FinalUnitPrice, q.CommercialTermId, q.CommercialTermVersion, q.ProductDiscountId, null, []);
+            db.Add(line);
+            orderLines[l.SkuId] = line;
+        }
+        VendorCheckout.AddParcels(db, order, basket, skus, orderLines, now);
+        order.ConfirmWalletPaid(debit.EntryId, now);
+        db.Add(new OrderStatusChange(order.Id, null, OrderStatus.Confirmed, currentUser.UserId,
+            $"Wallet debited; {basket.Groups.Count} vendor parcel(s): {string.Join(", ", basket.Groups.Select(g => g.Vendor.Name))}", now));
+        await audit.RecordAsync(new AuditRecord("orders.reseller_order.confirmed", "Order", order.Id.ToString(),
+            After: new
+            {
+                order.Number,
+                resellerId = reseller.ResellerId,
+                vendors = basket.Groups.Select(g => new { g.Vendor.Name, g.Vendor.ShippingFee }),
+                order.MerchandiseTotal,
+                order.ShippingFee,
+                order.GrandTotal,
+                walletBefore = debit.BalanceBefore,
+                walletAfter = debit.BalanceAfter,
+            }), ct);
+        outbox.Enqueue(new OrderConfirmed(order.Id, order.Number, order.Channel.ToString(), null));
+        await db.SaveChangesAsync(ct);
         return new CheckoutResult("CONFIRMED", await orders.GetAsync(order.Id, ct), debit.BalanceAfter, null);
     }
 }

@@ -32,5 +32,16 @@ public sealed class PricingModelConfiguration : IModuleModelConfiguration
             b.HasIndex(x => new { x.ProductId, x.EffectiveFrom });
             b.HasIndex(x => x.ProductId).IsUnique().HasFilter("effective_to IS NULL").HasDatabaseName("ux_product_reseller_discounts_current");
         });
+
+        modelBuilder.Entity<ProductOnlineDiscount>(b =>
+        {
+            b.ToTable("product_online_discounts", SchemaName, t => t.HasCheckConstraint("ck_product_online_discount_range", "discount_pct >= 0 AND discount_pct <= 100"));
+            b.HasKey(x => x.Id);
+            b.Property(x => x.DiscountPct).HasPrecision(7, 4);
+            b.Property(x => x.Reason).HasMaxLength(2000);
+            b.Property(x => x.EndReason).HasMaxLength(2000);
+            b.HasIndex(x => new { x.ProductId, x.EffectiveFrom });
+            b.HasIndex(x => x.ProductId).IsUnique().HasFilter("effective_to IS NULL").HasDatabaseName("ux_product_online_discounts_current");
+        });
     }
 }

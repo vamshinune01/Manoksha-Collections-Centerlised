@@ -33,6 +33,7 @@ public sealed class OrdersModule : IModule
         services.AddScoped<IPaymentPurposeHandler>(sp => sp.GetRequiredService<OrderPaymentHandler>());
         services.AddScoped<ReservationSweeper>();
         services.AddScoped<FulfillmentService>();
+        services.AddScoped<ParcelService>();
         services.AddScoped<PosSaleService>();
     }
 

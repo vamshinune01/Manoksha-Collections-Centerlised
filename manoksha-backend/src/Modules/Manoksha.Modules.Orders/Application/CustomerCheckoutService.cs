@@ -57,8 +57,9 @@ internal sealed class CustomerCheckoutService(
         var ids = lines.Select(l => l.SkuId).ToList();
         var quote = (await prices.QuoteForRetailAsync(ids, ct)).ToDictionary(q => q.SkuId);
         var skus = await catalog.FindSkusAsync(ids, ct);
-        var merchandise = lines.Sum(l => quote[l.SkuId].Price * l.Quantity);
-        var shipping = await settings.GetAsync<decimal>(SettingKeys.ShippingFeePerOrder, ct);
+        var merchandise = lines.Sum(l => quote[l.SkuId].FinalPrice * l.Quantity);
+        var vendorBasket = await VendorCheckout.GroupAsync(lines, skus, catalog, ct);
+        var shipping = vendorBasket?.Shipping ?? await settings.GetAsync<decimal>(SettingKeys.ShippingFeePerOrder, ct);
 
         // The reservation keeps its own expiry; later setting changes never affect it (SPEC §13).
         var now = clock.UtcNow;
@@ -66,6 +67,10 @@ internal sealed class CustomerCheckoutService(
 
         var orderId = Uuid7.NewGuid();
         var orderNumber = await CheckoutRules.NextOrderNumberAsync(db, ct);
+        if (vendorBasket is not null)
+        {
+            return await StageVendorOrderAsync(orderId, orderNumber, delivery, lines, quote, skus, vendorBasket, merchandise, shipping, now, expiresAt, ct);
+        }
         var basket = lines.Select(l => new BasketLine(l.SkuId, l.Quantity)).ToList();
         var (resolution, evaluations) = await router.ResolveAsync(basket, StockHold.Reserve, orderId, orderNumber, ct);
         if (resolution is null)
@@ -85,8 +90,7 @@ internal sealed class CustomerCheckoutService(
         {
             var q = quote[l.SkuId];
             var sku = skus[l.SkuId];
-            var line = new OrderLine(order.Id, l.SkuId, sku.SkuCode, sku.ProductName, sku.VariantName, l.Quantity, q.RetailPriceId, q.Price, DiscountSources.None, 0m,
-                q.Price, null, null, null, null, []);
+            var line = NewLine(order.Id, l, q, sku);
             db.Add(line);
             var held = resolution.Allocation.Lines.Single(a => a.SkuId == l.SkuId);
             db.Add(new ReservationLine(reservation.Id, line.Id, l.SkuId, l.Quantity, [.. held.ItemIds]));
@@ -99,6 +103,43 @@ internal sealed class CustomerCheckoutService(
         await audit.RecordAsync(new AuditRecord("orders.online_order.reserved", "Order", order.Id.ToString(),
             After: new { order.Number, branchId = resolution.BranchId, order.MerchandiseTotal, order.ShippingFee, order.GrandTotal, expiresAt, paymentAttemptId = attempt.Id, evaluations },
             BranchId: resolution.BranchId), ct);
+        await db.SaveChangesAsync(ct);
+        return new CheckoutStage(order.Id, attempt.Id, null);
+    }
+
+    private static OrderLine NewLine(Guid orderId, CheckoutLineRequest l, RetailPriceLine q, SkuInfo sku) =>
+        new(orderId, l.SkuId, sku.SkuCode, sku.ProductName, sku.VariantName, l.Quantity, q.RetailPriceId, q.RetailPrice,
+            q.DiscountPct > 0 ? DiscountSources.OnlineProduct : DiscountSources.None, q.DiscountPct, q.FinalPrice, null, null, null, null, []);
+
+    /// <summary>
+    /// Vendor products (ADR-001 §43–46): nothing to reserve. The order waits for the UPI payment with one parcel per vendor; a
+    /// payment — even a late one — confirms it.
+    /// </summary>
+    private async Task<CheckoutStage> StageVendorOrderAsync(Guid orderId, string orderNumber, DeliveryDetails delivery, IReadOnlyList<CheckoutLineRequest> lines,
+        IReadOnlyDictionary<Guid, RetailPriceLine> quote, IReadOnlyDictionary<Guid, SkuInfo> skus, VendorBasket basket, decimal merchandise, decimal shipping,
+        DateTimeOffset now, DateTimeOffset expiresAt, CancellationToken ct)
+    {
+        var userId = currentUser.UserId;
+        var order = new Order(orderId, orderNumber, OrderChannel.Online, null, null, null, delivery, merchandise, shipping, userId, now, customerUserId: userId);
+        order.AwaitPayment();
+        db.Add(order);
+        await db.SaveChangesAsync(ct);
+        var orderLines = new Dictionary<Guid, OrderLine>();
+        foreach (var l in lines)
+        {
+            var line = NewLine(order.Id, l, quote[l.SkuId], skus[l.SkuId]);
+            db.Add(line);
+            orderLines[l.SkuId] = line;
+        }
+        VendorCheckout.AddParcels(db, order, basket, skus, orderLines, now);
+        db.Add(new OrderStatusChange(order.Id, null, OrderStatus.PaymentPending, userId,
+            $"Waiting for payment; {basket.Groups.Count} vendor parcel(s): {string.Join(", ", basket.Groups.Select(g => g.Vendor.Name))}", now));
+        await db.SaveChangesAsync(ct);
+        var attempt = await payments.CreateAttemptAsync(new NewPaymentAttempt(PaymentPurposes.Order, order.Id, order.Number, userId, order.GrandTotal, expiresAt,
+            $"Manoksha Collections order {order.Number}", $"/orders/{order.Id}"), ct);
+        await audit.RecordAsync(new AuditRecord("orders.online_order.created", "Order", order.Id.ToString(),
+            After: new { order.Number, vendors = basket.Groups.Select(g => new { g.Vendor.Name, g.Vendor.ShippingFee }), order.MerchandiseTotal, order.ShippingFee,
+                order.GrandTotal, expiresAt, paymentAttemptId = attempt.Id }), ct);
         await db.SaveChangesAsync(ct);
         return new CheckoutStage(order.Id, attempt.Id, null);
     }

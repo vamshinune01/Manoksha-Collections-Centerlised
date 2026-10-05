@@ -73,6 +73,9 @@ public sealed class ManokshaApiFactory : WebApplicationFactory<Program>, IAsyncL
         _ = Services;
         OwnerUserId = await IdentityCommands.BootstrapOwnerAsync(Services, OwnerEmail, "Test Owner", OwnerPassword, CancellationToken.None);
 
+        // Most suites exercise the store/branch flows, which are paused by default in V1 (ADR-001 §48); vendor tests switch as needed.
+        await this.SetSettingAsync("operations.store_selling_enabled", "true");
+
         // The three V1 branches with the well-known development ids (Karimnagar P1, Hyderabad P2, Mulugu P3).
         await using var scope = Services.CreateAsyncScope();
         var branches = scope.ServiceProvider.GetRequiredService<BranchService>();

@@ -32,6 +32,19 @@ internal sealed class OrderPaymentHandler(
             return new PaymentHandlingResult(PaymentOutcome.Confirmed);
         }
         var now = clock.UtcNow;
+        if (order.FulfillmentMode == FulfillmentMode.Vendor)
+        {
+            // Vendor orders hold no stock, so a payment always confirms them — on time or late (ADR-001 §43).
+            var late = !success.WithinWindow || order.Status != OrderStatus.PaymentPending;
+            var prior = order.ConfirmVendorOnlinePaid(success.AttemptId, now);
+            db.Add(new OrderStatusChange(order.Id, prior, OrderStatus.Confirmed, null,
+                late ? "Payment received after the payment window; order confirmed at the original prices" : "Payment confirmed", now));
+            await audit.RecordAsync(new AuditRecord("orders.online_order.confirmed", "Order", order.Id.ToString(),
+                After: new { order.Number, order.GrandTotal, paymentAttemptId = success.AttemptId, success.ProviderPaymentRef, late }), cancellationToken);
+            outbox.Enqueue(new OrderConfirmed(order.Id, order.Number, order.Channel.ToString(), null));
+            await db.SaveChangesAsync(cancellationToken);
+            return new PaymentHandlingResult(late ? PaymentOutcome.Recovered : PaymentOutcome.Confirmed);
+        }
         var reservation = await LockActiveReservationAsync(order.Id, cancellationToken);
 
         // SPEC §14.1: valid payment while the reservation is still valid → finalise the reserved stock.

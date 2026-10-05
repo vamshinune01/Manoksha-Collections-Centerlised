@@ -51,7 +51,10 @@ internal sealed class OrderConfirmedHandler(NotificationPublisher publisher, IOr
         {
             return;
         }
-        await Publisher.InAppAsync($"order_confirmed:{e.OrderId:N}", EventType, Category.Info, $"New {e.Channel.ToLowerInvariant()} order {e.OrderNumber} to pack",
+        var title = e.FulfillmentBranchId is null
+            ? $"New {e.Channel.ToLowerInvariant()} order {e.OrderNumber} to place with vendors"
+            : $"New {e.Channel.ToLowerInvariant()} order {e.OrderNumber} to pack";
+        await Publisher.InAppAsync($"order_confirmed:{e.OrderId:N}", EventType, Category.Info, title,
             $"{o.Lines.Sum(l => l.Quantity)} item(s) · {EmailTemplates.Rs(o.GrandTotal)} · deliver to {o.DeliveryCity}", $"/orders/{e.OrderId}",
             P.Orders.Fulfill, e.FulfillmentBranchId, null, ct);
 
@@ -62,7 +65,9 @@ internal sealed class OrderConfirmedHandler(NotificationPublisher publisher, IOr
             new Facts([("Order", o.Number), ("Deliver to", $"{o.DeliveryName}, {o.DeliveryCity}")]),
             new Items(o.Lines.Select(l => (l.Name, l.Quantity, l.LineTotal)).ToList()),
             new Facts([("Items", EmailTemplates.Rs(o.MerchandiseTotal)), ("Shipping", EmailTemplates.Rs(o.ShippingFee)), ("Total", EmailTemplates.Rs(o.GrandTotal))]),
-            new Para("Need help with this order? Use \"Need help with this order\" on the order page."),
+            new Para(e.FulfillmentBranchId is null
+                ? "Items from different brands are shipped separately; you will get the courier and tracking for each as it ships."
+                : "Need help with this order? Use \"Need help with this order\" on the order page."),
         };
         await Publisher.EmailAsync($"order_confirmed:{e.OrderId:N}:email", EventType, Category.Info, o.Number, to.Email, to.Name, to.Kind,
             EmailTemplates.Build(Shop, $"Order {o.Number} confirmed", $"Your order {o.Number} is confirmed", blocks, "View order", Publisher.CustomerLink(to.OrderPath)), ct);
@@ -74,9 +79,9 @@ internal sealed class OrderStatusChangedHandler(NotificationPublisher publisher,
 {
     protected override async Task HandleAsync(OrderStatusChanged e, CancellationToken ct)
     {
-        if (e.Channel == "Store" || e.Status is not ("Shipped" or "Delivered" or "Cancelled"))
+        if (e.Channel == "Store" || e.Status is not ("Shipped" or "Delivered" or "Cancelled") || (e.Status == "Shipped" && e.Mode == "Vendor"))
         {
-            return;
+            return; // vendor orders: each parcel's shipping email carries its own courier and tracking
         }
         var o = await orders.GetAsync(e.OrderId, ct);
         if (o is null)
@@ -130,6 +135,28 @@ internal sealed class OrderRecipients(IUserDirectory users, IResellerDirectory r
             name = u?.DisplayName ?? name;
         }
         return new Recipient(email, name, "CUSTOMER", $"/orders/{o.OrderId}");
+    }
+}
+
+internal sealed class ParcelShippedHandler(NotificationPublisher publisher, IOrderNotificationView orders, OrderRecipients recipients)
+    : NotificationHandler<ParcelShipped>(publisher)
+{
+    protected override async Task HandleAsync(ParcelShipped e, CancellationToken ct)
+    {
+        var o = await orders.GetAsync(e.OrderId, ct);
+        if (o is null)
+        {
+            return;
+        }
+        var to = await recipients.ForAsync(o, ct);
+        var facts = new List<(string, string)> { ("Order", o.Number), ("Items from", e.VendorName), ("Courier", e.Courier) };
+        if (e.TrackingNumber is not null)
+        {
+            facts.Add(("Tracking number", e.TrackingNumber));
+        }
+        await Publisher.EmailAsync($"parcel_shipped:{e.ParcelId:N}", EventType, Category.Info, o.Number, to.Email, to.Name, to.Kind,
+            EmailTemplates.Build(Shop, $"Your {e.VendorName} items from order {o.Number} have shipped", $"Your {e.VendorName} items are on their way",
+                [new Para($"The {e.VendorName} part of your order has shipped."), new Facts(facts)], "View order", Publisher.CustomerLink(to.OrderPath)), ct);
     }
 }
 
